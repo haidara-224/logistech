@@ -50,7 +50,7 @@ interface SectionLabelProps {
 export function SectionLabel({ children, className = "" }: SectionLabelProps) {
   return (
     <span
-      className={`text-[#C8962E] text-xs uppercase tracking-[0.3em] font-medium ${className}`}
+      className={`text-amber-600 dark:text-[#C8962E] text-xs uppercase tracking-[0.3em] font-medium ${className}`}
     >
       {children}
     </span>
@@ -67,27 +67,44 @@ export function SectionHeading({ children, className = "" }: SectionHeadingProps
   return (
     <h2
       style={{ fontFamily: "'Cormorant Garamond', serif" }}
-      className={`text-5xl lg:text-7xl font-bold text-white mt-3 ${className}`}
+      className={`text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mt-3 ${className}`}
     >
       {children}
     </h2>
   );
 }
 
-export function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
+// ─── COUNTER ────────────────────────────────────────────────────────────────
+interface CounterProps {
+  to: number;
+  suffix?: string;
+  className?: string;
+}
+
+export function Counter({ to, suffix = "", className = "" }: CounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
   const [val, setVal] = useState(0);
+  
   useEffect(() => {
     if (!inView) return;
     let start = 0;
     const step = to / 60;
     const t = setInterval(() => {
       start += step;
-      if (start >= to) { setVal(to); clearInterval(t); }
-      else setVal(Math.floor(start));
+      if (start >= to) { 
+        setVal(to); 
+        clearInterval(t); 
+      } else {
+        setVal(Math.floor(start));
+      }
     }, 25);
     return () => clearInterval(t);
   }, [inView, to]);
-  return <span ref={ref}>{val}{suffix}</span>;
+  
+  return (
+    <span ref={ref} className={className}>
+      {val}{suffix}
+    </span>
+  );
 }
