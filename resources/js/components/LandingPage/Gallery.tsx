@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FadeIn } from "./ui-primitives";
 import { Filter, MapPin, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "@inertiajs/react";
 
 type GalleryFilter = "tous" | "charpente" | "transport" | "froid" | "batiment";
 
@@ -108,11 +109,11 @@ export function Gallery({ onDevis }: { onDevis: () => void }) {
         {/* CTA */}
         <FadeIn delay={0.3} className="text-center mt-16">
           <p className="text-slate-500 dark:text-white/40 mb-5">Votre projet pourrait figurer dans cette galerie.</p>
-          <button onClick={onDevis}
+          <Link href="/"
             className="px-10 py-4 rounded-xl font-bold text-black transition-all hover:brightness-110 hover:scale-[1.02] active:scale-95"
             style={{ background: "linear-gradient(135deg,#C8962E,#E8B84B)", boxShadow: "0 20px 50px rgba(200,150,46,0.25)" }}>
-            Démarrer mon projet →
-          </button>
+            Voir Nos Produits
+          </Link>
         </FadeIn>
       </div>
 

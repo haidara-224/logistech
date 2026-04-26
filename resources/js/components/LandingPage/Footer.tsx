@@ -1,5 +1,3 @@
-import { HardHat } from "lucide-react";
-
 const FOOTER_LINKS: Record<string, string[]> = {
   Services:   ["Charpente Métallique", "Transport Routier", "Froid Industriel", "Bâtiment & Construction", "Logistique"],
   Entreprise: ["À Propos", "Nos Réalisations", "Témoignages", "Contact"],
@@ -19,9 +17,13 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+              <div className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{ background: "linear-gradient(135deg,#C8962E,#E8B84B)" }}>
-                <HardHat size={26} className="text-black" />
+                   <img 
+                                    src="/logo.jpeg" 
+                                    alt="LOGISTECH EQUIP+" 
+                                    className="w-full h-full object-cover rounded-full"
+                                />
               </div>
               <div>
                 <p className="font-bold tracking-wider text-white dark:text-white">LOGISTECH EQUIP+</p>
@@ -55,7 +57,7 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4
           border-t border-slate-700/50 dark:border-white/5">
-          <p className="text-xs text-slate-500 dark:text-white/20">© 2025 LOGISTECH EQUIP+. Tous droits réservés.</p>
+          <p className="text-xs text-slate-500 dark:text-white/20">© {new Date().getFullYear()} LOGISTECH EQUIP+. Tous droits réservés.</p>
           <p className="text-xs text-slate-600 dark:text-white/15">Conakry · Guinée · Afrique de l'Ouest</p>
         </div>
       </div>

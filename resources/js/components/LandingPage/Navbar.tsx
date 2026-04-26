@@ -1,4 +1,4 @@
-// Navbar.tsx
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HardHat, Menu, X, FileText, LogIn, UserPlus, LayoutDashboard } from 'lucide-react';
@@ -10,20 +10,21 @@ const NAV_LINKS = [
     { label: 'Accueil', href: '#hero' },
     { label: 'Services', href: '#services' },
     { label: 'À Propos', href: '#about' },
-    { label: 'Galerie', href: '#gallery' },
-    { label: 'Avis', href: '#testimonials' },
     { label: 'Contact', href: '#contact' },
 ];
 
 interface NavbarProps {
     onDevis: () => void;
     canRegister?: boolean;
+    isAdmin: Boolean,
+    isSuperAdmin: Boolean
 }
 
-export function Navbar({ onDevis, canRegister = true }: NavbarProps) {
+
+export function Navbar({ onDevis, canRegister = true, isAdmin=false, isSuperAdmin =false}: NavbarProps) {
     const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    
+
     const { auth } = usePage().props;
 
     useEffect(() => {
@@ -42,7 +43,8 @@ export function Navbar({ onDevis, canRegister = true }: NavbarProps) {
             document.body.style.overflow = '';
         };
     }, [open]);
-
+    const canAccessDashboard = isAdmin || isSuperAdmin;
+    console.log('his ',canAccessDashboard)
     return (
         <>
             <nav
@@ -55,17 +57,28 @@ export function Navbar({ onDevis, canRegister = true }: NavbarProps) {
                 }}
             >
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-20">
-                    {/* Logo */}
+                    {/* Logo - Version améliorée */}
                     <a href="#hero" className="flex items-center gap-3 group shrink-0">
-                        <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
-                            style={{ background: 'linear-gradient(135deg,#C8962E,#E8B84B)' }}
-                        >
-                            <HardHat size={22} className="text-black" />
+                        <div className="relative w-11 h-11 rounded-xl overflow-hidden shadow-lg transition-transform group-hover:scale-105 duration-300"
+                            style={{
+                                background: 'linear-gradient(135deg, #C8962E, #E8B84B)',
+                                padding: '2px'
+                            }}>
+                            <div className="w-full h-full rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm">
+                                <img
+                                    src="/logo.jpeg"
+                                    alt="LOGISTECH EQUIP+"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-white font-bold text-sm leading-none tracking-wider">LOGISTECH</p>
-                            <p className="text-[#C8962E] text-xs tracking-[0.3em] font-light">EQUIP+</p>
+                        <div className="flex flex-col">
+                            <span className="text-white font-bold text-sm lg:text-base leading-tight tracking-wide">
+                                LOGISTECH
+                            </span>
+                            <span className="text-[#C8962E] text-[10px] lg:text-xs tracking-[0.2em] font-light">
+                                EQUIP+
+                            </span>
                         </div>
                     </a>
 
@@ -86,36 +99,32 @@ export function Navbar({ onDevis, canRegister = true }: NavbarProps) {
                     {/* Desktop Right Section */}
                     <div className="hidden lg:flex items-center gap-4 xl:gap-6 shrink-0">
                         {auth?.user ? (
-                            <Link
-                                href={dashboard()}
-                                className="inline-flex items-center gap-2 rounded-lg border border-[#C8962E] px-4 py-2 text-sm font-medium text-[#C8962E] hover:bg-[#C8962E] hover:text-black transition-all duration-300 whitespace-nowrap"
-                            >
-                                <LayoutDashboard size={16} />
-                                Dashboard
-                            </Link>
+                            canAccessDashboard ? (
+                                <Link
+                                    href={dashboard()}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-[#C8962E] px-4 py-2 text-sm font-medium text-[#C8962E] hover:bg-[#C8962E] hover:text-black transition-all duration-300"
+                                >
+                                    <LayoutDashboard size={16} />
+                                    Dashboard
+                                </Link>
+                            ) : null
                         ) : (
                             <>
-                                <Link
-                                    href={login()}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/80 hover:border-[#C8962E] hover:text-[#C8962E] hover:bg-white/5 transition-all duration-300 whitespace-nowrap"
-                                >
+                                <Link href={login()} className="...">
                                     <LogIn size={16} />
                                     Connexion
                                 </Link>
                                 {canRegister && (
-                                    <Link
-                                        href={register()}
-                                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2 text-sm font-semibold text-black shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 whitespace-nowrap"
-                                    >
+                                    <Link href={register()} className="...">
                                         <UserPlus size={16} />
                                         Inscription
                                     </Link>
                                 )}
                             </>
                         )}
-                        
+
                         <AppearanceToggleTab />
-                        
+
                         {/* Devis Button Desktop */}
                         <button
                             onClick={onDevis}
@@ -156,6 +165,31 @@ export function Navbar({ onDevis, canRegister = true }: NavbarProps) {
                                 backdropFilter: 'blur(20px)'
                             }}
                         >
+                            {/* Logo dans menu mobile */}
+                            <div className="flex items-center justify-center gap-3 pb-4 mb-2 border-b border-white/10">
+                                <div className="relative w-10 h-10 rounded-lg overflow-hidden"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #C8962E, #E8B84B)',
+                                        padding: '2px'
+                                    }}>
+                                    <div className="w-full h-full rounded-md overflow-hidden bg-white/10">
+                                        <img
+                                            src="/logo.jpeg"
+                                            alt="LOGISTECH"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-white font-bold text-sm leading-tight">
+                                        LOGISTECH
+                                    </span>
+                                    <span className="text-[#C8962E] text-[10px] tracking-[0.2em] font-light">
+                                        EQUIP+
+                                    </span>
+                                </div>
+                            </div>
+
                             {NAV_LINKS.map(link => (
                                 <a
                                     key={link.label}
@@ -166,38 +200,31 @@ export function Navbar({ onDevis, canRegister = true }: NavbarProps) {
                                     {link.label}
                                 </a>
                             ))}
-                            
-                            {auth?.user ? (
-                                <Link
-                                    href={dashboard()}
-                                    onClick={() => setOpen(false)}
-                                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#C8962E] px-4 py-3 text-sm font-medium text-[#C8962E] hover:bg-[#C8962E] hover:text-black transition-all duration-300"
-                                >
-                                    <LayoutDashboard size={16} />
-                                    Dashboard
-                                </Link>
-                            ) : (
-                                <div className="flex flex-col gap-3">
-                                    <Link
-                                        href={login()}
-                                        onClick={() => setOpen(false)}
-                                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 px-4 py-3 text-sm font-medium text-white/80 hover:border-[#C8962E] hover:text-[#C8962E] hover:bg-white/5 transition-all duration-300"
-                                    >
-                                        <LogIn size={16} />
-                                        Connexion
-                                    </Link>
-                                    {canRegister && (
-                                        <Link
-                                            href={register()}
-                                            onClick={() => setOpen(false)}
-                                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-3 text-sm font-semibold text-black shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-                                        >
-                                            <UserPlus size={16} />
-                                            Inscription
-                                        </Link>
-                                    )}
-                                </div>
-                            )}
+
+                         {auth?.user && canAccessDashboard ? (
+    <Link
+        href={dashboard()}
+        onClick={() => setOpen(false)}
+        className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#C8962E] px-4 py-3 text-sm font-medium text-[#C8962E] hover:bg-[#C8962E] hover:text-black transition-all duration-300"
+    >
+        <LayoutDashboard size={16} />
+        Dashboard
+    </Link>
+) : (
+    <div className="flex flex-col gap-3">
+        <Link href={login()} onClick={() => setOpen(false)} className="...">
+            <LogIn size={16} />
+            Connexion
+        </Link>
+
+        {canRegister && (
+            <Link href={register()} onClick={() => setOpen(false)} className="...">
+                <UserPlus size={16} />
+                Inscription
+            </Link>
+        )}
+    </div>
+)}
 
                             <button
                                 onClick={() => {

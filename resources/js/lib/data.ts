@@ -11,7 +11,7 @@ export type ServiceId = "charpente" | "transport" | "froid" | "batiment" | "logi
 
 export interface ServiceData {
   id: ServiceId;
-  icon: LucideIcon;  // ← minuscule !
+  icon: LucideIcon;  
   color: string;
   title: string;
   short: string;
