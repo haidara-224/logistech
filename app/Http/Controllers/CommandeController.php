@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Contracts\CommandeServiceInterface;
+use App\Http\Requests\StoreCommandeRequest;
+use App\Models\Commande;
+use Inertia\Inertia;
+use Illuminate\Http\RedirectResponse;
+
+class CommandeController extends Controller
+{
+    protected CommandeServiceInterface $service;
+
+    public function __construct(CommandeServiceInterface $service)
+    {
+        $this->service = $service;
+    }
+
+    public function index()
+    {
+        $commandes = Commande::with('client', 'items.produit')->paginate(20);
+        return Inertia::render('commandes/Index', ['commandes' => $commandes]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('commandes/Create');
+    }
+
+    public function store(StoreCommandeRequest $request): RedirectResponse
+    {
+        $commande = $this->service->createCommande($request->validated());
+        return redirect()->route('commandes.show', $commande->id)->with('success', 'Commande créée');
+    }
+
+    public function show(Commande $commande)
+    {
+        $commande->load('client', 'items.produit');
+        return Inertia::render('commandes/Show', ['commande' => $commande]);
+    }
+
+    public function destroy(Commande $commande): RedirectResponse
+    {
+        $commande->delete();
+        return redirect()->route('commandes.index')->with('success', 'Commande supprimée');
+    }
+}
+

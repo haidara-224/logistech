@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Contracts\StockServiceInterface;
+use App\Contracts\CommandeServiceInterface;
+use App\Services\StockService;
+use App\Services\CommandeService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +19,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind domain services
+        $this->app->bind(StockServiceInterface::class, StockService::class);
+        $this->app->bind(CommandeServiceInterface::class, function ($app) {
+            return new CommandeService($app->make(StockServiceInterface::class));
+        });
     }
 
     /**
