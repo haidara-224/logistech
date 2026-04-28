@@ -12,6 +12,7 @@ import {
     FileText,
     Settings,
     HardHat,
+    Package,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -75,7 +76,7 @@ export function AppSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link href="/produits">
-                                        <Apple />
+                                        <Package />
                                         <span>Produits</span>
                                     </Link>
                                 </SidebarMenuButton>
