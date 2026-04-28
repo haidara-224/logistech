@@ -67,6 +67,9 @@ export interface DashboardProps {
     sales_chart: SalesChart;
     low_stock: LowStockItem[];
     top_products: TopProduct[];
+    top_products_day?: TopProduct[];
+    top_products_week?: TopProduct[];
+    top_products_month?: TopProduct[];
     status_counts?: Record<string, number>;
     source_breakdown?: SourceBreakdown;
     recent_orders?: PaginatedData<RecentOrder>;

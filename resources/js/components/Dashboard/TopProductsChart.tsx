@@ -10,7 +10,12 @@ import { useState } from 'react';
 import { TopProduct } from '@/types';
 import { useAppearance } from '@/hooks/use-appearance';
 
-interface Props { topProducts: TopProduct[] }
+interface Props { 
+    topProducts: TopProduct[];
+    topProductsDay?: TopProduct[];
+    topProductsWeek?: TopProduct[];
+    topProductsMonth?: TopProduct[];
+}
 
 const COLORS = ['#f59e0b', '#a78bfa', '#38bdf8', '#34d399', '#f87171'];
 
@@ -31,12 +36,15 @@ function CustomTooltip({ active, payload, mode, isDark }: any) {
     );
 }
 
-export function TopProductsChart({ topProducts }: Props) {
+export function TopProductsChart({ topProducts, topProductsDay, topProductsWeek, topProductsMonth }: Props) {
     const { resolvedAppearance } = useAppearance();
     const isDark = resolvedAppearance === 'dark';
     const [mode, setMode] = useState<'qty' | 'revenue'>('qty');
+    const [period, setPeriod] = useState<'week' | 'day' | 'month' | '30d'>('30d');
 
-    const chartData = topProducts.map((p) => ({
+    const activeList = period === 'day' ? (topProductsDay ?? topProducts) : period === 'week' ? (topProductsWeek ?? topProducts) : period === 'month' ? (topProductsMonth ?? topProducts) : topProducts;
+
+    const chartData = activeList.map((p) => ({
         nom:     p.nom?.length > 13 ? p.nom.slice(0, 13) + '…' : p.nom,
         nomFull: p.nom,
         sku:     p.sku,
@@ -63,12 +71,22 @@ export function TopProductsChart({ topProducts }: Props) {
                             </CardTitle>
                             <p className="text-xs text-muted-foreground mt-1">Classé par {mode === 'qty' ? 'quantité' : 'chiffre d\'affaires'}</p>
                         </div>
-                        <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
-                            <TabsList className="h-7 text-xs">
-                                <TabsTrigger value="qty"     className="text-xs px-2.5">Quantité</TabsTrigger>
-                                <TabsTrigger value="revenue" className="text-xs px-2.5">CA</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                        <div className="flex items-center gap-2">
+                            <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
+                                <TabsList className="h-7 text-xs">
+                                    <TabsTrigger value="qty"     className="text-xs px-2.5">Quantité</TabsTrigger>
+                                    <TabsTrigger value="revenue" className="text-xs px-2.5">CA</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                            <div className="ml-3">
+                                <div className="inline-flex rounded-lg border overflow-hidden text-xs font-semibold">
+                                    <button onClick={() => setPeriod('day')} className={`px-2 py-1 ${period === 'day' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>Jour</button>
+                                    <button onClick={() => setPeriod('week')} className={`px-2 py-1 ${period === 'week' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>Semaine</button>
+                                    <button onClick={() => setPeriod('month')} className={`px-2 py-1 ${period === 'month' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>Mois</button>
+                                    <button onClick={() => setPeriod('30d')} className={`px-2 py-1 ${period === '30d' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>30j</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="pt-4 px-2 pb-4">

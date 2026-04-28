@@ -19,10 +19,10 @@ const fmtGnf = (n: number) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'GNF', maximumFractionDigits: 0 }).format(n);
 
 export default function Dashboard({
-    metrics, sales_chart, low_stock, top_products,
+    metrics, sales_chart, low_stock, top_products, top_products_day, top_products_week, top_products_month,
     status_counts, source_breakdown, recent_orders, filters,
 }: DashboardProps) {
-    const props: DashboardProps = { metrics, sales_chart, low_stock, top_products, status_counts, source_breakdown, recent_orders, filters };
+    const props: DashboardProps = { metrics, sales_chart, low_stock, top_products, top_products_day, top_products_week, top_products_month, status_counts, source_breakdown, recent_orders, filters };
 
     const initialSource = filters?.source ?? 'all';
     const [source, setSource] = useState<string>(initialSource);
@@ -121,7 +121,7 @@ export default function Dashboard({
                     {/* ── Row 4 : Top products + Low stock ─────────── */}
                     <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
                         <div className="xl:col-span-2">
-                            <TopProductsChart topProducts={top_products} />
+                            <TopProductsChart topProducts={top_products} topProductsDay={top_products_day} topProductsWeek={top_products_week} topProductsMonth={top_products_month} />
                         </div>
                         <div className="xl:col-span-3">
                             <LowStockTable lowStock={low_stock} />

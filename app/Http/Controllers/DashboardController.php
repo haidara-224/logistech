@@ -146,6 +146,40 @@ class DashboardController extends Controller
             ];
         })->values();
 
+        // Top products for specific ranges: today, week, month
+        $topForRange = function (Carbon $from, Carbon $to) use ($source) {
+            $q = DB::table('commande_items')
+                ->join('commandes', 'commande_items.commande_id', '=', 'commandes.id')
+                ->select('commande_items.produit_id', DB::raw('SUM(commande_items.quantite) as qty'), DB::raw('SUM(commande_items.prix_total) as revenue'))
+                ->whereBetween('commandes.created_at', [$from, $to])
+                ->groupBy('commande_items.produit_id')
+                ->orderByDesc('qty')
+                ->limit(5);
+
+            if ($source) {
+                $q->where('commandes.source', $source);
+            }
+
+            return collect($q->get())->map(function ($row) {
+                $produit = Produit::find($row->produit_id);
+                return [
+                    'produit_id' => $row->produit_id,
+                    'nom'        => $produit?->nom,
+                    'sku'        => $produit?->sku,
+                    'qty'        => (int)   $row->qty,
+                    'revenue'    => (float) $row->revenue,
+                ];
+            })->values();
+        };
+
+        $todayStart = $now->copy()->startOfDay();
+        $weekStart  = $now->copy()->startOfWeek();
+        $monthStart = $now->copy()->startOfMonth();
+
+        $topProducts_day = $topForRange($todayStart, $now);
+        $topProducts_week = $topForRange($weekStart, $now);
+        $topProducts_month = $topForRange($monthStart, $now);
+
         // ── Recent orders (paginated) ────────────────────────────────────────
         $perPage       = (int) $request->get('per_page', 10);
         $recentOrders  = Commande::with('client')
@@ -186,6 +220,9 @@ class DashboardController extends Controller
                 'stock_minimal' => $p->stock_minimal,
             ]),
             'top_products'      => $topProducts,
+            'top_products_day'  => $topProducts_day,
+            'top_products_week' => $topProducts_week,
+            'top_products_month'=> $topProducts_month,
             'status_counts'     => $statusCounts,
             'source_breakdown'  => $sourceBreakdown,
             'recent_orders'     => $recentOrders,
