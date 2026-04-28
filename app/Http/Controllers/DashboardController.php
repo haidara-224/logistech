@@ -13,80 +13,207 @@ class DashboardController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $now = Carbon::now();
-        $start = $now->copy()->subDays(29)->startOfDay();
+        $now    = Carbon::now();
+        $start  = $now->copy()->subDays(29)->startOfDay();
 
-        // Summary metrics
-        $totalSales30 = (float) Commande::where('status', 'paid')
+        $saleStatuses = ['payer', 'livree'];
+        $source       = $request->get('source'); // 'online' | 'pos' | null = all
+
+        // ── Core metrics ────────────────────────────────────────────────────
+        $totalSales30 = (float) Commande::whereIn('status', $saleStatuses)
+            ->when($source, fn($q) => $q->where('source', $source))
             ->whereBetween('created_at', [$start, $now])
             ->sum('montant_total');
 
-        $ordersCount30 = (int) Commande::whereBetween('created_at', [$start, $now])->count();
+        $ordersCount30 = (int) Commande::when($source, fn($q) => $q->where('source', $source))
+            ->whereBetween('created_at', [$start, $now])->count();
 
-        $ordersToday = (int) Commande::whereDate('created_at', $now->toDateString())->count();
+        $ordersToday = (int) Commande::when($source, fn($q) => $q->where('source', $source))
+            ->whereDate('created_at', $now->toDateString())->count();
 
-        // Sales per day for last 30 days
-        $salesRows = Commande::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(montant_total) as total'))
-            ->where('status', 'paid')
+        $salesToday = (float) Commande::whereIn('status', $saleStatuses)
+            ->when($source, fn($q) => $q->where('source', $source))
+            ->whereDate('created_at', $now->toDateString())
+            ->sum('montant_total');
+
+        $startOfMonth = $now->copy()->startOfMonth();
+        $salesMonth   = (float) Commande::whereIn('status', $saleStatuses)
+            ->when($source, fn($q) => $q->where('source', $source))
+            ->whereBetween('created_at', [$startOfMonth, $now])
+            ->sum('montant_total');
+
+        // Average basket (paid orders 30d)
+        $avgBasket = (float) Commande::whereIn('status', $saleStatuses)
+            ->when($source, fn($q) => $q->where('source', $source))
+            ->whereBetween('created_at', [$start, $now])
+            ->avg('montant_total') ?? 0;
+
+        // ── Sales per day — overall + per source (for dual-line chart) ──────
+        $buildDaySeries = function (string $src = null) use ($start, $now, $saleStatuses) {
+            return Commande::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(montant_total) as total'))
+                ->whereIn('status', $saleStatuses)
+                ->when($src, fn($q) => $q->where('source', $src))
+                ->whereBetween('created_at', [$start, $now])
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date')
+                ->map(fn($r) => (float) $r->total)
+                ->toArray();
+        };
+
+        $salesRows        = $buildDaySeries($source);
+        $salesRowsOnline  = $buildDaySeries('online');
+        $salesRowsPos     = $buildDaySeries('pos');
+
+        $labels      = [];
+        $data        = [];
+        $dataOnline  = [];
+        $dataPos     = [];
+
+        for ($i = 0; $i < 30; $i++) {
+            $d   = $start->copy()->addDays($i);
+            $key = $d->format('Y-m-d');
+            $labels[]     = $key;
+            $data[]       = $salesRows[$key]       ?? 0;
+            $dataOnline[] = $salesRowsOnline[$key] ?? 0;
+            $dataPos[]    = $salesRowsPos[$key]    ?? 0;
+        }
+
+        // ── Orders per day count (for order volume chart) ────────────────────
+        $orderCountRows = Commande::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as cnt'))
+            ->when($source, fn($q) => $q->where('source', $source))
             ->whereBetween('created_at', [$start, $now])
             ->groupBy('date')
             ->orderBy('date')
             ->get()
             ->keyBy('date')
-            ->map(fn ($r) => (float) $r->total)
+            ->map(fn($r) => (int) $r->cnt)
             ->toArray();
 
-        $labels = [];
-        $data = [];
-        for ($i = 0; $i < 30; $i++) {
-            $d = $start->copy()->addDays($i);
-            $key = $d->format('Y-m-d');
-            $labels[] = $key;
-            $data[] = $salesRows[$key] ?? 0;
-        }
+        $orderCountData = array_map(fn($key) => $orderCountRows[$key] ?? 0, $labels);
 
-        // Low stock products
+        // ── Source breakdown (online vs pos — amounts) ──────────────────────
+        $sourceBreakdown = Commande::select('source', DB::raw('SUM(montant_total) as total'), DB::raw('COUNT(*) as cnt'))
+            ->whereIn('status', $saleStatuses)
+            ->whereBetween('created_at', [$start, $now])
+            ->whereNotNull('source')
+            ->groupBy('source')
+            ->get()
+            ->mapWithKeys(fn($r) => [$r->source => [
+                'total' => (float) $r->total,
+                'count' => (int)   $r->cnt,
+            ]])
+            ->toArray();
+
+        // ── Status breakdown ────────────────────────────────────────────────
+        $statusCounts = Commande::select('status', DB::raw('count(*) as count'))
+            ->when($source, fn($q) => $q->where('source', $source))
+            ->groupBy('status')
+            ->get()
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // ── Low stock ───────────────────────────────────────────────────────
         $lowStock = Produit::with('categorie', 'mouvements')->get()->filter(function ($p) {
             return $p->stock_reel <= ($p->stock_minimal ?? 0);
         })->values();
 
-        // Top sold products (by quantity)
-        $top = DB::table('commande_items')
-            ->select('produit_id', DB::raw('SUM(quantite) as qty'))
-            ->groupBy('produit_id')
+        // ── Top products ────────────────────────────────────────────────────
+        $topQuery = DB::table('commande_items')
+            ->join('commandes', 'commande_items.commande_id', '=', 'commandes.id')
+            ->select(
+                'commande_items.produit_id',
+                DB::raw('SUM(commande_items.quantite) as qty'),
+                DB::raw('SUM(commande_items.prix_total) as revenue')
+            )
+            ->groupBy('commande_items.produit_id')
             ->orderByDesc('qty')
-            ->limit(5)
-            ->get();
+            ->limit(5);
 
-        $topProducts = collect($top)->map(function ($row) {
+        if ($source) {
+            $topQuery->where('commandes.source', $source);
+        }
+
+        $topProducts = $topQuery->get()->map(function ($row) {
             $produit = Produit::find($row->produit_id);
             return [
                 'produit_id' => $row->produit_id,
-                'nom' => $produit?->nom,
-                'sku' => $produit?->sku,
-                'qty' => (int) $row->qty,
+                'nom'        => $produit?->nom,
+                'sku'        => $produit?->sku,
+                'qty'        => (int)   $row->qty,
+                'revenue'    => (float) $row->revenue,
             ];
         })->values();
 
+        // ── Recent orders (paginated) ────────────────────────────────────────
+        $perPage       = (int) $request->get('per_page', 10);
+        $recentOrders  = Commande::with('client')
+            ->when($source, fn($q) => $q->where('source', $source))
+            ->orderByDesc('created_at')
+            ->paginate($perPage)
+            ->through(fn($c) => [
+                'id'           => $c->id,
+                'client'       => $c->client?->nom . ' ' . ($c->client?->prenom ?? ''),
+                'status'       => $c->status,
+                'source'       => $c->source,
+                'montant'      => (float) $c->montant_total,
+                'created_at'   => $c->created_at?->format('d/m/Y H:i'),
+            ]);
+
         return Inertia::render('dashboard', [
             'metrics' => [
-                'total_sales_30d' => $totalSales30,
-                'orders_30d' => $ordersCount30,
-                'orders_today' => $ordersToday,
-                'low_stock_count' => $lowStock->count(),
+                'total_sales_30d'  => $totalSales30,
+                'sales_today'      => $salesToday,
+                'sales_month'      => $salesMonth,
+                'orders_30d'       => $ordersCount30,
+                'orders_today'     => $ordersToday,
+                'low_stock_count'  => $lowStock->count(),
+                'avg_basket'       => round($avgBasket),
             ],
             'sales_chart' => [
-                'labels' => $labels,
-                'data' => $data,
+                'labels'        => $labels,
+                'data'          => $data,
+                'data_online'   => $dataOnline,
+                'data_pos'      => $dataPos,
+                'order_counts'  => $orderCountData,
             ],
-            'low_stock' => $lowStock->map(fn ($p) => [
-                'id' => $p->id,
-                'nom' => $p->nom,
-                'sku' => $p->sku,
-                'stock_reel' => $p->stock_reel,
+            'low_stock'        => $lowStock->map(fn($p) => [
+                'id'            => $p->id,
+                'nom'           => $p->nom,
+                'sku'           => $p->sku,
+                'stock_reel'    => $p->stock_reel,
                 'stock_minimal' => $p->stock_minimal,
             ]),
-            'top_products' => $topProducts,
+            'top_products'      => $topProducts,
+            'status_counts'     => $statusCounts,
+            'source_breakdown'  => $sourceBreakdown,
+            'recent_orders'     => $recentOrders,
+            'filters'           => ['source' => $source],
         ]);
+    }
+
+    /**
+     * Return recent orders as JSON for client-side pagination.
+     */
+    public function recentOrdersJson(Request $request)
+    {
+        $source = $request->get('source');
+        $perPage = (int) $request->get('per_page', 10);
+
+        $recentOrders = Commande::with('client')
+            ->when($source, fn($q) => $q->where('source', $source))
+            ->orderByDesc('created_at')
+            ->paginate($perPage)
+            ->through(fn($c) => [
+                'id'           => $c->id,
+                'client'       => $c->client?->nom . ' ' . ($c->client?->prenom ?? ''),
+                'status'       => $c->status,
+                'source'       => $c->source,
+                'montant'      => (float) $c->montant_total,
+                'created_at'   => $c->created_at?->format('d/m/Y H:i'),
+            ]);
+
+        return response()->json($recentOrders->toArray());
     }
 }

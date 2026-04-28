@@ -26,6 +26,7 @@ class CommandeService implements CommandeServiceInterface
                 'client_id' => $data['client_id'] ?? null,
                 'user_id' => $data['user_id'] ?? null,
                 'status' => $data['status'] ?? 'en_attente',
+                'source' => $data['source'] ?? 'online',
                 'montant_total' => 0,
             ]);
 
@@ -44,8 +45,8 @@ class CommandeService implements CommandeServiceInterface
                     'prix_total' => $prixTotal,
                 ]);
 
-                // decrement stock via stock service
-                $this->stockService->adjustStock($item['produit_id'], 'out', $quantite, 'commande', $commande->id);
+                // decrement stock via stock service, pass source if provided
+                $this->stockService->adjustStock($item['produit_id'], 'out', $quantite, $data['source'] ?? 'online', $commande->id);
 
                 $total += $prixTotal;
             }

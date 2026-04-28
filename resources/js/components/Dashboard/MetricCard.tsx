@@ -16,28 +16,28 @@ interface MetricCardProps {
 
 const variantStyles = {
     default: {
-        bg: 'bg-zinc-900 border-zinc-800',
-        icon: 'bg-zinc-800 text-zinc-300',
-        accent: 'text-zinc-100',
+        bg: 'bg-white border-gray-200 dark:bg-zinc-900 dark:border-zinc-800',
+        icon: 'bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-zinc-300',
+        accent: 'text-slate-900 dark:text-zinc-100',
         glow: '',
     },
     warning: {
-        bg: 'bg-amber-950/60 border-amber-800/40',
-        icon: 'bg-amber-900/60 text-amber-400',
-        accent: 'text-amber-300',
-        glow: 'shadow-amber-950/40',
+        bg: 'bg-amber-50 border-amber-100 dark:bg-amber-950/60 dark:border-amber-800/40',
+        icon: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-400',
+        accent: 'text-amber-700 dark:text-amber-300',
+        glow: 'shadow-amber-50',
     },
     success: {
-        bg: 'bg-emerald-950/60 border-emerald-800/40',
-        icon: 'bg-emerald-900/60 text-emerald-400',
-        accent: 'text-emerald-300',
-        glow: 'shadow-emerald-950/40',
+        bg: 'bg-emerald-50 border-emerald-100 dark:bg-emerald-950/60 dark:border-emerald-800/40',
+        icon: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-400',
+        accent: 'text-emerald-700 dark:text-emerald-300',
+        glow: 'shadow-emerald-50',
     },
     info: {
-        bg: 'bg-sky-950/60 border-sky-800/40',
-        icon: 'bg-sky-900/60 text-sky-400',
-        accent: 'text-sky-300',
-        glow: 'shadow-sky-950/40',
+        bg: 'bg-sky-50 border-sky-100 dark:bg-sky-950/60 dark:border-sky-800/40',
+        icon: 'bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-400',
+        accent: 'text-sky-700 dark:text-sky-300',
+        glow: 'shadow-sky-50',
     },
 };
 

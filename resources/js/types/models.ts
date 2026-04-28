@@ -1,3 +1,4 @@
+//models.ts
 export type MovementType = 'entree' | 'sortie';
 
 export interface User {
@@ -92,6 +93,7 @@ export interface Commande {
   user_id?: number | null;
   status?: 'en_attente' | 'payer' | 'annulee' | 'livree' | string | null;
   montant_total?: number | null;
+    source?: 'online' | 'pos' | string | null;
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;

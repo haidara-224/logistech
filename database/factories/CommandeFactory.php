@@ -17,6 +17,7 @@ class CommandeFactory extends Factory
             'client_id' => Client::inRandomOrder()->first()->id ?? Client::factory(),
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
             'status' => $this->faker->randomElement(['en_attente','payer','annulee','livree']),
+            'source' => $this->faker->randomElement(['online', 'pos']),
             'montant_total' => 0, // updated when items are added in seeder
         ];
     }

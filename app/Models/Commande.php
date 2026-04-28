@@ -16,6 +16,7 @@ class Commande extends Model
         'client_id',
         'user_id',
         'status',
+        'source',
         'montant_total'
     ];
 

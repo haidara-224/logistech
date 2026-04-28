@@ -15,6 +15,7 @@ Route::get("/",[HomeController::class,'index'])->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard/recent-orders', [DashboardController::class, 'recentOrdersJson'])->name('dashboard.recent_orders');
     // Product routes handled by controller (Inertia)
     Route::get('produits', [App\Http\Controllers\ProduitController::class, 'index'])->name('produits.index');
     Route::get('produits/creer', [App\Http\Controllers\ProduitController::class, 'create'])->name('produits.create');
