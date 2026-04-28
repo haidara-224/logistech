@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     Apple,
     BookOpen,
@@ -13,6 +13,8 @@ import {
     Settings,
     HardHat,
     Package,
+    Truck,
+    RotateCcw,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -36,6 +38,8 @@ import { dashboard } from '@/routes';
 
 
 export function AppSidebar() {
+    const { auth } = usePage().props as any;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -160,6 +164,23 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
 
+                {/* Logistique */}
+                <SidebarGroup>
+                    <SidebarGroupLabel>Logistique</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <Link href="/logistique">
+                                        <Truck />
+                                        <span>Logistique</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
                 {/* Paiements & Factures */}
                 <SidebarGroup>
                     <SidebarGroupLabel>Finances</SidebarGroupLabel>
@@ -198,14 +219,26 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild>
-                                    <Link href="/settings/permissions">
-                                        <HardHat />
-                                        <span>Permissions</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
+                            {auth?.is_super_admin && (
+                                <>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton asChild>
+                                            <Link href="/permissions">
+                                                <HardHat />
+                                                <span>Permissions</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton asChild>
+                                            <Link href="/restore">
+                                                <RotateCcw />
+                                                <span>Restauration</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </>
+                            )}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

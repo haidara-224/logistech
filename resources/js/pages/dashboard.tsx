@@ -87,7 +87,7 @@ export default function Dashboard({
                     </motion.div>
 
                     {/* ── Row 1 : 6 metric cards ───────────────────── */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
                         <MetricCard title="Ventes 30j" value={fmtGnf(metrics.total_sales_30d)}
                             icon={TrendingUp} variant="success"
                             subtitle={source === 'all' ? 'Toutes sources' : source === 'pos' ? 'Ventes sur place' : 'En ligne'}
@@ -97,8 +97,8 @@ export default function Dashboard({
 
                         <MetricCard title="Commandes 30j" value={metrics.orders_30d}
                             icon={ShoppingCart} variant="default" subtitle="Toutes commandes" delay={0.18} />
-                        <MetricCard title="Panier Moyen" value={fmtGnf(metrics.avg_basket)}
-                            icon={Activity} variant="default" subtitle="30 derniers jours" delay={0.24} />
+                        {/* <MetricCard title="Panier Moyen" value={fmtGnf(metrics.avg_basket)}
+                            icon={Activity} variant="default" subtitle="30 derniers jours" delay={0.24} /> */}
                         <MetricCard title="Stock Critique" value={metrics.low_stock_count}
                             icon={AlertTriangle}
                             variant={metrics.low_stock_count > 0 ? 'warning' : 'default'}
