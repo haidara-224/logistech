@@ -1,106 +1,101 @@
 import { ReactNode, SelectHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, ButtonHTMLAttributes } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
-// ── DarkInput ────────────────────────────────────────────────────────────────
-interface DarkInputProps extends InputHTMLAttributes<HTMLInputElement> {
+// ── ThemedInput ────────────────────────────────────────────────────────────────
+interface ThemedInputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
 }
-export function DarkInput({ label, error, className = '', ...props }: DarkInputProps) {
+export function ThemedInput({ label, error, className = '', ...props }: ThemedInputProps) {
     return (
-        <div className="grid gap-1.5">
+        <div className="space-y-1.5">
             {label && (
-                <label className="text-[12px] font-medium text-white/40 uppercase tracking-widest">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     {label}
                 </label>
             )}
             <input
                 {...props}
-                className={`w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-white/20
-                    outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all duration-200 ${className}`}
+                className={`w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200 ${className}`}
             />
-            {error && <p className="text-[12px] text-red-400 mt-0.5">{error}</p>}
+            {error && <p className="text-xs text-destructive mt-0.5">{error}</p>}
         </div>
     );
 }
 
-// ── DarkSelect ───────────────────────────────────────────────────────────────
-interface DarkSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+// ── ThemedSelect ───────────────────────────────────────────────────────────────
+interface ThemedSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label?: string;
     error?: string;
     children: ReactNode;
 }
-export function DarkSelect({ label, children, error, className = '', ...props }: DarkSelectProps) {
+export function ThemedSelect({ label, children, error, className = '', ...props }: ThemedSelectProps) {
     return (
-        <div className="grid gap-1.5">
+        <div className="space-y-1.5">
             {label && (
-                <label className="text-[12px] font-medium text-white/40 uppercase tracking-widest">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     {label}
                 </label>
             )}
             <select
                 {...props}
-                className={`w-full bg-[#141416] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-[14px] text-white
-                    outline-none focus:border-white/20 transition-all duration-200 cursor-pointer ${className}`}
+                className={`w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200 cursor-pointer ${className}`}
             >
                 {children}
             </select>
-            {error && <p className="text-[12px] text-red-400 mt-0.5">{error}</p>}
+            {error && <p className="text-xs text-destructive mt-0.5">{error}</p>}
         </div>
     );
 }
 
-// ── DarkTextarea ─────────────────────────────────────────────────────────────
-interface DarkTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+// ── ThemedTextarea ─────────────────────────────────────────────────────────────
+interface ThemedTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     label?: string;
 }
-export function DarkTextarea({ label, ...props }: DarkTextareaProps) {
+export function ThemedTextarea({ label, ...props }: ThemedTextareaProps) {
     return (
-        <div className="grid gap-1.5">
+        <div className="space-y-1.5">
             {label && (
-                <label className="text-[12px] font-medium text-white/40 uppercase tracking-widest">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     {label}
                 </label>
             )}
             <textarea
                 {...props}
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-[14px] text-white placeholder:text-white/20
-                    outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all duration-200 resize-none"
+                className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200 resize-none"
             />
         </div>
     );
 }
 
-// ── PrimaryButton ────────────────────────────────────────────────────────────
+// ── Button ─────────────────────────────────────────────────────────────────────
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;
     size?: ButtonSize;
 }
-export function PrimaryButton({ children, disabled, variant = 'primary', size = 'md', className = '', ...props }: PrimaryButtonProps) {
+export function Button({ children, disabled, variant = 'primary', size = 'md', className = '', ...props }: ButtonProps) {
     const variants: Record<ButtonVariant, string> = {
-        primary:   'bg-white text-black hover:bg-white/90',
-        secondary: 'bg-white/[0.06] text-white/80 border border-white/[0.08] hover:bg-white/[0.1] hover:text-white',
-        danger:    'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20',
-        ghost:     'text-white/40 hover:text-white hover:bg-white/[0.05]',
-        outline:   'border border-white/[0.08] text-white/60 hover:border-white/20 hover:text-white',
+        primary:   'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm',
+        secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80',
+        danger:    'bg-destructive text-destructive-foreground border border-destructive/20 hover:bg-destructive/90',
+        ghost:     'text-muted-foreground hover:text-foreground hover:bg-muted',
+        outline:   'border border-border text-foreground/60 hover:border-ring hover:text-foreground bg-transparent',
     };
     const sizes: Record<ButtonSize, string> = {
-        sm: 'px-3 py-1.5 text-[12px] rounded-lg',
-        md: 'px-4 py-2.5 text-[13px] rounded-xl',
-        lg: 'px-6 py-3 text-[14px] rounded-xl',
+        sm: 'px-3 py-1.5 text-xs rounded-lg gap-1.5',
+        md: 'px-4 py-2.5 text-sm rounded-xl gap-2',
+        lg: 'px-6 py-3 text-base rounded-xl gap-2',
     };
 
     return (
         <button
             {...props}
             disabled={disabled}
-            className={`font-semibold tracking-tight transition-all duration-200 flex items-center gap-2 cursor-pointer
-                disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]
-                ${variants[variant]} ${sizes[size]} ${className}`}
+            className={`font-semibold tracking-tight transition-all duration-200 flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] ${variants[variant]} ${sizes[size]} ${className}`}
         >
             {children}
         </button>
@@ -112,23 +107,29 @@ type StatusKey =
     | 'disponible' | 'en mission' | 'maintenance' | 'repos'
     | 'en cours' | 'en préparation' | 'livré' | 'annulé';
 
-const STATUS_MAP: Record<StatusKey, { color: string; bg: string; label: string }> = {
-    disponible:        { color: '#10B981', bg: 'rgba(16,185,129,0.12)',  label: 'Disponible' },
-    'en mission':      { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', label: 'En mission' },
-    maintenance:       { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',  label: 'Maintenance' },
-    repos:             { color: '#6B7280', bg: 'rgba(107,114,128,0.12)',label: 'Repos' },
-    'en cours':        { color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', label: 'En cours' },
-    'en préparation':  { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', label: 'En préparation' },
-    livré:             { color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)', label: 'Livré' },
-    annulé:            { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',  label: 'Annulé' },
+const STATUS_CONFIG: Record<StatusKey, { color: string; bg: string; label: string }> = {
+    disponible:        { color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10', label: 'Disponible' },
+    'en mission':      { color: 'text-amber-600 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-500/10',   label: 'En mission' },
+    maintenance:       { color: 'text-red-600 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-500/10',       label: 'Maintenance' },
+    repos:             { color: 'text-slate-600 dark:text-slate-400',    bg: 'bg-slate-100 dark:bg-slate-500/10',  label: 'Repos' },
+    'en cours':        { color: 'text-blue-600 dark:text-blue-400',      bg: 'bg-blue-50 dark:bg-blue-500/10',     label: 'En cours' },
+    'en préparation':  { color: 'text-amber-600 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-500/10',   label: 'En préparation' },
+    livré:             { color: 'text-violet-600 dark:text-violet-400',   bg: 'bg-violet-50 dark:bg-violet-500/10', label: 'Livré' },
+    annulé:            { color: 'text-red-600 dark:text-red-400',         bg: 'bg-red-50 dark:bg-red-500/10',       label: 'Annulé' },
 };
 
 export function StatusBadge({ status }: { status: string }) {
-    const s = STATUS_MAP[status as StatusKey] ?? { color: '#6B7280', bg: 'rgba(107,114,128,0.12)', label: status };
+    const config = STATUS_CONFIG[status as StatusKey];
+    if (!config) {
+        return (
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg whitespace-nowrap bg-muted text-muted-foreground border border-border">
+                {status}
+            </span>
+        );
+    }
     return (
-        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg whitespace-nowrap"
-            style={{ color: s.color, background: s.bg }}>
-            {s.label}
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg whitespace-nowrap border border-current/20 ${config.color} ${config.bg}`}>
+            {config.label}
         </span>
     );
 }
@@ -139,15 +140,16 @@ interface PanelProps {
     subtitle?: string;
     children: ReactNode;
     action?: ReactNode;
+    className?: string;
 }
-export function Panel({ title, subtitle, children, action }: PanelProps) {
+export function Panel({ title, subtitle, children, action, className = '' }: PanelProps) {
     return (
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6">
+        <div className={`rounded-2xl border border-border bg-card p-6 shadow-sm ${className}`}>
             {(title || action) && (
                 <div className="flex items-start justify-between mb-5">
                     <div>
-                        <h2 className="text-[15px] font-semibold text-white">{title}</h2>
-                        {subtitle && <p className="text-[12px] text-white/30 mt-0.5">{subtitle}</p>}
+                        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+                        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
                     </div>
                     {action}
                 </div>
@@ -174,19 +176,18 @@ export function DrawerPanel({ open, onClose, title, subtitle, children }: Drawer
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 24 }}
                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className="rounded-2xl border border-white/[0.1] bg-[#111113] p-6"
-                    style={{ boxShadow: '0 0 40px rgba(0,0,0,0.5)' }}
+                    className="rounded-2xl border border-border bg-card p-6 shadow-xl"
                 >
                     <div className="flex items-start justify-between mb-5">
                         <div>
-                            <h3 className="text-[15px] font-semibold text-white">{title}</h3>
-                            {subtitle && <p className="text-[12px] text-white/30 mt-0.5">{subtitle}</p>}
+                            <h3 className="text-base font-semibold text-foreground">{title}</h3>
+                            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
                         </div>
                         <button
                             onClick={onClose}
-                            className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors cursor-pointer"
+                            className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors cursor-pointer"
                         >
-                            <X size={14} className="text-white/60" />
+                            <X size={14} className="text-muted-foreground" />
                         </button>
                     </div>
                     {children}
@@ -197,8 +198,150 @@ export function DrawerPanel({ open, onClose, title, subtitle, children }: Drawer
 }
 
 // ── EmptyState ───────────────────────────────────────────────────────────────
-export function EmptyState({ message = 'Aucune donnée' }: { message?: string }) {
+export function EmptyState({ message = 'Aucune donnée', icon }: { message?: string; icon?: ReactNode }) {
     return (
-        <div className="text-center py-12 text-white/20 text-[13px]">{message}</div>
+        <div className="text-center py-12">
+            {icon && <div className="text-muted-foreground/40 mb-3">{icon}</div>}
+            <p className="text-sm text-muted-foreground/50">{message}</p>
+        </div>
     );
 }
+
+// ── FilterBar ────────────────────────────────────────────────────────────────
+interface FilterOption {
+    value: string;
+    label: string;
+}
+interface FilterBarProps {
+    search: string;
+    onSearch: (v: string) => void;
+    filterValue: string;
+    onFilter: (v: string) => void;
+    filterOptions: FilterOption[];
+    placeholder?: string;
+    filterLabel?: string;
+}
+export function FilterBar({ 
+    search, 
+    onSearch, 
+    filterValue, 
+    onFilter, 
+    filterOptions, 
+    placeholder = 'Rechercher…', 
+    filterLabel = 'Statut' 
+}: FilterBarProps) {
+    return (
+        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+            <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                    type="text"
+                    value={search}
+                    onChange={e => onSearch(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full pl-9 pr-4 py-2 text-sm bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200"
+                />
+            </div>
+            <select
+                value={filterValue}
+                onChange={e => onFilter(e.target.value)}
+                className="px-3.5 py-2 text-sm bg-card border border-border rounded-xl text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200 cursor-pointer min-w-[140px]"
+                aria-label={filterLabel}
+            >
+                {filterOptions.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+interface PaginationProps {
+    page: number;
+    totalPages: number;
+    onPage: (p: number) => void;
+    total: number;
+    perPage: number;
+}
+export function Pagination({ page, totalPages, onPage, total, perPage }: PaginationProps) {
+    if (totalPages <= 1) return null;
+    
+    const from = (page - 1) * perPage + 1;
+    const to = Math.min(page * perPage, total);
+
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (page <= 4) {
+                for (let i = 1; i <= 5; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            } else if (page >= totalPages - 3) {
+                pages.push(1);
+                pages.push('...');
+                for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('...');
+                for (let i = page - 1; i <= page + 1; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+        return pages;
+    };
+
+    return (
+        <div className="flex items-center justify-between mt-5 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+                {from}–{to} sur {total}
+            </p>
+            <div className="flex items-center gap-1">
+                <button
+                    onClick={() => onPage(page - 1)}
+                    disabled={page === 1}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
+                >
+                    <ChevronLeft size={14} />
+                </button>
+
+                {getPageNumbers().map((p, idx) => (
+                    p === '...' ? (
+                        <span key={`dots-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs text-muted-foreground">
+                            ...
+                        </span>
+                    ) : (
+                        <button
+                            key={p}
+                            onClick={() => onPage(p as number)}
+                            className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer
+                                ${p === page
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                }`}
+                        >
+                            {p}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => onPage(page + 1)}
+                    disabled={page === totalPages}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
+                >
+                    <ChevronRight size={14} />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// Export des anciens noms pour compatibilité
+export const DarkInput = ThemedInput;
+export const DarkSelect = ThemedSelect;
+export const DarkTextarea = ThemedTextarea;
+export const PrimaryButton = Button;

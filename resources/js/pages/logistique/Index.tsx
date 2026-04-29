@@ -1,15 +1,13 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Truck, Users, Package, MapPin, BarChart3, Plus, X, ChevronRight, Activity, AlertCircle, Clock, CheckCircle2, Zap } from 'lucide-react';
+import { Truck, Users, Package, MapPin, BarChart3, Activity } from 'lucide-react';
 import StatsDashboard from '@/components/logistique/Statsdashboard';
 import CamionsTab from '@/components/logistique/Camionstab';
 import ChauffeursTab from '@/components/logistique/Chauffeurstab';
 import ExpeditionsTab from '@/components/logistique/Expeditionstab';
 import LivraisonsTab from '@/components/logistique/Livraisonstab';
 import { Stats, Camion, Chauffeur, Produit, Expedition } from '@/types/logistique';
-
-
 
 const TABS = [
     { id: 'dashboard', label: 'Vue globale', icon: BarChart3, accent: '#F97316' },
@@ -19,36 +17,42 @@ const TABS = [
     { id: 'livraisons', label: 'Livraisons', icon: Package, accent: '#F59E0B' },
 ];
 
-export default function LogistiqueIndex(props: { stats: Stats; expeditions: unknown; camions: Camion[]; chauffeurs: Chauffeur[]; camionsDisponibles: Camion[]; chauffeursDisponibles: Chauffeur[]; produits: Produit[]; livraisons: unknown; }) {
+export default function LogistiqueIndex(props: { 
+    stats: Stats; 
+    expeditions: Expedition[]; 
+    camions: Camion[]; 
+    chauffeurs: Chauffeur[]; 
+    camionsDisponibles: Camion[]; 
+    chauffeursDisponibles: Chauffeur[]; 
+    produits: Produit[]; 
+    livraisons: unknown; 
+}) {
     const { auth } = usePage().props;
     const [activeTab, setActiveTab] = useState('dashboard');
-
-    const activeTabDef = TABS.find(t => t.id === activeTab);
 
     return (
         <>
             <Head title="Logistique" />
 
-            <div className="min-h-screen bg-[#0A0A0B] text-white font-['Geist',_system-ui,_sans-serif]">
+            <div className="min-h-screen bg-background text-foreground">
 
                 {/* Top header bar */}
-                <header className="border-b border-white/[0.06] bg-[#0D0D0F]/80 backdrop-blur-xl sticky top-0 z-50">
+                <header className="border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-50">
                     <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                               <img src="/logo.jpeg" alt="" />
+                                <img src="/logo.jpeg" alt="Logo" className="w-5 h-5" />
                             </div>
                             <div>
-                                <span className="text-[13px] font-semibold tracking-tight text-white">LOGITECH</span>
-                           
+                                <span className="text-sm font-semibold tracking-tight text-foreground">LOGISTECH</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 text-[13px] text-white/40">
-                            <Activity size={14} className="text-green-400" />
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Activity size={14} className="text-emerald-500" />
                             <span>Système opérationnel</span>
                             <span className="mx-2 opacity-30">·</span>
-                            <span className="text-white/60">{auth?.user?.name}</span>
+                            <span className="text-foreground/60">{auth?.user?.name}</span>
                         </div>
                     </div>
                 </header>
@@ -62,17 +66,17 @@ export default function LogistiqueIndex(props: { stats: Stats; expeditions: unkn
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            <h1 className="text-[42px] leading-none font-bold tracking-[-0.03em] text-white mb-2">
-                                Gestion <span className="text-white/20">logistique</span>
+                            <h1 className="text-4xl leading-none font-bold tracking-tight text-foreground mb-2">
+                                Gestion <span className="text-muted-foreground/50">logistique</span>
                             </h1>
-                            <p className="text-[15px] text-white/40">
+                            <p className="text-sm text-muted-foreground">
                                 Pilotez vos transports, camions, chauffeurs et livraisons en temps réel.
                             </p>
                         </motion.div>
                     </div>
 
                     {/* Tab navigation */}
-                    <div className="flex items-center gap-1 mb-8 p-1 bg-white/[0.04] rounded-2xl w-fit border border-white/[0.06]">
+                    <div className="flex items-center gap-1 mb-8 p-1 bg-muted/40 rounded-2xl w-fit border border-border">
                         {TABS.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -80,14 +84,13 @@ export default function LogistiqueIndex(props: { stats: Stats; expeditions: unkn
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-colors duration-200 cursor-pointer"
-                                    style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.4)' }}
+                                    className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 cursor-pointer"
+                                    style={{ color: isActive ? 'var(--foreground)' : 'var(--muted-foreground)' }}
                                 >
                                     {isActive && (
                                         <motion.div
                                             layoutId="tab-pill"
-                                            className="absolute inset-0 rounded-xl"
-                                            style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.1)' }}
+                                            className="absolute inset-0 rounded-xl bg-secondary"
                                             transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                                         />
                                     )}
@@ -107,12 +110,12 @@ export default function LogistiqueIndex(props: { stats: Stats; expeditions: unkn
                             exit={{ opacity: 0, y: -8 }}
                             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            {activeTab === 'dashboard' && <StatsDashboard stats={props.stats} expeditions={props.expeditions as Expedition[]} />}
+                            {activeTab === 'dashboard' && <StatsDashboard stats={props.stats} expeditions={props.expeditions} />}
                             {activeTab === 'camions' && <CamionsTab camions={props.camions} />}
                             {activeTab === 'chauffeurs' && <ChauffeursTab chauffeurs={props.chauffeurs} />}
                             {activeTab === 'expeditions' && (
                                 <ExpeditionsTab
-                                    expeditions={props.expeditions as Expedition[]}
+                                    expeditions={props.expeditions}
                                     camionsDisponibles={props.camionsDisponibles}
                                     chauffeursDisponibles={props.chauffeursDisponibles}
                                     camions={props.camions}

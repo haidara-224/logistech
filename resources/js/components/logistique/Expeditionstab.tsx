@@ -1,48 +1,64 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Form } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown } from 'lucide-react';
-import { DarkInput, DarkSelect, DarkTextarea, PrimaryButton, StatusBadge, Panel, DrawerPanel, EmptyState } from './Ui';
+import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown, Search, X, Check } from 'lucide-react';
+import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
 import { Camion, Chauffeur, Expedition, Produit } from '@/types/logistique';
 
+const PER_PAGE = 6;
+const PRODUITS_PER_PAGE = 8;
 
-// ── Product row inside new expedition form ────────────────────────────────────
+const FILTER_OPTIONS = [
+    { value: 'all', label: 'Tous les statuts' },
+    { value: 'en préparation', label: 'En préparation' },
+    { value: 'en cours', label: 'En cours' },
+    { value: 'livré', label: 'Livré' },
+    { value: 'annulé', label: 'Annulé' },
+];
+
 interface ProductRowState {
     produit_id: number | string;
     quantite: number;
+    produit?: Produit;
 }
 
 interface ProductRowProps {
     row: ProductRowState;
     index: number;
-    produits: Produit[];
-    onUpdate: (index: number, key: 'produit_id' | 'quantite', value: string | number) => void;
+    onUpdate: (index: number, key: 'produit_id' | 'quantite', value: string | number, produit?: Produit) => void;
     onRemove: (index: number) => void;
+    onOpenModal: (index: number) => void;
+    produits: Produit[];
 }
 
-function ProductRow({ row, index, produits, onUpdate, onRemove }: ProductRowProps) {
+function ProductRow({ row, index, onUpdate, onRemove, onOpenModal }: ProductRowProps) {
     return (
         <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4"
+            className="rounded-xl border border-border bg-muted/30 p-4"
         >
             <div className="grid grid-cols-[1fr_100px_auto] gap-3 items-end">
-                <DarkSelect
-                    label={index === 0 ? 'Produit' : undefined}
-                    value={row.produit_id}
-                    onChange={e => onUpdate(index, 'produit_id', e.target.value)}
-                    name={`produits[${index}][produit_id]`}
-                >
-                    {produits.map(p => (
-                        <option key={p.id} value={p.id}>
-                            {p.nom} ({p.sku}) — {p.quantite_stock} en stock
-                        </option>
-                    ))}
-                </DarkSelect>
-                <DarkInput
+                <div>
+                    {index === 0 && (
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                            Produit
+                        </label>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => onOpenModal(index)}
+                        className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground text-left flex items-center justify-between hover:border-ring transition-all duration-200 cursor-pointer"
+                    >
+                        <span className={row.produit_id ? 'text-foreground' : 'text-muted-foreground/50'}>
+                            {row.produit ? `${row.produit.nom} (${row.produit.sku})` : 'Sélectionner un produit'}
+                        </span>
+                        <ChevronDown size={14} className="text-muted-foreground" />
+                    </button>
+                </div>
+                <ThemedInput
                     label={index === 0 ? 'Qté' : undefined}
                     type="number"
                     min={1}
@@ -50,15 +66,165 @@ function ProductRow({ row, index, produits, onUpdate, onRemove }: ProductRowProp
                     onChange={e => onUpdate(index, 'quantite', e.target.value)}
                     name={`produits[${index}][quantite]`}
                 />
-                <PrimaryButton variant="danger" size="sm" type="button" onClick={() => onRemove(index)}>
-                    <Trash2 size={12} />
-                </PrimaryButton>
+                <Button variant="danger" size="sm" type="button" onClick={() => onRemove(index)}>
+                    <Trash2 size={12} className='text-white' />
+                </Button>
             </div>
         </motion.div>
     );
 }
 
-// ── New expedition form ───────────────────────────────────────────────────────
+// ── Product selection modal ───────────────────────────────────────────────────
+interface ProductModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    produits: Produit[];
+    onSelect: (produit: Produit) => void;
+}
+
+function ProductModal({ isOpen, onClose, produits, onSelect }: ProductModalProps) {
+    const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
+
+    const filtered = useMemo(() => {
+        const q = search.toLowerCase();
+        if (!q) return produits;
+        return produits.filter(p => 
+            p.nom.toLowerCase().includes(q) || 
+            p.sku.toLowerCase().includes(q)
+        );
+    }, [produits, search]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUITS_PER_PAGE));
+    const paginated = filtered.slice((page - 1) * PRODUITS_PER_PAGE, page * PRODUITS_PER_PAGE);
+
+    const handleSearch = (v: string) => {
+        setSearch(v);
+        setPage(1);
+    };
+
+    const handleSelect = (produit: Produit) => {
+        onSelect(produit);
+        onClose();
+        setSearch('');
+        setPage(1);
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-xl overflow-hidden"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Modal header */}
+                <div className="flex items-center justify-between p-5 border-b border-border">
+                    <div>
+                        <h3 className="text-lg font-semibold text-foreground">Sélectionner un produit</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">Choisissez un produit à ajouter à l'expédition</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
+                    >
+                        <X size={16} className="text-muted-foreground" />
+                    </button>
+                </div>
+
+                {/* Modal search */}
+                <div className="p-5 border-b border-border">
+                    <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={e => handleSearch(e.target.value)}
+                            placeholder="Rechercher par nom ou SKU..."
+                            className="w-full pl-9 pr-4 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 transition-all duration-200"
+                        />
+                    </div>
+                </div>
+
+                {/* Modal product list */}
+                <div className="max-h-[400px] overflow-y-auto p-2">
+                    {paginated.length === 0 ? (
+                        <div className="text-center py-12">
+                            <Package size={32} className="text-muted-foreground/30 mx-auto mb-3" />
+                            <p className="text-sm text-muted-foreground">
+                                {search ? 'Aucun produit trouvé' : 'Aucun produit disponible'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            {paginated.map((produit) => (
+                                <button
+                                    key={produit.id}
+                                    onClick={() => handleSelect(produit)}
+                                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all duration-200 text-left cursor-pointer group"
+                                >
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-foreground">{produit.nom}</span>
+                                            <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                                {produit.sku}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            Stock: {produit.quantite_stock} unités
+                                        </p>
+                                    </div>
+                                    <div className="w-6 h-6 rounded-full border border-border flex items-center justify-center group-hover:border-primary group-hover:bg-primary/10 transition-all">
+                                        <Check size={12} className="text-muted-foreground group-hover:text-primary" />
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Modal pagination */}
+                {totalPages > 1 && (
+                    <div className="p-4 border-t border-border flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">
+                            {filtered.length} produit{filtered.length !== 1 ? 's' : ''}
+                        </p>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            >
+                                <ChevronDown size={14} className="rotate-90" />
+                            </button>
+                            <span className="text-xs text-foreground px-2">
+                                Page {page} / {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            >
+                                <ChevronDown size={14} className="-rotate-90" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </motion.div>
+        </motion.div>
+    );
+}
+
 interface NewExpeditionFormProps {
     camionsDisponibles: Camion[];
     chauffeursDisponibles: Chauffeur[];
@@ -67,97 +233,121 @@ interface NewExpeditionFormProps {
 
 function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits }: NewExpeditionFormProps) {
     const [rows, setRows] = useState<ProductRowState[]>([
-        { produit_id: produits[0]?.id ?? '', quantite: 1 },
+        { produit_id: '', quantite: 1, produit: undefined },
     ]);
+    const [modalIndex, setModalIndex] = useState<number | null>(null);
 
-    const addRow    = () => setRows(prev => [...prev, { produit_id: produits[0]?.id ?? '', quantite: 1 }]);
+    const addRow = () => setRows(prev => [...prev, { produit_id: '', quantite: 1, produit: undefined }]);
     const removeRow = (i: number) => setRows(prev => prev.filter((_, idx) => idx !== i));
-    const updateRow = (i: number, key: 'produit_id' | 'quantite', val: string | number) => {
+    const updateRow = (i: number, key: 'produit_id' | 'quantite', val: string | number, produit?: Produit) => {
         setRows(prev => {
             const next = [...prev];
-            next[i] = { ...next[i], [key]: key === 'quantite' ? Number(val) : val };
+            if (key === 'produit_id') {
+                next[i] = { ...next[i], produit_id: val, produit };
+            } else {
+                next[i] = { ...next[i], quantite: Number(val) };
+            }
             return next;
         });
     };
 
+    const handleSelectProduct = (index: number, produit: Produit) => {
+        updateRow(index, 'produit_id', produit.id, produit);
+    };
+
     return (
-        <Form method="post" action="/logistique/expeditions" className="space-y-4">
-            {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
-                <>
-                    <DarkInput name="reference" label="Référence" placeholder="EXP-2026-001" error={errors.reference} />
+        <>
+            <Form method="post" action="/logistique/expeditions" className="space-y-4">
+                {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
+                    <>
+                        <ThemedInput name="reference" label="Référence" placeholder="EXP-2026-001" error={errors.reference} />
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <DarkSelect name="camion_id" label="Camion" error={errors.camion_id}>
-                            {camionsDisponibles.length === 0
-                                ? <option value="">Aucun camion disponible</option>
-                                : camionsDisponibles.map(c => (
-                                    <option key={c.id} value={c.id}>{c.immatriculation} — {c.marque}</option>
-                                ))
-                            }
-                        </DarkSelect>
-                        <DarkSelect name="chauffeur_id" label="Chauffeur" error={errors.chauffeur_id}>
-                            {chauffeursDisponibles.length === 0
-                                ? <option value="">Aucun chauffeur disponible</option>
-                                : chauffeursDisponibles.map(c => (
-                                    <option key={c.id} value={c.id}>{c.nom} {c.prenom}</option>
-                                ))
-                            }
-                        </DarkSelect>
-                    </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <ThemedSelect name="camion_id" label="Camion" error={errors.camion_id}>
+                                {camionsDisponibles.length === 0
+                                    ? <option value="">Aucun camion disponible</option>
+                                    : camionsDisponibles.map(c => (
+                                        <option key={c.id} value={c.id}>{c.immatriculation} — {c.marque}</option>
+                                    ))
+                                }
+                            </ThemedSelect>
+                            <ThemedSelect name="chauffeur_id" label="Chauffeur" error={errors.chauffeur_id}>
+                                {chauffeursDisponibles.length === 0
+                                    ? <option value="">Aucun chauffeur disponible</option>
+                                    : chauffeursDisponibles.map(c => (
+                                        <option key={c.id} value={c.id}>{c.nom} {c.prenom}</option>
+                                    ))
+                                }
+                            </ThemedSelect>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <DarkInput name="origine"     label="Origine"      placeholder="Entrepôt principal" />
-                        <DarkInput name="destination" label="Destination"  placeholder="Site client" />
-                    </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <ThemedInput name="origine" label="Origine" placeholder="Entrepôt principal" />
+                            <ThemedInput name="destination" label="Destination" placeholder="Site client" />
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <DarkInput name="date_depart"        label="Date de départ"  type="date" />
-                        <DarkInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" />
-                    </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <ThemedInput name="date_depart" label="Date de départ" type="date" />
+                            <ThemedInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" />
+                        </div>
 
-                    <DarkSelect name="statut" label="Statut">
-                        <option value="en préparation">En préparation</option>
-                        <option value="en cours">En cours</option>
-                        <option value="livré">Livré</option>
-                        <option value="annulé">Annulé</option>
-                    </DarkSelect>
+                        <ThemedSelect name="statut" label="Statut">
+                            <option value="en préparation">En préparation</option>
+                            <option value="en cours">En cours</option>
+                            <option value="livré">Livré</option>
+                            <option value="annulé">Annulé</option>
+                        </ThemedSelect>
 
-                    <div className="space-y-2">
-                        <label className="text-[12px] font-medium text-white/40 uppercase tracking-widest">
-                            Produits à livrer
-                        </label>
-                        <AnimatePresence>
-                            {rows.map((row, i) => (
-                                <ProductRow
-                                    key={i}
-                                    row={row}
-                                    index={i}
-                                    produits={produits}
-                                    onUpdate={updateRow}
-                                    onRemove={removeRow}
-                                />
-                            ))}
-                        </AnimatePresence>
-                        <PrimaryButton type="button" variant="outline" size="sm" onClick={addRow} className="w-full justify-center">
-                            <Plus size={12} />
-                            Ajouter un produit
-                        </PrimaryButton>
-                        {errors.produits && <p className="text-[12px] text-red-400">{errors.produits}</p>}
-                    </div>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                Produits à livrer
+                            </label>
+                            <AnimatePresence>
+                                {rows.map((row, i) => (
+                                    <ProductRow
+                                        key={i}
+                                        row={row}
+                                        index={i}
+                                        produits={produits}
+                                        onUpdate={updateRow}
+                                        onRemove={removeRow}
+                                        onOpenModal={(idx) => setModalIndex(idx)}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                            <Button type="button" variant="outline" size="sm" onClick={addRow} className="w-full">
+                                <Plus size={12} />
+                                Ajouter un produit
+                            </Button>
+                            {errors.produits && <p className="text-xs text-destructive">{errors.produits}</p>}
+                        </div>
 
-                    <DarkTextarea name="details" label="Détails" rows={3} placeholder="Observations sur le chargement…" />
+                        <ThemedTextarea name="details" label="Détails" rows={3} placeholder="Observations sur le chargement…" />
 
-                    <PrimaryButton type="submit" disabled={processing} className="w-full justify-center">
-                        <Plus size={14} />
-                        Créer l'expédition
-                    </PrimaryButton>
-                </>
-            )}
-        </Form>
+                        <Button type="submit" disabled={processing} className="w-full">
+                            <Plus size={14} />
+                            Créer l'expédition
+                        </Button>
+                    </>
+                )}
+            </Form>
+
+            {/* Product selection modal */}
+            <ProductModal
+                isOpen={modalIndex !== null}
+                onClose={() => setModalIndex(null)}
+                produits={produits}
+                onSelect={(produit) => {
+                    if (modalIndex !== null) {
+                        handleSelectProduct(modalIndex, produit);
+                        setModalIndex(null);
+                    }
+                }}
+            />
+        </>
     );
 }
 
-// ── Edit expedition form ──────────────────────────────────────────────────────
 interface EditExpeditionFormProps {
     expedition: Expedition;
     camions: Camion[];
@@ -168,40 +358,39 @@ function EditExpeditionForm({ expedition, camions, chauffeurs }: EditExpeditionF
     return (
         <Form method="put" action={`/logistique/expeditions/${expedition.id}`} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-                <DarkInput name="reference" label="Référence" defaultValue={expedition.reference} />
-                <DarkSelect name="statut" label="Statut" defaultValue={expedition.statut}>
+                <ThemedInput name="reference" label="Référence" defaultValue={expedition.reference} />
+                <ThemedSelect name="statut" label="Statut" defaultValue={expedition.statut}>
                     <option value="en préparation">En préparation</option>
                     <option value="en cours">En cours</option>
                     <option value="livré">Livré</option>
                     <option value="annulé">Annulé</option>
-                </DarkSelect>
+                </ThemedSelect>
             </div>
             <div className="grid grid-cols-2 gap-3">
-                <DarkInput name="origine"     label="Origine"     defaultValue={expedition.origine} />
-                <DarkInput name="destination" label="Destination" defaultValue={expedition.destination} />
+                <ThemedInput name="origine" label="Origine" defaultValue={expedition.origine} />
+                <ThemedInput name="destination" label="Destination" defaultValue={expedition.destination} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-                <DarkInput name="date_depart"         label="Date départ"    type="date" defaultValue={expedition.date_depart ?? ''} />
-                <DarkInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" defaultValue={expedition.date_arrivee_prevue ?? ''} />
+                <ThemedInput name="date_depart" label="Date départ" type="date" defaultValue={expedition.date_depart ?? ''} />
+                <ThemedInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" defaultValue={expedition.date_arrivee_prevue ?? ''} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-                <DarkSelect name="camion_id" label="Camion" defaultValue={expedition.camion?.id}>
+                <ThemedSelect name="camion_id" label="Camion" defaultValue={expedition.camion?.id}>
                     {camions.map(c => <option key={c.id} value={c.id}>{c.immatriculation}</option>)}
-                </DarkSelect>
-                <DarkSelect name="chauffeur_id" label="Chauffeur" defaultValue={expedition.chauffeur?.id}>
+                </ThemedSelect>
+                <ThemedSelect name="chauffeur_id" label="Chauffeur" defaultValue={expedition.chauffeur?.id}>
                     {chauffeurs.map(c => (
                         <option key={c.id} value={c.id}>{[c.nom, c.prenom].filter(Boolean).join(' ')}</option>
                     ))}
-                </DarkSelect>
+                </ThemedSelect>
             </div>
-            <PrimaryButton type="submit" className="w-full justify-center">
+            <Button type="submit" className="w-full">
                 Enregistrer les modifications
-            </PrimaryButton>
+            </Button>
         </Form>
     );
 }
 
-// ── Expedition card (accordion) ───────────────────────────────────────────────
 interface ExpeditionCardProps {
     expedition: Expedition;
     index: number;
@@ -216,48 +405,48 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.04, duration: 0.3 }}
-            className="rounded-xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+            className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
         >
-            {/* Header */}
             <div className="flex items-center gap-4 px-4 py-3.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                    <MapPin size={13} className="text-emerald-400" />
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center flex-shrink-0">
+                    <MapPin size={13} className="text-primary" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-white">{expedition.reference}</p>
-                    <p className="text-[12px] text-white/35 flex items-center gap-1.5 mt-0.5">
+                    <p className="text-sm font-semibold text-foreground">
+                        {expedition.reference}
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         <span className="truncate">{expedition.origine}</span>
-                        <ArrowRight size={10} className="flex-shrink-0 text-white/20" />
+                        <ArrowRight size={10} className="flex-shrink-0 text-muted-foreground/30" />
                         <span className="truncate">{expedition.destination}</span>
                     </p>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-2 text-[12px] text-white/30">
+                <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{expedition.camion?.immatriculation ?? '—'}</span>
-                    <span className="text-white/15">·</span>
+                    <span className="text-border">·</span>
                     <span>{[expedition.chauffeur?.nom, expedition.chauffeur?.prenom].filter(Boolean).join(' ') || '—'}</span>
                 </div>
 
                 <StatusBadge status={expedition.statut} />
 
                 <div className="flex items-center gap-1">
-                    <PrimaryButton variant="ghost" size="sm" onClick={() => onEdit(expedition.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => onEdit(expedition.id)}>
                         <Pencil size={12} />
-                    </PrimaryButton>
+                    </Button>
                     <button
                         onClick={() => setExpanded(e => !e)}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-colors cursor-pointer"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
                     >
                         <ChevronDown
                             size={13}
-                            className={`text-white/30 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+                            className={`text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
                         />
                     </button>
                 </div>
             </div>
 
-            {/* Accordion content */}
             <AnimatePresence>
                 {expanded && (
                     <motion.div
@@ -265,33 +454,33 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="border-t border-white/[0.05] px-4 py-3 bg-white/[0.02]"
+                        className="border-t border-border px-4 py-3 bg-muted/20"
                     >
                         <div className="grid grid-cols-2 gap-3 mb-3">
                             <Form method="patch" action={`/logistique/expeditions/${expedition.id}/statut`} className="flex gap-2">
                                 <select
                                     name="statut"
                                     defaultValue={expedition.statut}
-                                    className="flex-1 bg-[#141416] border border-white/[0.08] rounded-lg px-3 py-1.5 text-[12px] text-white outline-none"
+                                    className="flex-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs text-foreground outline-none focus:border-ring"
                                 >
                                     <option value="en préparation">En préparation</option>
                                     <option value="en cours">En cours</option>
                                     <option value="livré">Livré</option>
                                     <option value="annulé">Annulé</option>
                                 </select>
-                                <PrimaryButton type="submit" variant="secondary" size="sm">MAJ</PrimaryButton>
+                                <Button type="submit" variant="secondary" size="sm">MAJ</Button>
                             </Form>
 
                             <Form method="delete" action={`/logistique/expeditions/${expedition.id}`}>
-                                <PrimaryButton type="submit" variant="danger" size="sm" className="w-full justify-center">
-                                    <Trash2 size={12} />
+                                <Button type="submit" variant="danger" size="sm" className="text-white">
+                                    <Trash2 size={12} className='text-white text-center' />
                                     Supprimer
-                                </PrimaryButton>
+                                </Button>
                             </Form>
                         </div>
 
                         {expedition.produits?.length > 0 && (
-                            <p className="flex items-center gap-2 text-[12px] text-white/30">
+                            <p className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Package size={11} />
                                 {expedition.produits.map(p => `${p.nom} ×${p.pivot?.quantite}`).join(', ')}
                             </p>
@@ -303,7 +492,6 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
     );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
 interface ExpeditionsTabProps {
     expeditions: Expedition[];
     camionsDisponibles: Camion[];
@@ -321,28 +509,63 @@ export default function ExpeditionsTab({
     chauffeurs,
     produits,
 }: ExpeditionsTabProps) {
-    const [editId, setEditId]   = useState<number | null>(null);
+    const [editId, setEditId] = useState<number | null>(null);
     const [showNew, setShowNew] = useState(false);
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('all');
+    const [page, setPage] = useState(1);
 
+    const filtered = useMemo(() => {
+        return expeditions.filter(e => {
+            const matchesFilter = filter === 'all' || e.statut === filter;
+            const q = search.toLowerCase();
+            const matchesSearch = !q ||
+                e.reference.toLowerCase().includes(q) ||
+                e.origine.toLowerCase().includes(q) ||
+                e.destination.toLowerCase().includes(q) ||
+                (e.camion?.immatriculation ?? '').toLowerCase().includes(q) ||
+                (e.chauffeur?.nom ?? '').toLowerCase().includes(q);
+            return matchesFilter && matchesSearch;
+        });
+    }, [expeditions, search, filter]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
     const editing = expeditions.find(e => e.id === editId) ?? null;
+
+    const handleSearch = (v: string) => { setSearch(v); setPage(1); };
+    const handleFilter = (v: string) => { setFilter(v); setPage(1); };
 
     return (
         <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
             <Panel
                 title="Expéditions"
-                subtitle={`${expeditions.length} expédition${expeditions.length !== 1 ? 's' : ''}`}
+                subtitle={`${filtered.length} expédition${filtered.length !== 1 ? 's' : ''}`}
                 action={
-                    <PrimaryButton variant="secondary" size="sm" onClick={() => { setShowNew(true); setEditId(null); }}>
+                    <Button variant="secondary" size="sm" onClick={() => { setShowNew(true); setEditId(null); }}>
                         <Plus size={13} />
                         Nouvelle
-                    </PrimaryButton>
+                    </Button>
                 }
             >
-                {expeditions.length === 0 ? (
-                    <EmptyState message="Aucune expédition enregistrée" />
+                <FilterBar
+                    search={search}
+                    onSearch={handleSearch}
+                    filterValue={filter}
+                    onFilter={handleFilter}
+                    filterOptions={FILTER_OPTIONS}
+                    placeholder="Référence, origine, destination…"
+                    filterLabel="Statut expédition"
+                />
+
+                {paginated.length === 0 ? (
+                    <EmptyState 
+                        message={search || filter !== 'all' ? 'Aucun résultat pour ces filtres' : 'Aucune expédition enregistrée'} 
+                        icon={<MapPin size={32} />}
+                    />
                 ) : (
                     <div className="space-y-2">
-                        {expeditions.map((exp, i) => (
+                        {paginated.map((exp, i) => (
                             <ExpeditionCard
                                 key={exp.id}
                                 expedition={exp}
@@ -352,6 +575,14 @@ export default function ExpeditionsTab({
                         ))}
                     </div>
                 )}
+
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPage={setPage}
+                    total={filtered.length}
+                    perPage={PER_PAGE}
+                />
             </Panel>
 
             <div className="space-y-4">
@@ -371,14 +602,16 @@ export default function ExpeditionsTab({
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-5 text-center"
+                        className="rounded-2xl border border-border bg-card p-5 text-center"
                     >
-                        <MapPin size={24} className="text-white/15 mx-auto mb-3" />
-                        <p className="text-[13px] text-white/25">Créez une nouvelle expédition ou modifiez-en une existante.</p>
-                        <PrimaryButton variant="outline" size="sm" className="mx-auto mt-4" onClick={() => setShowNew(true)}>
+                        <MapPin size={24} className="text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-sm text-muted-foreground/50">
+                            Créez une nouvelle expédition ou modifiez-en une existante.
+                        </p>
+                        <Button variant="outline" size="sm" className="mx-auto mt-4" onClick={() => setShowNew(true)}>
                             <Plus size={12} />
                             Créer une expédition
-                        </PrimaryButton>
+                        </Button>
                     </motion.div>
                 )}
             </div>
