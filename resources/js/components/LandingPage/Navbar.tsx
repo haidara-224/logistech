@@ -369,65 +369,70 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
                                 </div>
 
                                 {/* Actions Section */}
-                                <div className="flex flex-col gap-3 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                    {auth?.user && canAccessDashboard ? (
-                                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                            <Link
-                                                href={dashboard()}
-                                                onClick={() => setOpen(false)}
-                                                className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md"
-                                            >
-                                                <LayoutDashboard size={16} />
-                                                Dashboard
-                                            </Link>
-                                        </motion.div>
-                                    ) : (
-                                        <>
-                                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                                <Link
-                                                    href={login()}
-                                                    onClick={() => setOpen(false)}
-                                                    className={cn(
-                                                        'flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium border transition-all duration-300',
-                                                        isDark
-                                                            ? 'border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-black'
-                                                            : 'border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-white'
-                                                    )}
-                                                >
-                                                    <LogIn size={16} />
-                                                    Connexion
-                                                </Link>
-                                            </motion.div>
+                              {/* Actions Section */}
+<div className="flex flex-col gap-3 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+    {auth?.user ? (
+        // Utilisateur connecté
+        canAccessDashboard && (
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                    href={dashboard()}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md"
+                >
+                    <LayoutDashboard size={16} />
+                    Dashboard
+                </Link>
+            </motion.div>
+        )
+    ) : (
+        // Utilisateur non connecté
+        <>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                    href={login()}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                        'flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium border transition-all duration-300',
+                        isDark
+                            ? 'border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-black'
+                            : 'border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-white'
+                    )}
+                >
+                    <LogIn size={16} />
+                    Connexion
+                </Link>
+            </motion.div>
 
-                                            {canRegister && (
-                                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                                    <Link
-                                                        href={register()}
-                                                        onClick={() => setOpen(false)}
-                                                        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md"
-                                                    >
-                                                        <Sparkles size={16} />
-                                                        Inscription
-                                                    </Link>
-                                                </motion.div>
-                                            )}
-                                        </>
-                                    )}
+            {canRegister && (
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                        href={register()}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md"
+                    >
+                        <Sparkles size={16} />
+                        Inscription
+                    </Link>
+                </motion.div>
+            )}
+        </>
+    )}
 
-                                    {/* Devis Button Mobile */}
-                                    <motion.button
-                                        onClick={() => {
-                                            onDevis();
-                                            setOpen(false);
-                                        }}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-bold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-lg"
-                                    >
-                                        <FileText size={16} />
-                                        Demander un devis
-                                    </motion.button>
-                                </div>
+    {/* Devis Button Mobile - visible pour tous */}
+    <motion.button
+        onClick={() => {
+            onDevis();
+            setOpen(false);
+        }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-bold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-lg"
+    >
+        <FileText size={16} />
+        Demander un devis
+    </motion.button>
+</div>
                             </div>
                         </motion.div>
                     </>
