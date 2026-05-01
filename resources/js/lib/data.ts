@@ -17,6 +17,7 @@ export interface ServiceData {
   short: string;
   desc: string;
   img: string;
+  images?: string[];  // ← optional array for carousel
   features: string[];
 }
 
@@ -28,7 +29,12 @@ export const SERVICES_DATA: ServiceData[] = [
     title: "Charpente Métallique",
     short: "Structures sur mesure",
     desc: "De la conception à la finition, nous réalisons vos structures métalliques avec précision. Bâtiments industriels, agricoles, commerciaux — chaque charpente est dimensionnée pour durer.",
-    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80",
+  img: '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg',   // fallback
+  images: [                                   // carousel complet
+    '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (2).jpeg',
+    '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (3).jpeg',
+    '/LOgistech FRoid/WhatsApp Image 2026-04-28 at 7.34.05 PM.jpeg',
+  ],
     features: ["Bâtiments industriels", "Structures agricoles", "Commerce & retail", "Charpentes sur mesure"],
   },
   {
@@ -38,7 +44,13 @@ export const SERVICES_DATA: ServiceData[] = [
     title: "Transport Routier",
     short: "Fret & livraison",
     desc: "Transporteur de fret à l'échelle nationale, régionale et internationale depuis Conakry. Nous adaptons nos solutions aux caractéristiques de vos marchandises.",
-    img: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80",
+    img: '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.37 PM (1).jpeg',
+    images: [
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.37 PM.jpeg',
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.34 PM.jpeg',
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.25 PM.jpeg',
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.39 PM (1).jpeg',
+    ],
     features: ["Transport national", "Fret international", "Livraison express", "Suivi en temps réel"],
   },
   {
@@ -48,7 +60,13 @@ export const SERVICES_DATA: ServiceData[] = [
     title: "Froid Industriel",
     short: "Génie climatique",
     desc: "Installation, ingénierie et maintenance de systèmes frigorifiques. Chambres froides, vitrines réfrigérées, centrales frigorifiques — expertise complète de la chaîne du froid.",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    img:     '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.18 PM.jpeg',
+      images: [
+        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.19 PM.jpeg',
+        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.20 PM.jpeg',
+        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.17 PM (1).jpeg',
+        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.49 PM.jpeg',
+      ],
     features: ["Chambres froides", "Vitrines réfrigérées", "Maintenance préventive", "Dépannage réactif"],
   },
   {
@@ -58,7 +76,13 @@ export const SERVICES_DATA: ServiceData[] = [
     title: "Bâtiment & Construction",
     short: "Génie civil",
     desc: "Développement, conception, construction et rénovation d'ouvrages de toutes natures. Logements neufs, développement immobilier, génie civil — des solutions complètes en Afrique.",
-    img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80",
+    img: '/LOgistech FRoid/WhatsApp Image 2026-04-28 at 7.34.08 PM (2).jpeg',
+    images: [
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.23 PM.jpeg',
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.24 PM (1).jpeg',
+
+      
+    ],
     features: ["Logements neufs", "Développement immobilier", "Génie civil", "Rénovation"],
   },
   {
@@ -68,7 +92,7 @@ export const SERVICES_DATA: ServiceData[] = [
     title: "Logistique & Stockage",
     short: "Supply chain",
     desc: "Prestataire de services logistiques et solutions de stockage sur mesure. Acteur majeur du secteur en Afrique, nous optimisons vos flux de marchandises au quotidien.",
-    img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80",
+    img: "/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.18 PM (1).jpeg",
     features: ["Stockage sur mesure", "Gestion des flux", "Supply chain", "Solutions 360°"],
   },
 ];

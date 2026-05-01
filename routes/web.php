@@ -11,6 +11,7 @@ use Laravel\Socialite\Facades\Socialite;
 
 
 Route::get("/",[HomeController::class,'index'])->name('home');
+Route::get("/images",[HomeController::class,'images'])->name('images');
 
 Route::middleware(['auth', 'verified','role:admin|super admin'])->group(function () {
 

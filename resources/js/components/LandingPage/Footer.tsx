@@ -1,52 +1,129 @@
-const FOOTER_LINKS: Record<string, string[]> = {
-  Services:   ["Charpente Métallique", "Transport Routier", "Froid Industriel", "Bâtiment & Construction", "Logistique"],
-  Entreprise: ["À Propos", "Nos Réalisations", "Témoignages", "Contact"],
-  Légal:      ["Mentions Légales", "Politique de Confidentialité", "CGV"],
+import { ArrowRight, Clock, Facebook, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube } from "lucide-react";
+import { motion } from "framer-motion";
+
+const FOOTER_LINKS: Record<string, Array<{ label: string; href: string }>> = {
+  Services: [
+    { label: "Charpente Métallique", href: "#services" },
+    { label: "Transport Routier", href: "#services" },
+    { label: "Froid Industriel", href: "#services" },
+    { label: "Bâtiment & Construction", href: "#services" },
+    { label: "Logistique", href: "#services" },
+  ],
+  Entreprise: [
+    { label: "À Propos", href: "#about" },
+    { label: "Nos Réalisations", href: "#gallery" },
+    { label: "Contact", href: "#contact" },
+  ],
+  Légal: [
+    { label: "Mentions Légales", href: "#" },
+    { label: "Politique de Confidentialité", href: "#" },
+    { label: "CGV", href: "#" },
+  ],
 };
 
-export function Footer({ onDevis }: { onDevis: () => void }) {
-  return (
-    <footer className="
-      border-t
-      bg-slate-900  border-slate-700/50
-      dark:bg-[#030A14] dark:border-[#C8962E]/10
-    ">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-10">
-        <div className="grid lg:grid-cols-5 gap-12 mb-16">
+const SOCIALS = [
+  { icon: Facebook, href: "#", color: "#1877F2", label: "Facebook" },
+  { icon: Twitter, href: "#", color: "#1DA1F2", label: "Twitter" },
+  { icon: Linkedin, href: "#", color: "#0A66C2", label: "LinkedIn" },
+  { icon: Youtube, href: "#", color: "#FF0000", label: "YouTube" },
+];
 
-          {/* Brand */}
+export function Footer({ onDevis }: { onDevis: () => void }) {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="relative bg-white dark:bg-[#0A0F1A] overflow-hidden">
+      
+      {/* Dégradé de fond subtil */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-white/5" />
+      
+      {/* Ligne décorative top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C8962E]/30 to-transparent" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-16 pb-8">
+        
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 mb-12">
+          
+          {/* Brand Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg,#C8962E,#E8B84B)" }}>
-                   <img 
-                                    src="/logo.jpeg" 
-                                    alt="LOGISTECH EQUIP+" 
-                                    className="w-full h-full object-cover rounded-full"
-                                />
+              <div className="relative">
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#C8962E] to-[#E8B84B] blur opacity-50" />
+                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-[#C8962E] to-[#E8B84B] p-[2px]">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-[#0A0F1A]">
+                    <img 
+                      src="/logo.jpeg" 
+                      alt="LOGISTECH EQUIP+" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
               </div>
               <div>
-                <p className="font-bold tracking-wider text-white dark:text-white">LOGISTECH EQUIP+</p>
-                <p className="text-[#C8962E] text-xs tracking-[0.25em]">Conakry, Guinée</p>
+                <p className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">
+                  LOGISTECH EQUIP+
+                </p>
+                <p className="text-[#C8962E] text-[10px] tracking-[0.25em] font-semibold">
+                  LEADER EN GUINÉE
+                </p>
               </div>
             </div>
-            <p className="text-sm leading-relaxed mb-6 max-w-xs text-slate-400 dark:text-white/30">
-              Votre partenaire industriel de confiance depuis 2020. Excellence, fiabilité, expertise au cœur de chaque projet.
+            
+            <p className="text-gray-600 dark:text-white/40 text-sm leading-relaxed mb-6 max-w-sm">
+              Votre partenaire industriel de confiance depuis 2020. Excellence, fiabilité et expertise au cœur de chaque projet.
             </p>
-           
+
+            {/* Contact Info */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
+                <MapPin className="w-4 h-4 text-[#C8962E]" />
+                <span>Conakry, République de Guinée</span>
+              </div>
+              <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
+                <Phone className="w-4 h-4 text-[#C8962E]" />
+                <a href="tel:+224600000000" className="hover:text-[#C8962E] transition-colors">
+                  +224 600 000 000
+                </a>
+              </div>
+              <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
+                <Mail className="w-4 h-4 text-[#C8962E]" />
+                <a href="mailto:contact@logistech.com" className="hover:text-[#C8962E] transition-colors">
+                  contact@logistech.com
+                </a>
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-3">
+              {SOCIALS.map((social, idx) => (
+                <motion.a
+                  key={social.label}
+                  href={social.href}
+                  whileHover={{ y: -2, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/5 hover:bg-[#C8962E] transition-all duration-300 group"
+                >
+                  <social.icon className="w-4 h-4 text-gray-600 dark:text-white/60 group-hover:text-white transition-colors" />
+                </motion.a>
+              ))}
+            </div>
           </div>
 
-          {/* Links */}
-          {Object.entries(FOOTER_LINKS).map(([cat, items]) => (
-            <div key={cat}>
-              <h4 className="font-semibold text-sm mb-5 uppercase tracking-widest text-white dark:text-white">
-                {cat}
+          {/* Links Sections */}
+          {Object.entries(FOOTER_LINKS).map(([category, links]) => (
+            <div key={category}>
+              <h4 className="font-semibold text-sm uppercase tracking-wider mb-5 text-gray-900 dark:text-white">
+                {category}
               </h4>
               <ul className="space-y-3">
-                {items.map(item => (
-                  <li key={item}>
-                    <a href="#" className="text-sm transition-colors text-slate-400 hover:text-[#C8962E] dark:text-white/30 dark:hover:text-[#C8962E]">
-                      {item}
+                {links.map((link) => (
+                  <li key={link.label}>
+                    <a 
+                      href={link.href}
+                      className="text-gray-500 dark:text-white/40 text-sm hover:text-[#C8962E] transition-colors duration-200"
+                    >
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -55,10 +132,55 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
           ))}
         </div>
 
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4
-          border-t border-slate-700/50 dark:border-white/5">
-          <p className="text-xs text-slate-500 dark:text-white/20">© {new Date().getFullYear()} LOGISTECH EQUIP+. Tous droits réservés.</p>
-          <p className="text-xs text-slate-600 dark:text-white/15">Conakry · Guinée · Afrique de l'Ouest</p>
+        {/* Newsletter Section */}
+        <div className="py-6 mb-8 border-t border-gray-200 dark:border-white/10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-[#C8962E]" />
+              <span className="text-gray-600 dark:text-white/60 text-sm">
+                Recevez nos actualités et offres
+              </span>
+            </div>
+            
+            <div className="flex w-full md:w-auto gap-3">
+              <input 
+                type="email"
+                placeholder="Votre adresse email"
+                className="flex-1 md:w-64 px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-white/30 focus:outline-none focus:border-[#C8962E] transition-colors"
+              />
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold flex items-center gap-2 whitespace-nowrap"
+              >
+                <Send className="w-4 h-4" />
+                S'abonner
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-white/10">
+          <p className="text-gray-400 dark:text-white/30 text-xs">
+            © {currentYear} LOGISTECH EQUIP+. Tous droits réservés.
+          </p>
+          
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-gray-400 dark:text-white/30 text-xs hover:text-[#C8962E] transition-colors">
+              Mentions Légales
+            </a>
+            <a href="#" className="text-gray-400 dark:text-white/30 text-xs hover:text-[#C8962E] transition-colors">
+              Confidentialité
+            </a>
+            <a href="#" className="text-gray-400 dark:text-white/30 text-xs hover:text-[#C8962E] transition-colors">
+              CGV
+            </a>
+          </div>
+
+          <p className="text-gray-400 dark:text-white/20 text-xs">
+            Conakry · Guinée · Afrique de l'Ouest
+          </p>
         </div>
       </div>
     </footer>

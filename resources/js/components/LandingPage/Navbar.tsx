@@ -8,436 +8,347 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 
 const NAV_LINKS = [
-    { label: 'Accueil', href: '#hero', icon: '🏠' },
-    { label: 'Services', href: '#services', icon: '⚡' },
-    { label: 'À Propos', href: '#about', icon: '✨' },
-    { label: 'Contact', href: '#contact', icon: '💬' },
+  { label: 'Accueil',  href: '/',     icon: '🏠' },
+  { label: 'Services', href: '#services', icon: '⚡' },
+  { label: 'À Propos', href: '#about',    icon: '✨' },
+  { label: 'Contact',  href: '#contact',  icon: '💬' },
 ];
 
 interface NavbarProps {
-    onDevis: () => void;
-    canRegister?: boolean;
-    isAdmin: Boolean;
-    isSuperAdmin: Boolean;
+  onDevis: () => void;
+  canRegister?: boolean;
+  isAdmin: Boolean;
+  isSuperAdmin: Boolean;
 }
 
 export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAdmin = false }: NavbarProps) {
-    const [open, setOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [activeLink, setActiveLink] = useState('');
+  const [open,       setOpen]       = useState(false);
+  const [scrolled,   setScrolled]   = useState(false);
+  const [activeLink, setActiveLink] = useState('hero');
 
-    const { auth } = usePage().props;
-    const { resolvedAppearance } = useAppearance();
+  const { auth }              = usePage().props;
+  const { resolvedAppearance } = useAppearance();
+  const isDark                = resolvedAppearance === 'dark';
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 60);
-            
-            // Détection de la section active
-            const sections = NAV_LINKS.map(link => link.href.substring(1));
-            const scrollPosition = window.scrollY + 100;
-            
-            for (const section of sections) {
-                const element = document.getElementById(section);
-                if (element) {
-                    const { offsetTop, offsetHeight } = element;
-                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-                        setActiveLink(section);
-                        break;
-                    }
-                }
-            }
-        };
-        
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    useEffect(() => {
-        if (open) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40);
+      const pos = window.scrollY + 130;
+      for (const { href } of NAV_LINKS) {
+        const el = document.getElementById(href.slice(1));
+        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) {
+          setActiveLink(href.slice(1));
+          break;
         }
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [open]);
-
-    const canAccessDashboard = isAdmin || isSuperAdmin;
-    const isDark = resolvedAppearance === 'dark';
-
-    // Animation variants
-    const menuVariants = {
-        hidden: { opacity: 0, scale: 0.95, y: -20 },
-        visible: { 
-            opacity: 1, 
-            scale: 1, 
-            y: 0,
-            transition: { 
-                type: "spring" as const, 
-                stiffness: 300, 
-                damping: 30 
-            }
-        },
-        exit: { 
-            opacity: 0, 
-            scale: 0.95, 
-            y: -20,
-            transition: { duration: 0.2 }
-        }
+      }
     };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-    const linkVariants = {
-        hidden: { opacity: 0, x: -20 },
-        visible: (i: number) => ({
-            opacity: 1,
-            x: 0,
-            transition: { delay: i * 0.05, duration: 0.3 }
-        })
-    };
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
 
-    return (
-        <>
-            <nav
-                className={cn(
-                    'fixed top-0 left-0 right-0 z-[100] transition-all duration-700',
-                    scrolled && 'shadow-2xl'
-                )}
-                style={{
-                    background: scrolled
-                        ? (isDark 
-                            ? 'rgba(6,13,26,0.95)' 
-                            : 'rgba(255,255,255,0.95)')
-                        : 'transparent',
-                    backdropFilter: scrolled ? 'blur(32px)' : 'none',
-                    borderBottom: scrolled
-                        ? (isDark 
-                            ? '1px solid rgba(200,150,46,0.15)' 
-                            : '1px solid rgba(200,150,46,0.1)')
-                        : 'none',
-                }}
+  const canDashboard = isAdmin || isSuperAdmin;
+
+  /* ── Styles ── */
+  const navBg   = scrolled
+    ? (isDark ? 'rgba(12, 18, 28, 0.97)' : 'rgba(255,255,255,0.97)')
+    : (isDark ? 'rgba(12, 18, 28, 0.8)'  : 'rgba(255,255,255,0.8)');
+
+  const shadow  = scrolled
+    ? (isDark ? '0 2px 24px rgba(0,0,0,0.4)' : '0 2px 24px rgba(0,0,0,0.06)')
+    : 'none';
+
+  const border  = scrolled
+    ? (isDark ? '1px solid rgba(200,150,46,0.18)' : '1px solid rgba(0,0,0,0.06)')
+    : '1px solid transparent';
+
+  const textColor = isDark ? 'text-gray-200' : 'text-gray-700';
+
+  return (
+    <>
+      {/* ── Desktop / sticky nav ── */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500"
+        style={{
+          background: navBg,
+          boxShadow: shadow,
+          border: border,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between h-[68px] lg:h-[76px]">
+
+            {/* ── Logo ── */}
+            <motion.a
+              href="/"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex items-center gap-3 shrink-0"
             >
-                <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16 lg:h-20">
-                        {/* Logo avec effet de brillance */}
-                        <motion.a 
-                            href="#hero" 
-                            className="flex items-center gap-3 group shrink-0 relative"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <div className="relative">
-                                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] blur-md opacity-50 group-hover:opacity-75 transition-opacity" />
-                                <div className="relative w-10 h-10 lg:w-11 lg:h-11 rounded-xl overflow-hidden shadow-lg transition-all group-hover:shadow-xl"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #C8962E, #E8B84B)',
-                                        padding: '2px'
-                                    }}>
-                                    <div className="w-full h-full rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm">
-                                        <img
-                                            src="/logo.jpeg"
-                                            alt="LOGISTECH EQUIP+"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className={cn(
-                                    'font-bold text-sm lg:text-base leading-tight tracking-wide transition-colors',
-                                    isDark ? 'text-white' : 'text-gray-800'
-                                )}>
-                                    LOGISTECH
-                                </span>
-                                <span className="text-[#C8962E] text-[10px] lg:text-xs tracking-[0.2em] font-light">
-                                    EQUIP+
-                                </span>
-                            </div>
-                        </motion.a>
-
-                        {/* Desktop Navigation - Élégant avec indicateur actif */}
-                        <div className="hidden lg:flex items-center justify-center gap-1 xl:gap-2 flex-1">
-                            {NAV_LINKS.map(link => (
-                                <a
-                                    key={link.label}
-                                    href={link.href}
-                                    className={cn(
-                                        'relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg',
-                                        'hover:bg-gradient-to-r hover:from-[#C8962E]/10 hover:to-[#E8B84B]/10',
-                                        activeLink === link.href.substring(1)
-                                            ? (isDark ? 'text-[#C8962E]' : 'text-[#C8962E]')
-                                            : (isDark ? 'text-gray-300 hover:text-[#C8962E]' : 'text-gray-600 hover:text-[#C8962E]')
-                                    )}
-                                >
-                                    <span className="relative z-10">{link.label}</span>
-                                    {activeLink === link.href.substring(1) && (
-                                        <motion.div
-                                            layoutId="activeNav"
-                                            className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#C8962E]/20 to-[#E8B84B]/20"
-                                            transition={{ type: "spring", duration: 0.6 }}
-                                        />
-                                    )}
-                                </a>
-                            ))}
-                        </div>
-
-                        {/* Desktop Right Section - Design épuré */}
-                        <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
-                            {auth?.user ? (
-                                canAccessDashboard && (
-                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                        <Link
-                                            href={dashboard()}
-                                            className="group relative inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium overflow-hidden transition-all duration-300"
-                                        >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-[#C8962E] to-[#E8B84B] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            <span className="relative flex items-center gap-2 text-[#C8962E] group-hover:text-white transition-colors">
-                                                <LayoutDashboard size={16} />
-                                                Dashboard
-                                            </span>
-                                        </Link>
-                                    </motion.div>
-                                )
-                            ) : (
-                                <>
-                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                        <Link
-                                            href={login()}
-                                            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium border border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-white transition-all duration-300"
-                                        >
-                                            <LogIn size={16} />
-                                            Connexion
-                                        </Link>
-                                    </motion.div>
-                                    {canRegister && (
-                                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                            <Link
-                                                href={register()}
-                                                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                                            >
-                                                <Sparkles size={16} />
-                                                Inscription
-                                            </Link>
-                                        </motion.div>
-                                    )}
-                                </>
-                            )}
-
-                            <AppearanceToggleTab />
-
-                            {/* Devis Button Desktop */}
-                            <motion.button
-                                onClick={onDevis}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="group relative inline-flex items-center gap-2 px-5 py-2 rounded-xl font-semibold text-sm overflow-hidden shadow-lg"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#C8962E] to-[#E8B84B] transition-transform group-hover:scale-110" />
-                                <span className="relative flex items-center gap-2 text-white">
-                                    <FileText size={15} />
-                                    Devis
-                                </span>
-                            </motion.button>
-                        </div>
-
-                        {/* Mobile Menu Button - Design minimaliste */}
-                        <motion.button
-                            onClick={() => setOpen(prev => !prev)}
-                            whileTap={{ scale: 0.95 }}
-                            className={cn(
-                                'lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all',
-                                isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-black/5 hover:bg-black/10'
-                            )}
-                            aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
-                        >
-                            <AnimatePresence mode="wait">
-                                {open ? (
-                                    <motion.div
-                                        key="close"
-                                        initial={{ rotate: -90, opacity: 0 }}
-                                        animate={{ rotate: 0, opacity: 1 }}
-                                        exit={{ rotate: 90, opacity: 0 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <X size={20} className={isDark ? 'text-white' : 'text-gray-700'} />
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="menu"
-                                        initial={{ rotate: 90, opacity: 0 }}
-                                        animate={{ rotate: 0, opacity: 1 }}
-                                        exit={{ rotate: -90, opacity: 0 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <Menu size={20} className={isDark ? 'text-white' : 'text-gray-700'} />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </motion.button>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Mobile Menu - Design moderne glassmorphique */}
-            <AnimatePresence>
-                {open && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setOpen(false)}
-                            className="fixed inset-0 z-[98] bg-black/40 backdrop-blur-sm lg:hidden"
-                        />
-                        
-                        <motion.div
-                            variants={menuVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            className="fixed top-[72px] left-4 right-4 z-[99] lg:hidden"
-                        >
-                            <div
-                                className={cn(
-                                    'rounded-2xl p-6 flex flex-col gap-3 max-h-[calc(100vh-6rem)] overflow-y-auto',
-                                    'shadow-2xl backdrop-blur-xl border'
-                                )}
-                                style={{
-                                    background: isDark 
-                                        ? 'rgba(10, 20, 35, 0.98)' 
-                                        : 'rgba(255, 255, 255, 0.98)',
-                                    borderColor: isDark 
-                                        ? 'rgba(200,150,46,0.2)' 
-                                        : 'rgba(200,150,46,0.1)',
-                                }}
-                            >
-                                {/* Logo et branding */}
-                                <div className="flex items-center justify-between pb-4 mb-2 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-lg overflow-hidden"
-                                            style={{
-                                                background: 'linear-gradient(135deg, #C8962E, #E8B84B)',
-                                                padding: '2px'
-                                            }}>
-                                            <div className="w-full h-full rounded-md overflow-hidden bg-white/10">
-                                                <img
-                                                    src="/logo.jpeg"
-                                                    alt="LOGISTECH"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className={cn('font-bold text-sm leading-tight', isDark ? 'text-white' : 'text-gray-800')}>
-                                                LOGISTECH
-                                            </span>
-                                            <span className="text-[#C8962E] text-[10px] tracking-[0.2em] font-light">
-                                                EQUIP+
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <AppearanceToggleTab />
-                                </div>
-
-                                {/* Navigation Links avec animations */}
-                                <div className="flex flex-col gap-1 py-2">
-                                    {NAV_LINKS.map((link, index) => (
-                                        <motion.a
-                                            key={link.label}
-                                            custom={index}
-                                            variants={linkVariants}
-                                            initial="hidden"
-                                            animate="visible"
-                                            href={link.href}
-                                            onClick={() => setOpen(false)}
-                                            className={cn(
-                                                'flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group',
-                                                isDark 
-                                                    ? 'hover:bg-white/5 text-gray-300 hover:text-[#C8962E]' 
-                                                    : 'hover:bg-black/5 text-gray-600 hover:text-[#C8962E]'
-                                            )}
-                                        >
-                                            <span className="flex items-center gap-3">
-                                                <span className="text-xl">{link.icon}</span>
-                                                <span className="font-medium">{link.label}</span>
-                                            </span>
-                                            <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </motion.a>
-                                    ))}
-                                </div>
-
-                                {/* Actions Section */}
-                              {/* Actions Section */}
-<div className="flex flex-col gap-3 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-    {auth?.user ? (
-        // Utilisateur connecté
-        canAccessDashboard && (
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                    href={dashboard()}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md"
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-[#C8962E]/30 shadow-md">
+                <img src="/logo.jpeg" alt="LOGISTECH EQUIP+" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex flex-col leading-none">
+                <span
+                  className={cn('font-bold text-[15px] tracking-wide', isDark ? 'text-white' : 'text-gray-900')}
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 >
-                    <LayoutDashboard size={16} />
-                    Dashboard
-                </Link>
-            </motion.div>
-        )
-    ) : (
-        // Utilisateur non connecté
-        <>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  LOGISTECH
+                </span>
+                <span className="text-[#C8962E] text-[9px] tracking-[0.25em] font-medium mt-0.5">
+                  EQUIP+
+                </span>
+              </div>
+            </motion.a>
+
+            {/* ── Center links ── */}
+            <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
+              {NAV_LINKS.map(link => {
+                const isActive = activeLink === link.href.slice(1);
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className={cn(
+                      'relative px-4 py-2 text-[13.5px] font-medium rounded-lg transition-all duration-250',
+                      isActive
+                        ? 'text-[#C8962E]'
+                        : cn(textColor, 'hover:text-[#C8962E]'),
+                    )}
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {link.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="navActive"
+                        className="absolute inset-0 rounded-lg bg-[#C8962E]/10"
+                        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                      />
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+
+            {/* ── Right actions ── */}
+            <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+              {auth?.user && canDashboard && (
                 <Link
+                  href={dashboard()}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-200',
+                    'border border-[#C8962E]/25 text-[#C8962E] hover:bg-[#C8962E] hover:text-white hover:border-[#C8962E]',
+                  )}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  <LayoutDashboard size={14} />
+                  Dashboard
+                </Link>
+              )}
+
+              {!auth?.user && (
+                <>
+                  <Link
                     href={login()}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-200',
+                      'border border-gray-200 hover:border-[#C8962E] hover:text-[#C8962E]',
+                      isDark ? 'text-gray-300' : 'text-gray-600',
+                    )}
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    <LogIn size={14} />
+                    Connexion
+                  </Link>
+
+                  {canRegister && (
+                    <Link
+                      href={register()}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold text-white bg-gray-900 hover:bg-gray-700 transition-all duration-200 shadow-sm"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      <Sparkles size={13} />
+                      Inscription
+                    </Link>
+                  )}
+                </>
+              )}
+
+              <AppearanceToggleTab />
+
+              {/* Primary CTA */}
+              <motion.button
+                onClick={onDevis}
+                whileHover={{ scale: 1.04, y: -1 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white shadow-lg transition-shadow hover:shadow-xl"
+                style={{
+                  background: 'linear-gradient(135deg, #C8962E 0%, #E8B84B 100%)',
+                  boxShadow: '0 6px 20px rgba(200,150,46,0.35)',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                <FileText size={14} />
+                Devis gratuit
+              </motion.button>
+            </div>
+
+            {/* ── Mobile hamburger ── */}
+            <motion.button
+              onClick={() => setOpen(v => !v)}
+              whileTap={{ scale: 0.94 }}
+              className={cn(
+                'lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all',
+                isDark ? 'bg-white/10 hover:bg-white/15' : 'bg-gray-100 hover:bg-gray-200',
+              )}
+            >
+              <AnimatePresence mode="wait">
+                {open ? (
+                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                    <X size={18} className={isDark ? 'text-white' : 'text-gray-800'} />
+                  </motion.div>
+                ) : (
+                  <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                    <Menu size={18} className={isDark ? 'text-white' : 'text-gray-800'} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Mobile menu ── */}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-[98] bg-black/40 backdrop-blur-sm lg:hidden"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, y: -16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.97 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              className="fixed top-[80px] left-4 right-4 z-[99] lg:hidden rounded-2xl overflow-hidden shadow-2xl"
+              style={{
+                background: isDark ? 'rgba(14, 22, 36, 0.99)' : '#fff',
+                border: isDark ? '1px solid rgba(200,150,46,0.15)' : '1px solid rgba(0,0,0,0.07)',
+              }}
+            >
+              {/* Logo row */}
+              <div
+                className="flex items-center justify-between px-5 py-4"
+                style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg overflow-hidden ring-2 ring-[#C8962E]/30">
+                    <img src="/logo.jpeg" alt="LOGISTECH" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p className={cn('font-bold text-sm', isDark ? 'text-white' : 'text-gray-900')} style={{ fontFamily: "'Playfair Display', serif" }}>
+                      LOGISTECH
+                    </p>
+                    <p className="text-[#C8962E] text-[8px] tracking-[0.25em]">EQUIP+</p>
+                  </div>
+                </div>
+                <AppearanceToggleTab />
+              </div>
+
+              {/* Links */}
+              <div className="px-3 py-3">
+                {NAV_LINKS.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                        'flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium border transition-all duration-300',
-                        isDark
-                            ? 'border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-black'
-                            : 'border-[#C8962E] text-[#C8962E] hover:bg-[#C8962E] hover:text-white'
+                      'flex items-center justify-between px-4 py-3 rounded-xl mb-0.5 transition-all group',
+                      isDark ? 'hover:bg-white/8 text-gray-200' : 'hover:bg-gray-50 text-gray-700',
                     )}
-                >
-                    <LogIn size={16} />
-                    Connexion
-                </Link>
-            </motion.div>
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">{link.icon}</span>
+                      <span className="font-medium text-sm">{link.label}</span>
+                    </span>
+                    <ChevronRight size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
+                  </a>
+                ))}
+              </div>
 
-            {canRegister && (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              {/* Actions */}
+              <div
+                className="px-4 pb-4 pt-2 flex flex-col gap-2.5"
+                style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)' }}
+              >
+                {auth?.user ? (
+                  canDashboard && (
                     <Link
+                      href={dashboard()}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium text-[#C8962E] border border-[#C8962E]/25 hover:bg-[#C8962E] hover:text-white transition-all"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      <LayoutDashboard size={15} />
+                      Dashboard
+                    </Link>
+                  )
+                ) : (
+                  <>
+                    <Link
+                      href={login()}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        'flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium border border-[#C8962E]/30 text-[#C8962E] hover:bg-[#C8962E] hover:text-white transition-all',
+                      )}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      <LogIn size={15} />
+                      Connexion
+                    </Link>
+                    {canRegister && (
+                      <Link
                         href={register()}
                         onClick={() => setOpen(false)}
-                        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md"
-                    >
-                        <Sparkles size={16} />
+                        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-semibold bg-gray-900 text-white"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        <Sparkles size={14} />
                         Inscription
-                    </Link>
-                </motion.div>
-            )}
-        </>
-    )}
-
-    {/* Devis Button Mobile - visible pour tous */}
-    <motion.button
-        onClick={() => {
-            onDevis();
-            setOpen(false);
-        }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-bold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-lg"
-    >
-        <FileText size={16} />
-        Demander un devis
-    </motion.button>
-</div>
-                            </div>
-                        </motion.div>
-                    </>
+                      </Link>
+                    )}
+                  </>
                 )}
-            </AnimatePresence>
-        </>
-    );
+
+                <button
+                  onClick={() => { onDevis(); setOpen(false); }}
+                  className="flex items-center justify-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #C8962E, #E8B84B)',
+                    boxShadow: '0 8px 20px rgba(200,150,46,0.3)',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  <FileText size={15} />
+                  Demander un devis
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }

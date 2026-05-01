@@ -22,4 +22,16 @@ class HomeController extends Controller
             'isSuperAdmin'=>$isSuperAdmin
         ]);
     }
+    public function images()
+    {
+          $user = Auth::user();
+
+        $isAdmin = $user?->hasRole('admin');
+        $isSuperAdmin = $user?->hasRole('super admin');
+        return Inertia::render('Gallery/Gallery', [
+                'canRegister' => Features::enabled(Features::registration()),
+            'isAdmin'=>$isAdmin,
+            'isSuperAdmin'=>$isSuperAdmin
+        ]);
+    }
 }

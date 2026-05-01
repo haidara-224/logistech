@@ -1,282 +1,341 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { FileText, ArrowRight, ChevronDown, HardHat, Truck, Snowflake, Building2, Package } from 'lucide-react';
+import { FileText, ArrowRight, ChevronDown, HardHat, Truck, Snowflake, Building2, Package, Shield, Award, Play, Circle, Zap } from 'lucide-react';
 import { Counter } from './ui-primitives';
 
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80',
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
-  'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=1920&q=80',
+  {
+    url: "/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.52 PM (1).jpeg",
+    title: "Froid Industriel",
+    description: "Solutions de refroidissement haute performance"
+  },
+  {
+    url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM.jpeg",
+    title: "Installation Technique",
+    description: "Équipements dernier cri"
+  },
+  {
+    url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.37 PM (1).jpeg",
+    title: "Transport & Logistique",
+    description: "Flotte moderne et réactive"
+  },
+  {
+    url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg",
+    title: "Charpente Métallique",
+    description: "Structures robustes et durables"
+  },
 ];
 
 const STATS = [
-  { val: 5,   suf: '+', label: "Années d'expérience" },
-  { val: 200, suf: '+', label: 'Produits'    },
-  { val: 50,  suf: '+', label: 'Clients satisfaits'  },
-
+  { value: 5, suffix: '+', label: "Années d'expérience", icon: Award },
+  { value: 200, suffix: '+', label: 'Produits disponibles', icon: Package },
+  { value: 50, suffix: '+', label: 'Clients satisfaits', icon: Shield },
 ];
 
-const WORDS = [
-  "Charpente Métallique",
-  "Transport Routier",
-  "Froid Industriel",
-  "Bâtiment & Construction",
-  "Logistique & Stockage"
+const SERVICES = [
+  { name: "Charpente Métallique", icon: HardHat, gradient: "from-amber-500 to-yellow-600", color: "#C8962E" },
+  { name: "Transport Routier", icon: Truck, gradient: "from-blue-500 to-blue-600", color: "#3B82F6" },
+  { name: "Froid Industriel", icon: Snowflake, gradient: "from-cyan-500 to-cyan-600", color: "#06B6D4" },
+  { name: "Bâtiment & Construction", icon: Building2, gradient: "from-emerald-500 to-emerald-600", color: "#10B981" },
 ];
-
-const WORD_COLORS = {
-  "Charpente Métallique": "#C8962E",
-  "Transport Routier": "#3B82F6",
-  "Froid Industriel": "#06B6D4",
-  "Bâtiment & Construction": "#10B981",
-  "Logistique & Stockage": "#8B5CF6"
-};
-
-const WORD_ICONS = {
-  "Charpente Métallique": HardHat,
-  "Transport Routier": Truck,
-  "Froid Industriel": Snowflake,
-  "Bâtiment & Construction": Building2,
-  "Logistique & Stockage": Package
-};
 
 interface HeroProps { onDevis: () => void }
 
 export function Hero({ onDevis }: HeroProps) {
   const { scrollY } = useScroll();
-  const parallaxY = useTransform(scrollY, [0, 600], [0, 180]);
-  const fadeOpacity = useTransform(scrollY, [0, 400], [1, 0]);
-
-  const [imgIdx, setImgIdx] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [wordIndex, setWordIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [serviceIndex, setServiceIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [cursorVisible, setCursorVisible] = useState(true);
+  const [showCursor, setShowCursor] = useState(true);
+  
+  const yOffset = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 400], [1, 0.5]);
 
+  // Carousel images
   useEffect(() => {
-    const t = setInterval(() => setImgIdx(i => (i + 1) % HERO_IMAGES.length), 5000);
-    return () => clearInterval(t);
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 7000);
+    return () => clearInterval(interval);
   }, []);
 
+  // Typewriter pour les services
   useEffect(() => {
-    const currentWord = WORDS[wordIndex];
+    const currentService = SERVICES[serviceIndex].name;
     let timeout: NodeJS.Timeout;
 
     if (isDeleting) {
       timeout = setTimeout(() => {
-        setDisplayText(prev => prev.slice(0, -1));
-        if (displayText === "") {
+        setTypedText(prev => prev.slice(0, -1));
+        if (typedText === "") {
           setIsDeleting(false);
-          setWordIndex((prev) => (prev + 1) % WORDS.length);
+          setServiceIndex((prev) => (prev + 1) % SERVICES.length);
         }
       }, 40);
     } else {
       timeout = setTimeout(() => {
-        setDisplayText(currentWord.slice(0, displayText.length + 1));
-        if (displayText === currentWord) {
+        setTypedText(currentService.slice(0, typedText.length + 1));
+        if (typedText.length + 1 === currentService.length) {
           setTimeout(() => setIsDeleting(true), 2000);
         }
-      }, 80);
+      }, 60);
     }
 
     return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, wordIndex]);
+  }, [typedText, isDeleting, serviceIndex]);
 
+  // Curseur
   useEffect(() => {
-    const cursorInterval = setInterval(() => setCursorVisible(prev => !prev), 500);
-    return () => clearInterval(cursorInterval);
+    const interval = setInterval(() => setShowCursor(prev => !prev), 500);
+    return () => clearInterval(interval);
   }, []);
 
-  const CurrentIcon = WORD_ICONS[WORDS[wordIndex] as keyof typeof WORD_ICONS];
-  const currentColor = WORD_COLORS[WORDS[wordIndex] as keyof typeof WORD_COLORS];
+  const currentService = SERVICES[serviceIndex];
+  const CurrentIcon = currentService.icon;
+  const currentColor = currentService.color;
 
   return (
-    <section id="hero" className="relative h-screen min-h-[600px] sm:min-h-[700px] flex items-center overflow-hidden">
-
-   
-      <motion.div className="absolute inset-0" style={{ y: parallaxY }}>
+    <section className="relative min-h-screen overflow-hidden">
+      
+      {/* Background Carousel avec effet cinématique */}
+      <div className="absolute inset-0">
         <AnimatePresence mode="sync">
-          <motion.img
-            key={imgIdx}
-            src={HERO_IMAGES[imgIdx]}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            initial={{ opacity: 0, scale: 1.08 }}
-            animate={{ opacity: 1, scale: 1.04 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
-          />
-        </AnimatePresence>
-
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, rgba(6,13,26,0.95) 0%, rgba(11,22,40,0.85) 50%, rgba(6,13,26,0.95) 100%)' }} />
-        <div className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at 30% 50%, rgba(200,150,46,0.12) 0%, transparent 70%)' }} />
-        
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: 'linear-gradient(rgba(200,150,46,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(200,150,46,0.8) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        
-        <motion.div 
-          className="absolute top-1/4 -left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] rounded-full opacity-20 blur-3xl"
-          style={{ background: `radial-gradient(circle, ${currentColor}40, transparent)` }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        />
-      </motion.div>
-
-      <div className="absolute top-0 right-0 w-px h-full opacity-30 hidden sm:block"
-        style={{ background: 'linear-gradient(180deg, transparent, #C8962E 40%, #C8962E 60%, transparent)' }} />
-
-      {/* ── Content ── */}
-      <motion.div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full" style={{ opacity: fadeOpacity }}>
-        <div className="max-w-4xl">
-
-          {/* Badge - version mobile plus compacte */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="inline-flex items-center gap-2 sm:gap-3 mb-5 sm:mb-8 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full backdrop-blur-sm"
-            style={{ 
-              background: 'rgba(200,150,46,0.08)', 
-              border: '1px solid rgba(200,150,46,0.25)',
-              boxShadow: '0 4px 20px rgba(200,150,46,0.1)'
-            }}>
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#C8962E] animate-pulse" />
-            <span className="text-[#C8962E] text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] font-medium whitespace-nowrap">
-              Leader Guinée
-            </span>
-          </motion.div>
-
-          {/* Heading - tailles réduites sur mobile */}
-          <motion.h1
-            initial={{ opacity: 0, y: 60 }} 
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            style={{ fontFamily: "'Cormorant Garamond', serif", lineHeight: 1.1 }}
-            className="text-4xl sm:text-6xl lg:text-8xl font-bold mb-4 sm:mb-6"
+            key={currentIndex}
+            className="absolute inset-0"
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.1, opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
           >
-            <span className="text-white">L'excellence en</span>
-            <br />
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 sm:mt-4">
-              <span 
-                className="inline-block transition-all duration-300 text-2xl sm:text-5xl lg:text-7xl"
-                style={{ color: currentColor }}
-              >
-                {displayText}
-                <span 
-                  className="inline-block w-[2px] sm:w-[3px] h-6 sm:h-10 lg:h-12 ml-0.5 sm:ml-1"
-                  style={{ 
-                    background: currentColor,
-                    opacity: cursorVisible ? 1 : 0,
-                    boxShadow: `0 0 4px ${currentColor}`
-                  }}
-                />
-              </span>
+            <img
+              src={HERO_IMAGES[currentIndex].url}
+              alt={HERO_IMAGES[currentIndex].title}
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+        </AnimatePresence>
+        
+        {/* Overlay élégant pour la lisibilité */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+        
+        {/* Effet de lumière qui bouge */}
+        <motion.div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[120px]"
+          style={{ background: `${currentColor}20` }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
+      </div>
+
+      {/* Contenu principal */}
+      <motion.div 
+        className="relative z-10 min-h-screen flex items-center"
+        style={{ y: yOffset, opacity }}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full py-20">
+          
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Colonne gauche - Texte */}
+            <div>
+              {/* Badge */}
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.8, type: "spring" }}
-                className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center"
-                style={{ 
-                  background: `${currentColor}15`,
-                  border: `1px solid ${currentColor}30`
-                }}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
               >
-             <CurrentIcon 
-  className="w-4 h-4 sm:w-6 sm:h-6" 
-  style={{ color: currentColor }} 
-/>
+                <Zap className="w-4 h-4 text-[#C8962E]" />
+                <span className="text-[#C8962E] text-sm font-semibold uppercase tracking-wider">
+                  Leader en Guinée
+                </span>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#C8962E] animate-pulse" />
+              </motion.div>
+
+              {/* Titre */}
+              <motion.h1
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.1 }}
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                L'excellence en{" "}
+                <span 
+                  className="relative inline-block"
+                  style={{ color: currentColor }}
+                >
+                  {typedText}
+                  <span 
+                    className="inline-block w-[3px] h-10 align-middle ml-1"
+                    style={{ 
+                      background: currentColor,
+                      opacity: showCursor ? 1 : 0,
+                    }}
+                  />
+                </span>
+                <br />
+                à votre service
+              </motion.h1>
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="text-white/70 text-base sm:text-lg mb-8 leading-relaxed max-w-lg"
+              >
+                Solutions intégrées pour l'industrie et la construction en Guinée.
+                De la conception à la réalisation, nous bâtissons l'avenir ensemble.
+              </motion.p>
+
+              {/* Boutons */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+                className="flex flex-col sm:flex-row gap-4 mb-12"
+              >
+                <a
+                 href="#gallery"
+                  className="group px-8 py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-xl text-base"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${currentColor}, ${currentColor}dd)`,
+                    boxShadow: `0 10px 30px ${currentColor}40`
+                  }}
+                >
+                  <FileText className="w-5 h-5" />
+                  Gallerie
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </a>
+
+                <a
+                  href="#services"
+                  className="px-8 py-4 rounded-xl font-semibold text-white border border-white/30 backdrop-blur-sm flex items-center justify-center gap-2 transition-all hover:bg-white/10"
+                >
+                  Nos services
+                  <ChevronDown className="w-4 h-4" />
+                </a>
+              </motion.div>
+
+              {/* Stats */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+                className="flex gap-8 pt-8 border-t border-white/20"
+              >
+                {STATS.map((stat, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <stat.icon className="w-5 h-5 text-[#C8962E]" />
+                    <div>
+                      <div className="text-2xl font-bold text-white">
+                        <Counter to={stat.value} suffix={stat.suffix} />
+                      </div>
+                      <p className="text-white/40 text-xs uppercase tracking-wider">
+                        {stat.label}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </motion.div>
             </div>
-            <span className="text-[#C8962E] block text-3xl sm:text-5xl lg:text-7xl mt-2 sm:mt-4">à votre service.</span>
-          </motion.h1>
 
-          {/* Description - texte plus petit sur mobile */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8, delay: 0.9 }}
-            className="text-white/50 text-sm sm:text-lg lg:text-xl mb-6 sm:mb-10 max-w-2xl leading-relaxed backdrop-blur-sm"
-          >
-            Charpentes métalliques, transport, froid, construction et logistique —
-            des solutions sur mesure pour bâtir l'Afrique.
-          </motion.p>
+            {/* Colonne droite - Carte d'image active */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="hidden lg:block"
+            >
+              <div className="relative">
+                {/* Carte flottante */}
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentIndex}
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <img
+                        src={HERO_IMAGES[currentIndex].url}
+                        alt={HERO_IMAGES[currentIndex].title}
+                        className="w-full h-[500px] object-cover rounded-2xl"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-2xl" />
+                      
+                      {/* Info overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <h3 className="text-2xl font-bold text-white mb-2">
+                          {HERO_IMAGES[currentIndex].title}
+                        </h3>
+                        <p className="text-white/60">
+                          {HERO_IMAGES[currentIndex].description}
+                        </p>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
-          {/* Boutons CTA - version mobile plus compacte */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.8, delay: 1.1 }}
-            className="flex flex-col sm:flex-row gap-3 sm:gap-5"
-          >
-      <button 
-  onClick={onDevis}
-  className="group relative overflow-hidden px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-95 text-sm sm:text-base"
-  style={{ 
-    background: 'linear-gradient(135deg, #C8962E, #E8B84B)', 
-    boxShadow: '0 20px 40px rgba(200,150,46,0.3)'
-  }}
->
-  <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-  Devis gratuit
-  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
-</button>
-
-<a 
-  href="#services"
-  className="group px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 hover:bg-white/10 backdrop-blur-sm text-sm sm:text-base"
-  style={{ border: '1px solid rgba(255,255,255,0.15)' }}
->
-  Découvrir 
-  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-y-1 transition-transform" />
-</a>
-          </motion.div>
-
-          {/* Stats - version mobile responsive */}
-          <motion.div
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            transition={{ duration: 1, delay: 1.4 }}
-            className="flex flex-wrap justify-between sm:justify-start gap-4 sm:gap-12 mt-10 sm:mt-20 pt-6 sm:pt-8 border-t border-white/10 backdrop-blur-sm"
-          >
-            {STATS.map((s, i) => (
-              <motion.div 
-                key={s.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4 + i * 0.1 }}
-                className="flex-1 sm:flex-none text-center sm:text-left"
-              >
-                <p className="text-xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] bg-clip-text text-transparent" 
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                  <Counter to={s.val} suffix={s.suf} />
-                </p>
-                <p className="text-white/20 text-[8px] sm:text-xs uppercase tracking-wider sm:tracking-widest mt-0.5 sm:mt-1">
-                  {s.label}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
+                {/* Indicateurs */}
+                <div className="flex justify-center gap-2 mt-6">
+                  {HERO_IMAGES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`transition-all duration-300 rounded-full ${
+                        idx === currentIndex 
+                          ? 'w-8 h-1.5 bg-[#C8962E]' 
+                          : 'w-1.5 h-1.5 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </motion.div>
 
-      {/* Scroll indicator - caché sur très petit mobile */}
+      {/* Scroll indicator */}
       <motion.div
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        transition={{ delay: 1.8 }}
-        className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2"
       >
-        <p className="text-white/20 text-[10px] uppercase tracking-[0.3em]">Scroll</p>
-        <div className="w-6 h-10 rounded-full border border-white/20 flex items-start justify-center p-1.5 backdrop-blur-sm">
-          <motion.div
-            className="w-1 h-3 rounded-full"
-            style={{ background: 'linear-gradient(180deg, #C8962E, #E8B84B)' }}
-            animate={{ y: [0, 16, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} />
-        </div>
+        <span className="text-white/30 text-xs uppercase tracking-widest">Explorer</span>
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        >
+          <ChevronDown className="w-5 h-5 text-white/40" />
+        </motion.div>
       </motion.div>
+
+      {/* Miniatures mobiles */}
+      <div className="absolute bottom-20 left-0 right-0 lg:hidden z-20">
+        <div className="flex justify-center gap-2 px-4">
+          {HERO_IMAGES.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`transition-all duration-300 ${
+                idx === currentIndex 
+                  ? 'w-12 h-12 opacity-100' 
+                  : 'w-10 h-10 opacity-50'
+              } rounded-lg overflow-hidden`}
+            >
+              <img src={img.url} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
