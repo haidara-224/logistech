@@ -131,3 +131,14 @@ export interface Image {
   created_at?: string | null;
   updated_at?: string | null;
 }
+
+export interface ProduitFormData {
+  nom: string;
+  sku?: string;
+  description?: string;
+  prix_vente?: number;
+  prix_achat?: number;
+  quantite_stock?: number;
+  stock_minimal?: number;
+  categorie_id?: number;
+}

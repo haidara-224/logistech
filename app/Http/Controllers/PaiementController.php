@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Commande;
+use App\Models\Paiement;
 use App\Services\PaiementService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Http\RedirectResponse;
 
 class PaiementController extends Controller
 {
@@ -16,23 +18,52 @@ class PaiementController extends Controller
         $this->service = $service;
     }
 
-    public function create($commandeId)
+    public function index()
     {
-        return Inertia::render('paiements/Create', ['commande_id' => $commandeId]);
+        $paiements = Paiement::with('commande.client')
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        $stats = [
+            'total_encaisse' => Paiement::where('status', 'effectue')->sum('montant') ?? 0,
+            'ca_mois' => Paiement::where('status', 'effectue')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('montant') ?? 0,
+            'especes' => Paiement::where('mode_paiement', 'espece')->where('status', 'effectue')->sum('montant') ?? 0,
+            'mobile_money' => Paiement::where('mode_paiement', 'mobile_money')->where('status', 'effectue')->sum('montant') ?? 0,
+            'carte' => Paiement::where('mode_paiement', 'carte_bancaire')->where('status', 'effectue')->sum('montant') ?? 0,
+            'nb_paiements' => Paiement::count(),
+        ];
+
+        $chart = Paiement::selectRaw("DATE(created_at) as date, SUM(montant) as total, COUNT(*) as nb")
+            ->where('status', 'effectue')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->groupByRaw('DATE(created_at)')
+            ->orderBy('date')
+            ->get();
+
+        return Inertia::render('paiements/Index', compact('paiements', 'stats', 'chart'));
     }
 
-    public function register(Request $request, $commandeId): RedirectResponse
+    public function create(Commande $commande)
+    {
+        $commande->load('client', 'items.produit');
+
+        return Inertia::render('paiements/Create', ['commande' => $commande]);
+    }
+
+    public function register(Request $request, Commande $commande): RedirectResponse
     {
         $data = $request->validate([
             'montant' => 'required|numeric|min:0',
             'mode_paiement' => 'nullable|string',
             'status' => 'nullable|string',
-            'date_paiement' => 'nullable|date'
+            'date_paiement' => 'nullable|date',
         ]);
 
-        $result = $this->service->registerPayment($commandeId, $data);
+        $this->service->registerPayment($commande->id, $data);
 
-        return redirect()->route('commandes.show', $commandeId)->with('success', 'Paiement enregistré');
+        return redirect()->route('commandes.show', $commande->id)->with('success', 'Paiement enregistré');
     }
 }
-

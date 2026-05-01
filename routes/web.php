@@ -54,6 +54,21 @@ Route::middleware(['auth', 'verified','role:admin|super admin'])->group(function
     // Paiement routes (for a commande)
     Route::get('commandes/{commande}/paiements/creer', [App\Http\Controllers\PaiementController::class, 'create'])->name('paiements.create');
     Route::post('commandes/{commande}/paiements', [App\Http\Controllers\PaiementController::class, 'register'])->name('paiements.register');
+
+    // Paiements list
+    Route::get('paiements', [App\Http\Controllers\PaiementController::class, 'index'])->name('paiements.index');
+
+    // Factures
+    Route::get('factures', [App\Http\Controllers\FactureController::class, 'index'])->name('factures.index');
+    Route::get('factures/{facture}', [App\Http\Controllers\FactureController::class, 'show'])->name('factures.show');
+
+    // Ventes (commandes payées / CA)
+    Route::get('ventes', [App\Http\Controllers\VenteController::class, 'index'])->name('ventes.index');
+
+    // Mouvements & Ajustements de stock
+    Route::get('mouvements', [App\Http\Controllers\MouvementsStockController::class, 'index'])->name('mouvements.index');
+    Route::get('stock/ajustements', [App\Http\Controllers\MouvementsStockController::class, 'ajustements'])->name('stock.ajustements');
+    Route::post('stock/ajustements', [App\Http\Controllers\MouvementsStockController::class, 'store'])->name('stock.ajustements.store');
 });
 Route::get('/auth/redirect', function () {
     return Socialite::driver('google')->redirect();

@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, Facebook, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube } from "lucide-react";
+import { ArrowRight, Clock, Facebook, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube, Heart, Code, User } from "lucide-react";
 import { motion } from "framer-motion";
 
 const FOOTER_LINKS: Record<string, Array<{ label: string; href: string }>> = {
@@ -25,7 +25,6 @@ const SOCIALS = [
   { icon: Facebook, href: "#", color: "#1877F2", label: "Facebook" },
   { icon: Twitter, href: "#", color: "#1DA1F2", label: "Twitter" },
   { icon: Linkedin, href: "#", color: "#0A66C2", label: "LinkedIn" },
-  { icon: Youtube, href: "#", color: "#FF0000", label: "YouTube" },
 ];
 
 export function Footer({ onDevis }: { onDevis: () => void }) {
@@ -82,14 +81,14 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
               </div>
               <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
                 <Phone className="w-4 h-4 text-[#C8962E]" />
-                <a href="tel:+224600000000" className="hover:text-[#C8962E] transition-colors">
-                  +224 600 000 000
+                <a href="tel:+224625421335" className="hover:text-[#C8962E] transition-colors">
+                  +224 625 421 335
                 </a>
               </div>
               <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
                 <Mail className="w-4 h-4 text-[#C8962E]" />
-                <a href="mailto:contact@logistech.com" className="hover:text-[#C8962E] transition-colors">
-                  contact@logistech.com
+                <a href="mailto:sidymohamedcherifhaidara02@gmail.com" className="hover:text-[#C8962E] transition-colors">
+                  sidymohamedcherifhaidara02@gmail.com
                 </a>
               </div>
             </div>
@@ -160,7 +159,7 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar avec développeur */}
         <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-white/10">
           <p className="text-gray-400 dark:text-white/30 text-xs">
             © {currentYear} LOGISTECH EQUIP+. Tous droits réservés.
@@ -178,9 +177,41 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
             </a>
           </div>
 
-          <p className="text-gray-400 dark:text-white/20 text-xs">
-            Conakry · Guinée · Afrique de l'Ouest
-          </p>
+          {/* Développeur */}
+          <div className="flex items-center gap-2">
+            <Code className="w-3 h-3 text-[#C8962E]" />
+            <p className="text-gray-400 dark:text-white/30 text-xs">
+              Développé par{" "}
+              <a 
+                href="mailto:sidymohamedcherifhaidara02@gmail.com"
+                className="text-[#C8962E] hover:underline transition-colors font-medium"
+              >
+                Sidy Mohamed Cherif Haidara
+              </a>
+            </p>
+            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+          </div>
+        </div>
+
+        {/* Contact direct du développeur */}
+        <div className="mt-4 pt-4 flex flex-col items-center gap-2 border-t border-gray-200/50 dark:border-white/5">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-gray-400 dark:text-white/20">
+            <a 
+              href="mailto:sidymohamedcherifhaidara02@gmail.com"
+              className="hover:text-[#C8962E] transition-colors flex items-center gap-1"
+            >
+              <Mail className="w-3 h-3" />
+              sidymohamedcherifhaidara02@gmail.com
+            </a>
+            <span>•</span>
+            <a 
+              href="tel:+224625421335"
+              className="hover:text-[#C8962E] transition-colors flex items-center gap-1"
+            >
+              <Phone className="w-3 h-3" />
+              +224 625 421 335
+            </a>
+          </div>
         </div>
       </div>
     </footer>
