@@ -19,9 +19,9 @@ const SOCIALS = [
 const inputCls = [
   "w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200",
   "bg-stone-50 border border-stone-200 text-slate-900 placeholder:text-slate-400",
-  "focus:border-[#C8962E] focus:ring-2 focus:ring-[#C8962E]/20",
+  "focus:border-[#C8962E]",
   "dark:bg-white/[0.04] dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/25",
-  "dark:focus:border-[#C8962E] dark:focus:ring-[#C8962E]/15",
+  "dark:focus:border-[#C8962E] ",
 ].join(" ");
 
 export function Contact() {
