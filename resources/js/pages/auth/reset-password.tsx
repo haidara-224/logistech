@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/password-input';
 import { Spinner } from '@/components/ui/spinner';
 
-const inputCls = 'h-11 rounded-xl px-4 text-sm bg-stone-100 border-stone-300 text-slate-900 placeholder:text-slate-400 focus:border-[#C8962E] focus:ring-2 focus:ring-[#C8962E]/20 dark:bg-white/[0.04] dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/25 dark:focus:border-[#C8962E] dark:focus:ring-[#C8962E]/20';
+const inputCls = 'h-11 rounded-xl px-4 text-sm bg-stone-100 border-stone-300 text-slate-900 placeholder:text-slate-400 dark:bg-white/[0.04] dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/25';
 
 type ResetProps = { token: string; email: string };
 
