@@ -6,6 +6,7 @@ use App\Contracts\CommandeServiceInterface;
 use App\Contracts\StockServiceInterface;
 use App\Models\Commande;
 use App\Models\Commande_item;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CommandeService implements CommandeServiceInterface
@@ -24,7 +25,7 @@ class CommandeService implements CommandeServiceInterface
 
             $commande = Commande::create([
                 'client_id' => $data['client_id'] ?? null,
-                'user_id' => $data['user_id'] ?? null,
+                'user_id' => Auth::id(),
                 'status' => $data['status'] ?? 'en_attente',
                 'source' => $data['source'] ?? 'online',
                 'montant_total' => 0,
