@@ -10,7 +10,16 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
   const [idx, setIdx] = useState(0);
   const [dir, setDir] = useState(1);
   const [isHovering, setIsHovering] = useState(false);
-  const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const go = useCallback((next: number) => {
     setDir(next > idx ? 1 : -1);
@@ -20,7 +29,7 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
   const prev = () => go((idx - 1 + images.length) % images.length);
   const next = () => go((idx + 1) % images.length);
 
-  // Auto-advance with pause on hover
+  // Auto-advance plus lent sur mobile
   useEffect(() => {
     if (images.length < 2) return;
     
@@ -31,7 +40,7 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
           setDir(1);
           setIdx(i => (i + 1) % images.length);
         }
-      }, 3500);
+      }, isMobile ? 6000 : 4500);
     };
     
     startAutoAdvance();
@@ -39,7 +48,7 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
     return () => {
       if (autoTimerRef.current) clearInterval(autoTimerRef.current);
     };
-  }, [images.length, isHovering]);
+  }, [images.length, isHovering, isMobile]);
 
   const variants = {
     enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),
@@ -51,8 +60,8 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
     <div 
       className="relative rounded-2xl overflow-hidden shadow-xl" 
       style={{ aspectRatio: '4/3' }}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      onMouseEnter={() => !isMobile && setIsHovering(true)}
+      onMouseLeave={() => !isMobile && setIsHovering(false)}
     >
       <AnimatePresence custom={dir} mode="popLayout">
         <motion.img
@@ -64,7 +73,7 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+          transition={{ duration: isMobile ? 0.4 : 0.55, ease: [0.32, 0.72, 0, 1] }}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ willChange: 'transform, opacity' }}
         />
@@ -78,30 +87,36 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
 
       {images.length > 1 && (
         <>
+          {/* Flèches plus petites sur mobile */}
           <button
             onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+            className={`absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+              isMobile ? 'w-6 h-6' : 'w-8 h-8'
+            }`}
             style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
           >
-            <ChevronLeft size={16} className="text-gray-700" />
+            <ChevronLeft size={isMobile ? 12 : 16} className="text-gray-700" />
           </button>
           <button
             onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+            className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+              isMobile ? 'w-6 h-6' : 'w-8 h-8'
+            }`}
             style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
           >
-            <ChevronRight size={16} className="text-gray-700" />
+            <ChevronRight size={isMobile ? 12 : 16} className="text-gray-700" />
           </button>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {/* Dots plus petits sur mobile */}
+          <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5 z-10">
             {images.map((_, i) => (
               <button
                 key={i}
                 onClick={() => go(i)}
                 className="transition-all duration-300 rounded-full"
                 style={{
-                  width:   i === idx ? 20 : 6,
-                  height:  6,
+                  width: i === idx ? (isMobile ? 12 : 20) : (isMobile ? 3 : 6),
+                  height: isMobile ? 3 : 6,
                   background: i === idx ? color : 'rgba(255,255,255,0.55)',
                   boxShadow: i === idx ? `0 0 8px ${color}80` : 'none',
                 }}
@@ -111,7 +126,7 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
         </>
       )}
 
-      {images.length > 1 && (
+      {images.length > 1 && !isMobile && (
         <div
           className="absolute bottom-4 right-4 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white z-10"
           style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)' }}
@@ -126,10 +141,19 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
 export function Services({ onDevis }: ServicesProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
- const autoScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const svc = SERVICES_DATA[activeIdx];
   const images: string[] = (svc as any).images?.length
     ? (svc as any).images
@@ -149,15 +173,16 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
       clearTimeout(inactivityTimerRef.current);
     }
     
-    // Attendre 8 secondes après la dernière interaction avant de changer de section
+    // Attendre plus longtemps sur mobile avant de réactiver l'auto-scroll
     inactivityTimerRef.current = setTimeout(() => {
       setIsUserInteracting(false);
-    }, 8000);
-  }, []);
+    }, isMobile ? 12000 : 8000);
+  }, [isMobile]);
 
-  // Auto-scroll des sections
+  // Auto-scroll des sections (désactivé sur mobile)
   useEffect(() => {
-    // Démarrer le timer d'auto-scroll seulement si l'utilisateur n'interagit pas
+    if (isMobile) return; // Pas d'auto-scroll sur mobile
+    
     if (!isUserInteracting) {
       if (autoScrollTimerRef.current) {
         clearInterval(autoScrollTimerRef.current);
@@ -165,7 +190,7 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
       
       autoScrollTimerRef.current = setInterval(() => {
         goToNextService();
-      }, 10000); // Changement toutes les 10 secondes
+      }, 10000);
     }
     
     return () => {
@@ -173,7 +198,7 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
         clearInterval(autoScrollTimerRef.current);
       }
     };
-  }, [isUserInteracting, goToNextService]);
+  }, [isUserInteracting, goToNextService, isMobile]);
 
   // Écouter les interactions de l'utilisateur
   useEffect(() => {
@@ -181,14 +206,16 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     if (!section) return;
     
     const handleUserInteraction = () => {
-      resetInactivityTimer();
+      if (!isMobile) resetInactivityTimer();
     };
     
-    // Interactions qui réinitialisent le timer
-    section.addEventListener('click', handleUserInteraction);
-    section.addEventListener('touchstart', handleUserInteraction);
-    section.addEventListener('mousemove', handleUserInteraction);
-    section.addEventListener('keydown', handleUserInteraction);
+    // Interactions qui réinitialisent le timer (seulement sur desktop)
+    if (!isMobile) {
+      section.addEventListener('click', handleUserInteraction);
+      section.addEventListener('touchstart', handleUserInteraction);
+      section.addEventListener('mousemove', handleUserInteraction);
+      section.addEventListener('keydown', handleUserInteraction);
+    }
     
     return () => {
       section.removeEventListener('click', handleUserInteraction);
@@ -203,30 +230,13 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
         clearInterval(autoScrollTimerRef.current);
       }
     };
-  }, [resetInactivityTimer]);
-
-  // Animation pour attirer l'attention sur le prochain service
-  const [showHint, setShowHint] = useState(false);
-  
-  useEffect(() => {
-    // Afficher un indice subtil 2 secondes avant le changement automatique
-    if (!isUserInteracting) {
-      const hintTimer = setTimeout(() => {
-        setShowHint(true);
-        setTimeout(() => setShowHint(false), 1500);
-      }, 8000);
-      
-      return () => clearTimeout(hintTimer);
-    } else {
-      setShowHint(false);
-    }
-  }, [isUserInteracting, activeIdx]);
+  }, [resetInactivityTimer, isMobile]);
 
   return (
     <section
       ref={sectionRef}
       id="services"
-      className="relative py-28 overflow-hidden bg-[#F9F7F3] dark:bg-[#07101F]"
+      className="relative py-16 sm:py-28 overflow-hidden bg-[#F9F7F3] dark:bg-[#07101F]"
     >
       {/* Subtle dot grid */}
       <div
@@ -237,21 +247,20 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
       {/* Top accent line */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C8962E]/25 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 relative z-10">
 
         {/* ── Header ── */}
-        <FadeIn className="text-center mb-14">
+        <FadeIn className="text-center mb-10 sm:mb-14">
           <SectionLabel>Ce que nous faisons</SectionLabel>
           <SectionHeading>Nos Expertises</SectionHeading>
-          <p className="mt-3 max-w-lg mx-auto text-base text-gray-500 dark:text-white/40"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="mt-2 sm:mt-3 max-w-lg mx-auto text-sm sm:text-base text-gray-500 dark:text-white/40">
             Cinq domaines d'excellence au service de vos ambitions
           </p>
         </FadeIn>
 
         {/* ── Tab pills ── */}
         <FadeIn delay={0.1}>
-          <div className="flex flex-wrap justify-center gap-2.5 mb-14 relative">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2.5 mb-10 sm:mb-14 relative">
             {SERVICES_DATA.map((s, i) => {
               const Icon = s.icon;
               const isActive = activeIdx === i;
@@ -261,44 +270,28 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
                   type="button"
                   onClick={() => {
                     setActiveIdx(i);
-                    resetInactivityTimer();
+                    if (!isMobile) resetInactivityTimer();
                   }}
-                  whileHover={{ y: -2 }}
+                  whileHover={!isMobile ? { y: -2 } : {}}
                   whileTap={{ scale: 0.97 }}
-                  className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300"
+                  className="relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-xl text-[11px] sm:text-[13px] font-medium transition-all duration-300"
                   style={
                     isActive
                       ? {
                           background: `${s.color}14`,
-                          border: `1.5px solid ${s.color}`,
+                          border: `1px solid ${s.color}`,
                           color: s.color,
                           boxShadow: `0 4px 20px ${s.color}22`,
-                          fontFamily: "'DM Sans', sans-serif",
                         }
                       : {
                           background: 'rgba(255,255,255,0.7)',
-                          border: '1.5px solid rgba(0,0,0,0.08)',
+                          border: '1px solid rgba(0,0,0,0.08)',
                           color: '#6B7280',
-                          fontFamily: "'DM Sans', sans-serif",
                         }
                   }
                 >
-                  <Icon
-                    size={15}
-                    style={{ color: isActive ? s.color : '#9CA3AF', transition: 'color 0.3s' }}
-                  />
+                  <Icon size={isMobile ? 12 : 15} style={{ color: isActive ? s.color : '#9CA3AF' }} />
                   {s.short}
-                  
-                  {/* Indice pour la section suivante */}
-                  {!isUserInteracting && i === (activeIdx + 1) % SERVICES_DATA.length && showHint && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-                      style={{ background: s.color }}
-                    />
-                  )}
                 </motion.button>
               );
             })}
@@ -309,148 +302,141 @@ const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIdx}
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: isMobile ? 15 : 28 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -18 }}
-            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-            className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center"
+            exit={{ opacity: 0, y: isMobile ? -10 : -18 }}
+            transition={{ duration: isMobile ? 0.3 : 0.42, ease: [0.22, 1, 0.36, 1] }}
+            className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center"
           >
             {/* ── Left: text ── */}
             <div>
               {/* Icon + line */}
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
-                  style={{ background: `${svc.color}18`, border: `1.5px solid ${svc.color}35` }}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+                  style={{ background: `${svc.color}18`, border: `1px solid ${svc.color}35` }}
                 >
-                  <svc.icon size={22} style={{ color: svc.color }} />
+                  <svc.icon size={isMobile ? 18 : 22} style={{ color: svc.color }} />
                 </div>
                 <div
-                  className="h-px flex-1"
+                  className="h-px flex-1 hidden sm:block"
                   style={{ background: `linear-gradient(90deg, ${svc.color}60, transparent)` }}
                 />
               </div>
 
-              {/* Title */}
+              {/* Title - taille réduite sur mobile */}
               <h3
-                className="text-4xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white leading-tight"
+                className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-white leading-tight"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '-0.02em' }}
               >
                 {svc.title}
               </h3>
 
-              {/* Description */}
+              {/* Description - simplifiée sur mobile */}
               <p
-                className="text-base lg:text-lg leading-relaxed mb-8 text-gray-500 dark:text-white/55"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                className="text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 text-gray-500 dark:text-white/55"
               >
-                {svc.desc}
+                {isMobile ? svc.desc.slice(0, 100) + (svc.desc.length > 100 ? '...' : '') : svc.desc}
               </p>
 
-              {/* Feature list */}
-              <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-10">
-                {svc.features.map((f: string) => (
-                  <div key={f} className="flex items-center gap-2.5">
+              {/* Feature list - 1 colonne sur mobile */}
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-y-2 sm:gap-y-3 gap-x-4 mb-6 sm:mb-10`}>
+                {svc.features.slice(0, isMobile ? 3 : 4).map((f: string) => (
+                  <div key={f} className="flex items-center gap-2">
                     <div
                       className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                       style={{ background: svc.color }}
                     />
-                    <span
-                      className="text-sm text-gray-600 dark:text-white/65"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
+                    <span className="text-xs sm:text-sm text-gray-600 dark:text-white/65">
                       {f}
                     </span>
                   </div>
                 ))}
               </div>
 
-              {/* CTA */}
+              {/* CTA - plus petit sur mobile */}
               <motion.button
                 type="button"
                 onClick={onDevis}
-                whileHover={{ scale: 1.04, y: -2 }}
+                whileHover={!isMobile ? { scale: 1.04, y: -2 } : {}}
                 whileTap={{ scale: 0.97 }}
-                className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-shadow hover:shadow-xl"
+                className="group inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-white shadow-lg"
                 style={{
                   background: `linear-gradient(135deg, ${svc.color}, ${svc.color}CC)`,
                   boxShadow: `0 8px 24px ${svc.color}35`,
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                <FileText size={15} />
+                <FileText size={isMobile ? 13 : 15} />
                 Devis {svc.short}
-                <ArrowRight
-                  size={15}
-                  className="group-hover:translate-x-1 transition-transform duration-200"
-                />
+                <ArrowRight size={isMobile ? 12 : 15} className="group-hover:translate-x-1 transition-transform duration-200" />
               </motion.button>
             </div>
 
             {/* ── Right: image carousel ── */}
             <div className="relative">
               <div
-                className="absolute -top-3 -right-3 w-full h-full rounded-2xl pointer-events-none"
+                className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-full h-full rounded-2xl pointer-events-none hidden sm:block"
                 style={{ border: `1.5px solid ${svc.color}25` }}
               />
 
               <ServiceCarousel images={images} color={svc.color} title={svc.title} />
 
               <div
-                className="absolute -bottom-3 -left-3 w-14 h-14 rounded-xl pointer-events-none"
+                className="absolute -bottom-2 -left-2 sm:-bottom-3 sm:-left-3 w-10 h-10 sm:w-14 sm:h-14 rounded-xl pointer-events-none hidden sm:block"
                 style={{ background: `${svc.color}12`, border: `1.5px solid ${svc.color}25` }}
               />
 
               <div
-                className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[11px] font-semibold"
                 style={{
                   background: 'rgba(255,255,255,0.88)',
                   backdropFilter: 'blur(8px)',
                   color: svc.color,
                   boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                <svc.icon size={12} />
+                <svc.icon size={isMobile ? 10 : 12} />
                 {svc.short}
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* ── Progress bar under tabs avec animation d'auto-scroll ── */}
-        <div className="mt-14 flex gap-1.5 justify-center">
-          {SERVICES_DATA.map((s, i) => (
-            <div
-              key={s.id}
-              className="relative h-0.5 rounded-full transition-all duration-500 overflow-hidden"
-              style={{
-                width: activeIdx === i ? 40 : 8,
-                background: 'rgba(0,0,0,0.12)',
-              }}
-            >
-              {activeIdx === i && !isUserInteracting && (
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: s.color }}
-                  initial={{ width: '0%' }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: 10, ease: "linear" }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        {/* ── Progress bar - cachée sur mobile ── */}
+        {!isMobile && (
+          <div className="mt-10 sm:mt-14 flex gap-1.5 justify-center">
+            {SERVICES_DATA.map((s, i) => (
+              <div
+                key={s.id}
+                className="relative h-0.5 rounded-full transition-all duration-500 overflow-hidden"
+                style={{
+                  width: activeIdx === i ? 40 : 8,
+                  background: 'rgba(0,0,0,0.12)',
+                }}
+              >
+                {activeIdx === i && !isUserInteracting && (
+                  <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: s.color }}
+                    initial={{ width: '0%' }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: 10, ease: "linear" }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
         
-        {/* Indicateur d'auto-scroll */}
-        {!isUserInteracting && (
+        {/* Indicateur d'auto-scroll - caché sur mobile */}
+        {!isMobile && !isUserInteracting && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center mt-6"
+            className="text-center mt-5 sm:mt-6"
           >
-            <p className="text-[11px] text-gray-400 dark:text-white/25 uppercase tracking-wider">
-              Changement automatique dans {Math.floor(10 - (Date.now() % 10000) / 1000)}s
+            <p className="text-[10px] sm:text-[11px] text-gray-400 dark:text-white/25 uppercase tracking-wider">
+              Changement automatique
             </p>
           </motion.div>
         )}
