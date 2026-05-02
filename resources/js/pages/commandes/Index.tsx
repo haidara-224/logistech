@@ -100,10 +100,13 @@ export default function CommandesIndex({ commandes }: Props) {
         router.get('/commandes', { page }, { preserveState: true });
     };
 
-    // Stats computed locally from paginated data + total from server
+    
     const enAttenteCount = commandes.data.filter((c) => c.status === 'en_attente').length;
     const payeesCount = commandes.data.filter((c) => c.status === 'payer' || c.status === 'livree').length;
-    const caTotal = commandes.data.reduce((sum, c) => sum + (c.montant_total ?? 0), 0);
+ const caTotal = (commandes?.data ?? []).reduce((sum, c) => {
+    const montant = Number(c.montant_total);
+    return sum + (isNaN(montant) ? 0 : montant);
+}, 0);
 
     const filtered =
         activeFilter === 'all'
