@@ -7,26 +7,17 @@ import CamionsTab from '@/components/logistique/Camionstab';
 import ChauffeursTab from '@/components/logistique/Chauffeurstab';
 import ExpeditionsTab from '@/components/logistique/Expeditionstab';
 import LivraisonsTab from '@/components/logistique/Livraisonstab';
-import { Stats, Camion, Chauffeur, Produit, Expedition } from '@/types/logistique';
+import { LogistiqueProps } from '@/types/logistique';
 
 const TABS = [
-    { id: 'dashboard', label: 'Vue globale', icon: BarChart3, accent: '#F97316' },
-    { id: 'camions', label: 'Camions', icon: Truck, accent: '#3B82F6' },
-    { id: 'chauffeurs', label: 'Chauffeurs', icon: Users, accent: '#8B5CF6' },
-    { id: 'expeditions', label: 'Expéditions', icon: MapPin, accent: '#10B981' },
-    { id: 'livraisons', label: 'Livraisons', icon: Package, accent: '#F59E0B' },
+    { id: 'dashboard',    label: 'Vue globale',  icon: BarChart3, accent: '#F97316' },
+    { id: 'camions',      label: 'Camions',       icon: Truck,     accent: '#3B82F6' },
+    { id: 'chauffeurs',   label: 'Chauffeurs',    icon: Users,     accent: '#8B5CF6' },
+    { id: 'expeditions',  label: 'Expéditions',   icon: MapPin,    accent: '#10B981' },
+    { id: 'livraisons',   label: 'Livraisons',    icon: Package,   accent: '#F59E0B' },
 ];
 
-export default function LogistiqueIndex(props: { 
-    stats: Stats; 
-    expeditions: Expedition[]; 
-    camions: Camion[]; 
-    chauffeurs: Chauffeur[]; 
-    camionsDisponibles: Camion[]; 
-    chauffeursDisponibles: Chauffeur[]; 
-    produits: Produit[]; 
-    livraisons: unknown; 
-}) {
+export default function LogistiqueIndex(props: LogistiqueProps) {
     const { auth } = usePage().props;
     const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -40,19 +31,17 @@ export default function LogistiqueIndex(props: {
                 <header className="border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-50">
                     <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-500/20">
                                 <img src="/logo.jpeg" alt="Logo" className="w-5 h-5" />
                             </div>
-                            <div>
-                                <span className="text-sm font-semibold tracking-tight text-foreground">LOGISTECH</span>
-                            </div>
+                            <span className="text-sm font-semibold tracking-tight text-foreground">LOGISTECH</span>
                         </div>
 
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Activity size={14} className="text-emerald-500" />
                             <span>Système opérationnel</span>
                             <span className="mx-2 opacity-30">·</span>
-                            <span className="text-foreground/60">{auth?.user?.name}</span>
+                            <span className="text-foreground/60">{(auth as any)?.user?.name}</span>
                         </div>
                     </div>
                 </header>
@@ -96,6 +85,12 @@ export default function LogistiqueIndex(props: {
                                     )}
                                     <Icon size={14} style={{ color: isActive ? tab.accent : undefined }} />
                                     <span className="relative">{tab.label}</span>
+                                    {/* Retard badge on dashboard tab */}
+                                    {tab.id === 'dashboard' && props.stats.expeditions_en_retard > 0 && (
+                                        <span className="relative ml-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
+                                            {props.stats.expeditions_en_retard}
+                                        </span>
+                                    )}
                                 </button>
                             );
                         })}
@@ -110,9 +105,25 @@ export default function LogistiqueIndex(props: {
                             exit={{ opacity: 0, y: -8 }}
                             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            {activeTab === 'dashboard' && <StatsDashboard stats={props.stats} expeditions={props.expeditions} />}
-                            {activeTab === 'camions' && <CamionsTab camions={props.camions} />}
-                            {activeTab === 'chauffeurs' && <ChauffeursTab chauffeurs={props.chauffeurs} />}
+                            {activeTab === 'dashboard' && (
+                                <StatsDashboard
+                                    stats={props.stats}
+                                    expeditions={props.expeditions}
+                                    retards={props.retards}
+                                />
+                            )}
+                            {activeTab === 'camions' && (
+                                <CamionsTab
+                                    camions={props.camions}
+                                    expeditions={props.expeditions}
+                                />
+                            )}
+                            {activeTab === 'chauffeurs' && (
+                                <ChauffeursTab
+                                    chauffeurs={props.chauffeurs}
+                                    expeditions={props.expeditions}
+                                />
+                            )}
                             {activeTab === 'expeditions' && (
                                 <ExpeditionsTab
                                     expeditions={props.expeditions}

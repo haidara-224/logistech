@@ -1,3 +1,4 @@
+import './echo';
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -13,6 +14,7 @@ createInertiaApp({
     layout: (name) => {
         switch (true) {
             case name === 'welcome':
+            case name.startsWith('boutique/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

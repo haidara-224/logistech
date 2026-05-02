@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: 'Services', href: '#services', icon: '⚡' },
   { label: 'À Propos', href: '#about',    icon: '✨' },
   { label: 'Contact',  href: '#contact',  icon: '💬' },
+  { label: 'Notre Boutique',  href: '/boutique',  icon: '🛍️' },
 ];
 
 interface NavbarProps {

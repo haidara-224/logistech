@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Camion;
 use App\Models\Chauffeur;
+use App\Models\Commande;
 use App\Models\Expedition;
 use App\Models\Produit;
 use App\Models\User;
@@ -21,6 +22,7 @@ class RestoreController extends Controller
             'expeditions' => Expedition::onlyTrashed()->orderByDesc('deleted_at')->get(),
             'users' => User::onlyTrashed()->orderByDesc('deleted_at')->get(),
             'produits' => Produit::onlyTrashed()->orderByDesc('deleted_at')->get(),
+            'commandes' => Commande::onlyTrashed()->orderByDesc('deleted_at')->get(),
         ]);
     }
 
@@ -47,6 +49,7 @@ class RestoreController extends Controller
 
         return back()->with('success', 'Expédition restaurée.');
     }
+
     public function restoreUser(int $id): RedirectResponse
     {
         $user = User::onlyTrashed()->findOrFail($id);
@@ -54,13 +57,23 @@ class RestoreController extends Controller
 
         return back()->with('success', 'Utilisateur restauré.');
     }
+
     public function restoreproduit(int $id): RedirectResponse
     {
         $produit = Produit::onlyTrashed()->findOrFail($id);
         $produit->restore();
 
         return back()->with('success', 'Produit restauré.');
-    }   
+    }
+
+    public function restoreCommande(int $id): RedirectResponse
+    {
+        $commande = Commande::onlyTrashed()->findOrFail($id);
+        $commande->restore();
+
+        return back()->with('success', 'Commande restaurée.');
+    }
+
     public function restoreAll(): RedirectResponse
     {
         Camion::onlyTrashed()->restore();
@@ -68,7 +81,8 @@ class RestoreController extends Controller
         Expedition::onlyTrashed()->restore();
         User::onlyTrashed()->restore();
         Produit::onlyTrashed()->restore();
+        Commande::onlyTrashed()->restore();
+
         return back()->with('success', 'Toutes les données restaurées.');
     }
-
 }

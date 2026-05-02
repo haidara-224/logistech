@@ -1,5 +1,7 @@
-import { ArrowRight, Clock, Facebook, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube, Heart, Code, User } from "lucide-react";
+import { ArrowRight, Clock, Facebook, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube, Heart, Code, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { router } from "@inertiajs/react";
 
 const FOOTER_LINKS: Record<string, Array<{ label: string; href: string }>> = {
   Services: [
@@ -29,6 +31,19 @@ const SOCIALS = [
 
 export function Footer({ onDevis }: { onDevis: () => void }) {
   const currentYear = new Date().getFullYear();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSent, setNewsletterSent] = useState(false);
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
+
+  const handleNewsletter = () => {
+    if (!newsletterEmail || newsletterSubmitting) return;
+    setNewsletterSubmitting(true);
+    router.post('/newsletter', { email: newsletterEmail }, {
+      onSuccess: () => { setNewsletterSent(true); setNewsletterEmail(''); },
+      onFinish: () => setNewsletterSubmitting(false),
+      preserveScroll: true,
+    });
+  };
 
   return (
     <footer className="relative bg-white dark:bg-[#0A0F1A] overflow-hidden">
@@ -141,21 +156,37 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
               </span>
             </div>
             
-            <div className="flex w-full md:w-auto gap-3">
-              <input 
-                type="email"
-                placeholder="Votre adresse email"
-                className="flex-1 md:w-64 px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-white/30 focus:outline-none focus:border-[#C8962E] transition-colors"
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold flex items-center gap-2 whitespace-nowrap"
+            {newsletterSent ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold"
               >
-                <Send className="w-4 h-4" />
-                S'abonner
-              </motion.button>
-            </div>
+                <CheckCircle className="w-4 h-4" />
+                Merci ! Vous êtes abonné.
+              </motion.div>
+            ) : (
+              <div className="flex w-full md:w-auto gap-3">
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleNewsletter()}
+                  placeholder="Votre adresse email"
+                  className="flex-1 md:w-64 px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-white/30 focus:outline-none focus:border-[#C8962E] transition-colors"
+                />
+                <motion.button
+                  whileHover={{ scale: newsletterSubmitting ? 1 : 1.02 }}
+                  whileTap={{ scale: newsletterSubmitting ? 1 : 0.98 }}
+                  onClick={handleNewsletter}
+                  disabled={newsletterSubmitting}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold flex items-center gap-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                  {newsletterSubmitting ? '...' : "S'abonner"}
+                </motion.button>
+              </div>
+            )}
           </div>
         </div>
 

@@ -21,7 +21,7 @@ class CommandeController extends Controller
 
     public function index()
     {
-        $commandes = Commande::with('client', 'items.produit')->paginate(20);
+        $commandes = Commande::with('client', 'items.produit')->orderBy('created_at', 'desc')->paginate(20);
 
         return Inertia::render('commandes/Index', ['commandes' => $commandes]);
     }
@@ -29,7 +29,11 @@ class CommandeController extends Controller
     public function create()
     {
         $clients = Client::select('id', 'nom', 'prenom')->orderBy('nom')->get();
-        $produits = Produit::select('id', 'nom', 'prix_vente', 'quantite_stock')->where('quantite_stock', '>', 0)->orderBy('nom')->get();
+        $produits = Produit::with(['images.image'])
+            ->select('id', 'nom', 'sku', 'prix_vente', 'quantite_stock', 'stock_minimal')
+            ->where('quantite_stock', '>', 0)
+            ->orderBy('nom')
+            ->get();
 
         return Inertia::render('commandes/Create', compact('clients', 'produits'));
     }

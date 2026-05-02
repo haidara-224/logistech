@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProductPickerModal, ProduitPickerItem } from '@/components/ProductPickerModal';
 import {
     ArrowUpCircle,
     ArrowDownCircle,
@@ -8,6 +9,9 @@ import {
     ChevronLeft,
     ChevronRight,
     AlertTriangle,
+    ChevronDown,
+    Package,
+    Search,
     BarChart3,
     MoveRight,
 } from 'lucide-react';
@@ -15,15 +19,8 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MouvementsStock } from '@/types/models';
 
-interface ProduitOption {
-    id: number;
-    nom: string;
-    quantite_stock: number;
-    stock_minimal: number;
-}
-
 interface Props {
-    produits: ProduitOption[];
+    produits: ProduitPickerItem[];
     ajustements: {
         data: MouvementsStock[];
         current_page: number;
@@ -42,6 +39,7 @@ export default function Ajustements({ produits, ajustements }: Props) {
     const [type, setType] = useState<'entree' | 'sortie'>('entree');
     const [quantite, setQuantite] = useState<string>('');
     const [processing, setProcessing] = useState(false);
+    const [pickerOpen, setPickerOpen] = useState(false);
 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
@@ -142,26 +140,54 @@ export default function Ajustements({ produits, ajustements }: Props) {
 
                                 <CardContent className="pt-6">
                                     <form onSubmit={handleSubmit} className="space-y-5">
-                                        {/* Produit Select */}
+                                        {/* Produit Picker */}
                                         <div className="space-y-1.5">
                                             <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                                                 Produit
                                             </label>
-                                            <select
-                                                value={produitId}
-                                                onChange={(e) =>
-                                                    setProduitId(e.target.value ? Number(e.target.value) : '')
-                                                }
-                                                className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3 text-sm text-gray-900 dark:text-white focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
+                                            <button
+                                                type="button"
+                                                onClick={() => setPickerOpen(true)}
+                                                className={`w-full flex items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all hover:border-[#C8962E]/50 ${
+                                                    selectedProduit
+                                                        ? 'border-[#C8962E]/30 bg-white dark:bg-zinc-800'
+                                                        : 'border-dashed border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800'
+                                                }`}
                                             >
-                                                <option value="">-- Choisir un produit --</option>
-                                                {produits.map((p) => (
-                                                    <option key={p.id} value={p.id}>
-                                                        {p.nom} ({p.quantite_stock < p.stock_minimal ? '⚠ ' : ''}{fmt(p.quantite_stock)} unités)
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                {selectedProduit ? (
+                                                    <>
+                                                        <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-zinc-700 overflow-hidden shrink-0 flex items-center justify-center">
+                                                            {selectedProduit.images?.[0]?.image?.image_path
+                                                                ? <img src={`/storage/${selectedProduit.images[0].image.image_path}`} alt={selectedProduit.nom} className="w-full h-full object-cover" />
+                                                                : <Package className="w-4 h-4 text-gray-400" />
+                                                            }
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{selectedProduit.nom}</p>
+                                                            <p className="text-xs text-gray-500">{fmt(selectedProduit.quantite_stock ?? 0)} unités en stock</p>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                                                        <span className="text-sm text-gray-400">Choisir un produit…</span>
+                                                    </>
+                                                )}
+                                                <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 ml-auto" />
+                                            </button>
                                         </div>
+
+                                        <AnimatePresence>
+                                            {pickerOpen && (
+                                                <ProductPickerModal
+                                                    open={true}
+                                                    produits={produits}
+                                                    selectedId={produitId || null}
+                                                    onSelect={(p) => { setProduitId(p.id); setPickerOpen(false); }}
+                                                    onClose={() => setPickerOpen(false)}
+                                                />
+                                            )}
+                                        </AnimatePresence>
 
                                         {/* Stock Indicator */}
                                         <AnimatePresence>

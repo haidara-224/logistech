@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Form } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown, Search, X, Check } from 'lucide-react';
+import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown, Search, X, Check, Phone, Truck, History, AlertTriangle, Calendar } from 'lucide-react';
 import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
 import { Camion, Chauffeur, Expedition, Produit } from '@/types/logistique';
 
@@ -157,7 +157,7 @@ function ProductModal({ isOpen, onClose, produits, onSelect }: ProductModalProps
                 </div>
 
                 {/* Modal product list */}
-                <div className="max-h-[400px] overflow-y-auto p-2">
+                <div className="max-h-100 overflow-y-auto p-2">
                     {paginated.length === 0 ? (
                         <div className="text-center py-12">
                             <Package size={32} className="text-muted-foreground/30 mx-auto mb-3" />
@@ -408,7 +408,7 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
             className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"
         >
             <div className="flex items-center gap-4 px-4 py-3.5">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
                     <MapPin size={13} className="text-primary" />
                 </div>
 
@@ -418,7 +418,7 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         <span className="truncate">{expedition.origine}</span>
-                        <ArrowRight size={10} className="flex-shrink-0 text-muted-foreground/30" />
+                        <ArrowRight size={10} className="shrink-0 text-muted-foreground/30" />
                         <span className="truncate">{expedition.destination}</span>
                     </p>
                 </div>
@@ -454,10 +454,11 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="border-t border-border px-4 py-3 bg-muted/20"
+                        className="border-t border-border bg-muted/20"
                     >
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Form method="patch" action={`/logistique/expeditions/${expedition.id}/statut`} className="flex gap-2">
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+                            <Form method="patch" action={`/logistique/expeditions/${expedition.id}/statut`} className="flex gap-2 flex-1">
                                 <select
                                     name="statut"
                                     defaultValue={expedition.statut}
@@ -468,22 +469,99 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                                     <option value="livré">Livré</option>
                                     <option value="annulé">Annulé</option>
                                 </select>
-                                <Button type="submit" variant="secondary" size="sm">MAJ</Button>
+                                <Button type="submit" variant="secondary" size="sm">MAJ statut</Button>
                             </Form>
-
                             <Form method="delete" action={`/logistique/expeditions/${expedition.id}`}>
                                 <Button type="submit" variant="danger" size="sm" className="text-white">
-                                    <Trash2 size={12} className='text-white text-center' />
-                                    Supprimer
+                                    <Trash2 size={12} className="text-white" />
                                 </Button>
                             </Form>
                         </div>
 
+                        {/* Info grid: chauffeur + camion */}
+                        <div className="grid grid-cols-2 gap-2 px-4 pb-2">
+                            {expedition.chauffeur && (
+                                <div className="rounded-lg bg-card border border-border px-3 py-2">
+                                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Chauffeur</p>
+                                    <p className="text-xs font-semibold text-foreground">
+                                        {[expedition.chauffeur.nom, expedition.chauffeur.prenom].filter(Boolean).join(' ')}
+                                    </p>
+                                    {expedition.chauffeur.telephone && (
+                                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                            <Phone size={9} />
+                                            {expedition.chauffeur.telephone}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                            {expedition.camion && (
+                                <div className="rounded-lg bg-card border border-border px-3 py-2">
+                                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Camion</p>
+                                    <p className="text-xs font-semibold text-foreground">{expedition.camion.immatriculation}</p>
+                                    <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                        <Truck size={9} />
+                                        {[expedition.camion.marque, expedition.camion.modele].filter(Boolean).join(' ') || 'Modèle non précisé'}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Dates */}
+                        {(expedition.date_depart || expedition.date_arrivee_prevue) && (
+                            <div className="flex items-center gap-4 px-4 pb-2 text-[11px] text-muted-foreground">
+                                <Calendar size={10} className="shrink-0" />
+                                {expedition.date_depart && (
+                                    <span>Départ : <span className="text-foreground font-medium">{new Date(expedition.date_depart).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}</span></span>
+                                )}
+                                {expedition.date_arrivee_prevue && (
+                                    <span>Arrivée prévue : <span className="text-foreground font-medium">{new Date(expedition.date_arrivee_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}</span></span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Products */}
                         {expedition.produits?.length > 0 && (
-                            <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Package size={11} />
-                                {expedition.produits.map(p => `${p.nom} ×${p.pivot?.quantite}`).join(', ')}
-                            </p>
+                            <div className="px-4 pb-2">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                    <Package size={10} /> Produits ({expedition.produits.length})
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {expedition.produits.map(p => (
+                                        <span key={p.id} className="text-[11px] bg-card border border-border rounded-md px-2 py-0.5 text-foreground">
+                                            {p.nom} <span className="text-muted-foreground">×{p.pivot?.quantite}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Livraisons history */}
+                        {expedition.livraisons && expedition.livraisons.length > 0 && (
+                            <div className="px-4 pb-3">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                                    <History size={10} /> Historique des mises à jour
+                                </p>
+                                <div className="space-y-1.5">
+                                    {expedition.livraisons.map((l) => (
+                                        <div key={l.id} className="flex items-center gap-2 text-[11px]">
+                                            <span className="text-muted-foreground shrink-0 w-20">
+                                                {l.date_statut ? new Date(l.date_statut).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '—'}
+                                            </span>
+                                            <StatusBadge status={l.etat} />
+                                            {l.commentaire && (
+                                                <span className="text-muted-foreground truncate">{l.commentaire}</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Notes */}
+                        {expedition.details && (
+                            <div className="px-4 pb-3 text-[11px] text-muted-foreground italic border-t border-border/50 pt-2">
+                                {expedition.details}
+                            </div>
                         )}
                     </motion.div>
                 )}

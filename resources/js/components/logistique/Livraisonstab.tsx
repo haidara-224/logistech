@@ -3,6 +3,7 @@ import { Form } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, CheckCircle2, Clock, Loader, XCircle, Search, Filter, Calendar } from 'lucide-react';
 import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
+import type { Livraison, Expedition } from '@/types/logistique';
 
 const PER_PAGE = 10;
 
@@ -21,21 +22,6 @@ const stateConfig = {
     'annulé': { icon: XCircle, color: '#EF4444', bg: 'bg-red-500/10', label: 'Annulé' },
 };
 
-type Etat = keyof typeof stateConfig;
-
-interface Livraison {
-    id: number;
-    etat: Etat;
-    expedition?: { reference?: string };
-    date_statut?: string;
-    commentaire?: string;
-}
-
-interface Expedition {
-    id: number;
-    reference?: string;
-}
-
 interface LivraisonsTabProps {
     livraisons: Livraison[];
     expeditions: Expedition[];
@@ -43,7 +29,7 @@ interface LivraisonsTabProps {
 
 // ── Timeline entry component ─────────────────────────────────────────────────
 function LivraisonEntry({ livraison, index, isLast }: { livraison: Livraison; index: number; isLast: boolean }) {
-    const cfg = stateConfig[livraison.etat] ?? stateConfig['en préparation'];
+    const cfg = stateConfig[livraison.etat as keyof typeof stateConfig] ?? stateConfig['en préparation'];
     const Icon = cfg.icon;
 
     return (
@@ -54,14 +40,14 @@ function LivraisonEntry({ livraison, index, isLast }: { livraison: Livraison; in
             className="flex gap-4 relative"
         >
             {/* Timeline line */}
-            <div className="flex flex-col items-center flex-shrink-0">
+            <div className="flex flex-col items-center shrink-0">
                 <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${cfg.bg}`}
                     style={{ borderColor: cfg.color + '33' }}
                 >
                     <Icon size={14} style={{ color: cfg.color }} />
                 </div>
-                {!isLast && <div className="w-px flex-1 mt-2 bg-border min-h-[1rem]" />}
+                {!isLast && <div className="w-px flex-1 mt-2 bg-border min-h-4" />}
             </div>
 
             {/* Content */}
@@ -78,7 +64,7 @@ function LivraisonEntry({ livraison, index, isLast }: { livraison: Livraison; in
                             {cfg.label}
                         </span>
                     </div>
-                    <span className="text-[11px] text-muted-foreground flex-shrink-0">
+                    <span className="text-[11px] text-muted-foreground shrink-0">
                         {livraison.date_statut
                             ? new Date(livraison.date_statut).toLocaleDateString('fr-FR', { 
                                 day: '2-digit', 
@@ -102,7 +88,7 @@ function LivraisonEntry({ livraison, index, isLast }: { livraison: Livraison; in
 
 // ── Livraison card for list view ─────────────────────────────────────────────
 function LivraisonCard({ livraison, index }: { livraison: Livraison; index: number }) {
-    const cfg = stateConfig[livraison.etat] ?? stateConfig['en préparation'];
+    const cfg = stateConfig[livraison.etat as keyof typeof stateConfig] ?? stateConfig['en préparation'];
     const Icon = cfg.icon;
 
     return (

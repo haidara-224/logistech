@@ -39,7 +39,8 @@ class MouvementsStockController extends Controller
 
     public function ajustements()
     {
-        $produits = Produit::select('id', 'nom', 'quantite_stock', 'stock_minimal')
+        $produits = Produit::with(['images.image'])
+            ->select('id', 'nom', 'sku', 'quantite_stock', 'stock_minimal')
             ->orderBy('nom')
             ->get();
 

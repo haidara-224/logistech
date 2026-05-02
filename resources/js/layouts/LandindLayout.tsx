@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { FileText } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { LoadingScreen } from '@/components/LandingPage/LoadingScreen';
 import { Navbar } from '@/components/LandingPage/Navbar';
 import { Footer } from '@/components/LandingPage/Footer';
 import { DevisModal } from '@/components/LandingPage/DevisModal';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
 import type { BreadcrumbItem } from '@/types';
 
 interface AppLayoutProps {
@@ -75,23 +75,7 @@ export default function AppLayoutLanding({
 
                     <Footer onDevis={() => setDevisOpen(true)} />
 
-                    {/* Floating CTA */}
-                    <motion.button
-                        onClick={() => setDevisOpen(true)}
-                        initial={{ opacity: 0, scale: 0, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ delay: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="fixed bottom-8 right-8 z-[90] flex items-center gap-2.5 px-5 py-3.5 rounded-full font-bold text-black text-sm shadow-2xl"
-                        style={{
-                            background: 'linear-gradient(135deg,#C8962E,#E8B84B)',
-                            boxShadow: '0 20px 60px rgba(200,150,46,0.5)',
-                        }}
-                    >
-                        <FileText size={18} />
-                        <span className="hidden sm:inline">Devis gratuit</span>
-                    </motion.button>
+                    <WhatsAppButton />
 
                     {/* Devis Modal */}
                     <AnimatePresence mode="wait">

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Building2, CheckCircle, FileText, HardHat, Package, Snowflake, Truck, X, Send, User, Mail, Phone, Calendar, MessageSquare } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle, HardHat, Package, Snowflake, Truck, X, Send, User, Mail, Phone, Calendar, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import { router } from "@inertiajs/react";
 
 const DEVIS_SERVICES = [
   { id: "charpente", label: "Charpente Métallique", icon: HardHat, desc: "Structures, bâtiments industriels, agricoles, commerciaux", color: "#C8962E" },
@@ -16,24 +17,27 @@ export function DevisModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({ nom: "", email: "", tel: "", message: "", delai: "" });
   const [sent, setSent] = useState(false);
 
+  const [submitting, setSubmitting] = useState(false);
+
   const handleSubmit = () => {
-    // Afficher les données dans la console
-    const selectedService = DEVIS_SERVICES.find(s => s.id === selected);
-    console.log("=== DEMANDE DE DEVIS ===");
-    console.log("Service:", selectedService?.label);
-    console.log("Nom:", form.nom);
-    console.log("Email:", form.email);
-    console.log("Téléphone:", form.tel);
-    console.log("Délai:", form.delai);
-    console.log("Message:", form.message);
-    console.log("======================");
-    
-    setSent(true);
-    setTimeout(onClose, 2800);
+    if (!selected || submitting) return;
+    setSubmitting(true);
+    router.post('/devis', {
+      service: selected,
+      nom: form.nom,
+      email: form.email,
+      telephone: form.tel,
+      delai: form.delai,
+      message: form.message,
+    }, {
+      onSuccess: () => { setSent(true); setTimeout(onClose, 2800); },
+      onError: () => setSubmitting(false),
+      onFinish: () => setSubmitting(false),
+      preserveScroll: true,
+    });
   };
 
   const selectedService = DEVIS_SERVICES.find(s => s.id === selected);
-  const currentColor = selectedService?.color || "#C8962E";
 
   return (
     <motion.div
@@ -310,10 +314,11 @@ export function DevisModal({ onClose }: { onClose: () => void }) {
                   </button>
                   <button
                     onClick={handleSubmit}
-                    className="flex-1 py-2.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-[#C8962E] to-[#E8B84B] hover:shadow-lg"
+                    disabled={submitting}
+                    className="flex-1 py-2.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-[#C8962E] to-[#E8B84B] hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <Send size={16} />
-                    Envoyer ma demande
+                    {submitting ? 'Envoi en cours...' : 'Envoyer ma demande'}
                   </button>
                 </div>
               </motion.div>

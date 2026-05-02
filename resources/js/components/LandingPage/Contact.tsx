@@ -2,6 +2,7 @@ import { CheckCircle, Clock, Facebook, Instagram, Linkedin, Mail, MapPin, Phone 
 import { FadeIn } from "./ui-primitives";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { router } from "@inertiajs/react";
 
 const CONTACT_INFO = [
   { icon: MapPin, label: "Adresse",   value: "Conakry, Guinée"              },
@@ -27,11 +28,25 @@ const inputCls = [
 export function Contact() {
   const [form, setForm] = useState({ nom: "", email: "", tel: "", message: "" });
   const [sent, setSent]  = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSend = () => {
-    setSent(true);
-    setTimeout(() => setSent(false), 4000);
-    setForm({ nom: "", email: "", tel: "", message: "" });
+    if (submitting) return;
+    setSubmitting(true);
+    router.post('/contact', {
+      nom: form.nom,
+      email: form.email,
+      telephone: form.tel,
+      message: form.message,
+    }, {
+      onSuccess: () => {
+        setSent(true);
+        setForm({ nom: "", email: "", tel: "", message: "" });
+        setTimeout(() => setSent(false), 5000);
+      },
+      onFinish: () => setSubmitting(false),
+      preserveScroll: true,
+    });
   };
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -198,9 +213,10 @@ export function Contact() {
                     <motion.button
                       key="btn"
                       onClick={handleSend}
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2.5 transition-shadow hover:shadow-xl"
+                      disabled={submitting}
+                      whileHover={{ scale: submitting ? 1 : 1.02, y: submitting ? 0 : -1 }}
+                      whileTap={{ scale: submitting ? 1 : 0.98 }}
+                      className="w-full py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2.5 transition-shadow hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
                       style={{
                         background: "linear-gradient(135deg,#C8962E,#E8B84B)",
                         boxShadow: "0 8px 24px rgba(200,150,46,0.3)",
@@ -208,7 +224,7 @@ export function Contact() {
                       }}
                     >
                       <Mail size={16} />
-                      Envoyer le message
+                      {submitting ? 'Envoi en cours...' : 'Envoyer le message'}
                     </motion.button>
                   )}
                 </AnimatePresence>

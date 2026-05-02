@@ -13,6 +13,7 @@ export interface Camion {
     capacite_poids: number;
     capacite_volume: number;
     statut: 'disponible' | 'en mission' | 'maintenance';
+    notes?: string;
 }
 
 export interface Chauffeur {
@@ -23,10 +24,18 @@ export interface Chauffeur {
     email?: string;
     permis?: string;
     statut: 'disponible' | 'en mission' | 'repos';
+    notes?: string;
 }
 
 export interface ProduitPivot extends Produit {
     pivot: { quantite: number };
+}
+
+export interface LivraisonBrief {
+    id: number;
+    etat: string;
+    commentaire?: string;
+    date_statut?: string;
 }
 
 export interface Expedition {
@@ -34,12 +43,14 @@ export interface Expedition {
     reference: string;
     origine: string;
     destination: string;
+    details?: string;
     date_depart: string | null;
     date_arrivee_prevue: string | null;
     statut: 'en préparation' | 'en cours' | 'livré' | 'annulé';
     camion: Camion;
     chauffeur: Chauffeur;
     produits: ProduitPivot[];
+    livraisons?: LivraisonBrief[];
 }
 
 export interface Livraison {
@@ -52,10 +63,13 @@ export interface Livraison {
 
 export interface Stats {
     camions_disponibles: number;
+    camions_en_maintenance: number;
     expeditions_en_cours: number;
+    expeditions_en_retard: number;
     livraisons_en_preparation: number;
     livraisons_livrees: number;
     chauffeurs_en_mission: number;
+    taux_ponctualite: number | null;
 }
 
 export interface LogistiqueProps {
@@ -66,5 +80,6 @@ export interface LogistiqueProps {
     expeditions: Expedition[];
     livraisons: Livraison[];
     produits: Produit[];
+    retards: Expedition[];
     stats: Stats;
 }

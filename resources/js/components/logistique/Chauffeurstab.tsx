@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Form } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Users, Plus, Pencil, Trash2, Phone, Shield } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Phone, Shield, MapPin } from 'lucide-react';
 import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
-import { Chauffeur } from '@/types/logistique';
+import { Chauffeur, Expedition } from '@/types/logistique';
 
 const PER_PAGE = 8;
 
@@ -36,9 +36,10 @@ interface ChauffeurRowProps {
     chauffeur: Chauffeur;
     index: number;
     onEdit: (id: number) => void;
+    missionRef?: string;
 }
 
-function ChauffeurRow({ chauffeur, index, onEdit }: ChauffeurRowProps) {
+function ChauffeurRow({ chauffeur, index, onEdit, missionRef }: ChauffeurRowProps) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -66,6 +67,12 @@ function ChauffeurRow({ chauffeur, index, onEdit }: ChauffeurRowProps) {
                         </span>
                     )}
                 </p>
+                {missionRef && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                        <MapPin size={9} />
+                        {missionRef}
+                    </p>
+                )}
             </div>
 
             <StatusBadge status={chauffeur.statut} />
@@ -142,7 +149,7 @@ function EditChauffeurForm({ chauffeur }: { chauffeur: Chauffeur }) {
     );
 }
 
-export default function ChauffeursTab({ chauffeurs }: { chauffeurs: Chauffeur[] }) {
+export default function ChauffeursTab({ chauffeurs, expeditions }: { chauffeurs: Chauffeur[]; expeditions: Expedition[] }) {
     const [editId, setEditId] = useState<number | null>(null);
     const [showNew, setShowNew] = useState(false);
     const [search, setSearch] = useState('');
@@ -167,6 +174,14 @@ export default function ChauffeursTab({ chauffeurs }: { chauffeurs: Chauffeur[] 
 
     const handleSearch = (v: string) => { setSearch(v); setPage(1); };
     const handleFilter = (v: string) => { setFilter(v); setPage(1); };
+
+    const activeMissions = useMemo(() => {
+        const map: Record<number, string> = {};
+        expeditions
+            .filter(e => e.statut === 'en cours' || e.statut === 'en préparation')
+            .forEach(e => { if (e.chauffeur?.id) map[e.chauffeur.id] = e.reference; });
+        return map;
+    }, [expeditions]);
 
     const disponibleCount = chauffeurs.filter(c => c.statut === 'disponible').length;
 
@@ -205,6 +220,7 @@ export default function ChauffeursTab({ chauffeurs }: { chauffeurs: Chauffeur[] 
                                 chauffeur={c}
                                 index={i}
                                 onEdit={(id) => { setEditId(id); setShowNew(false); }}
+                                missionRef={activeMissions[c.id]}
                             />
                         ))}
                     </div>

@@ -29,6 +29,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/restore/camions/{id}', [RestoreController::class, 'restoreCamion'])->name('settings.restore.camions');
         Route::post('/restore/chauffeurs/{id}', [RestoreController::class, 'restoreChauffeur'])->name('settings.restore.chauffeurs');
         Route::post('/restore/expeditions/{id}', [RestoreController::class, 'restoreExpedition'])->name('settings.restore.expeditions');
+        Route::post('/restore/users/{id}', [RestoreController::class, 'restoreUser'])->name('settings.restore.users');
+        Route::post('/restore/produits/{id}', [RestoreController::class, 'restoreproduit'])->name('settings.restore.produits');
+        Route::post('/restore/commandes/{id}', [RestoreController::class, 'restoreCommande'])->name('settings.restore.commandes');
+        Route::post('/restore/all', [RestoreController::class, 'restoreAll'])->name('settings.restore.all');
 
         Route::get('/permissions', [PermissionController::class, 'index'])->name('settings.permissions.index');
         Route::post('/permissions/users', [PermissionController::class, 'storeUser'])->name('settings.permissions.users.store');

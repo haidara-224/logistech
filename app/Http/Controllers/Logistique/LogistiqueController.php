@@ -21,11 +21,26 @@ class LogistiqueController extends Controller
             ->get();
         $livraisons = Livraison::with('expedition')
             ->orderByDesc('date_statut')
-            ->limit(12)
+            ->limit(50)
             ->get();
         $produits = Produit::where('quantite_stock', '>', 0)
             ->orderBy('nom')
             ->get();
+
+        $retards = $expeditions
+            ->whereNotIn('statut', ['livré', 'annulé'])
+            ->filter(fn ($e) => $e->date_arrivee_prevue && $e->date_arrivee_prevue->lt(now()))
+            ->values();
+
+        $livrees = $expeditions->where('statut', 'livré')->count();
+        $avecDate = $expeditions
+            ->whereNotNull('date_arrivee_prevue')
+            ->whereIn('statut', ['livré'])
+            ->count();
+        $alTemps = $expeditions
+            ->where('statut', 'livré')
+            ->filter(fn ($e) => $e->date_arrivee_prevue && $e->date_depart && $e->date_depart->lte($e->date_arrivee_prevue))
+            ->count();
 
         return Inertia::render('logistique/Index', [
             'camions' => $camions,
@@ -35,12 +50,16 @@ class LogistiqueController extends Controller
             'expeditions' => $expeditions,
             'livraisons' => $livraisons,
             'produits' => $produits,
+            'retards' => $retards,
             'stats' => [
                 'camions_disponibles' => $camions->where('statut', 'disponible')->count(),
+                'camions_en_maintenance' => $camions->where('statut', 'maintenance')->count(),
                 'expeditions_en_cours' => $expeditions->where('statut', 'en cours')->count(),
+                'expeditions_en_retard' => $retards->count(),
                 'livraisons_en_preparation' => $expeditions->where('statut', 'en préparation')->count(),
-                'livraisons_livrees' => $expeditions->where('statut', 'livré')->count(),
+                'livraisons_livrees' => $livrees,
                 'chauffeurs_en_mission' => $chauffeurs->where('statut', 'en mission')->count(),
+                'taux_ponctualite' => $avecDate > 0 ? (int) round(($alTemps / $avecDate) * 100) : null,
             ],
         ]);
     }

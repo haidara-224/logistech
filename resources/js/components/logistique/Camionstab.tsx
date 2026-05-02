@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Form } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Truck, Plus, Pencil, Trash2, Weight, Box, Search } from 'lucide-react';
+import { Truck, Plus, Pencil, Trash2, Weight, Box, MapPin } from 'lucide-react';
 import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
-import { Camion } from '@/types/logistique';
+import { Camion, Expedition } from '@/types/logistique';
 
 const PER_PAGE = 8;
 
@@ -19,9 +19,10 @@ interface CamionRowProps {
     camion: Camion;
     index: number;
     onEdit: (id: number) => void;
+    missionRef?: string;
 }
 
-function CamionRow({ camion, index, onEdit }: CamionRowProps) {
+function CamionRow({ camion, index, onEdit, missionRef }: CamionRowProps) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -29,7 +30,7 @@ function CamionRow({ camion, index, onEdit }: CamionRowProps) {
             transition={{ delay: index * 0.04, duration: 0.3 }}
             className="group flex items-center gap-4 px-4 py-3.5 rounded-xl border border-transparent hover:border-border hover:bg-muted/30 transition-all duration-200"
         >
-            <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
                 <Truck size={15} className="text-primary" />
             </div>
 
@@ -40,6 +41,12 @@ function CamionRow({ camion, index, onEdit }: CamionRowProps) {
                 <p className="text-xs text-muted-foreground mt-0.5">
                     {[camion.marque, camion.modele].filter(Boolean).join(' ') || 'Modèle non précisé'}
                 </p>
+                {missionRef && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                        <MapPin size={9} />
+                        {missionRef}
+                    </p>
+                )}
             </div>
 
             <div className="hidden md:flex items-center gap-3 text-xs text-muted-foreground">
@@ -56,13 +63,13 @@ function CamionRow({ camion, index, onEdit }: CamionRowProps) {
 
             <StatusBadge status={camion.statut} />
 
-            <div className="flex items-center gap-1  group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="sm" onClick={() => onEdit(camion.id)}>
                     <Pencil size={12} />
                 </Button>
                 <Form method="delete" action={`/logistique/camions/${camion.id}`}>
                     <Button variant="danger" size="sm" type="submit">
-                        <Trash2 size={16} className='text-white' />
+                        <Trash2 size={16} className="text-white" />
                     </Button>
                 </Form>
             </div>
@@ -129,12 +136,20 @@ function EditCamionForm({ camion }: { camion: Camion }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function CamionsTab({ camions }: { camions: Camion[] }) {
+export default function CamionsTab({ camions, expeditions }: { camions: Camion[]; expeditions: Expedition[] }) {
     const [editId, setEditId] = useState<number | null>(null);
     const [showNew, setShowNew] = useState(false);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
+
+    const activeMissions = useMemo(() => {
+        const map: Record<number, string> = {};
+        expeditions
+            .filter(e => e.statut === 'en cours' || e.statut === 'en préparation')
+            .forEach(e => { if (e.camion?.id) map[e.camion.id] = e.reference; });
+        return map;
+    }, [expeditions]);
 
     const filtered = useMemo(() => {
         return camions.filter(c => {
@@ -192,6 +207,7 @@ export default function CamionsTab({ camions }: { camions: Camion[] }) {
                                 camion={camion}
                                 index={i}
                                 onEdit={(id) => { setEditId(id); setShowNew(false); }}
+                                missionRef={activeMissions[camion.id]}
                             />
                         ))}
                     </div>
