@@ -225,7 +225,7 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
         </div>
 
         {/* Contact direct du développeur */}
-        <div className="mt-4 pt-4 flex flex-col items-center gap-2 border-t border-gray-200/50 dark:border-white/5">
+        {/* <div className="mt-4 pt-4 flex flex-col items-center gap-2 border-t border-gray-200/50 dark:border-white/5">
           <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-gray-400 dark:text-white/20">
             <a 
               href="mailto:sidymohamedcherifhaidara02@gmail.com"
@@ -243,7 +243,7 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
               +224 625 421 335
             </a>
           </div>
-        </div>
+        </div> */}
       </div>
     </footer>
   );

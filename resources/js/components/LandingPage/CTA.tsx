@@ -99,7 +99,7 @@ export function CTABanner({ onDevis }: { onDevis: () => void }) {
               className="px-8 py-4 rounded-xl font-semibold text-gray-700 dark:text-white flex items-center justify-center gap-2 border border-gray-300 dark:border-white/20 hover:border-[#C8962E] hover:bg-[#C8962E]/5 transition-all"
             >
               <Phone className="w-5 h-5 text-[#C8962E]" />
-              +224 600 000 000
+              +224 614 60 44 44
             </motion.a>
           </div>
         </FadeIn>
