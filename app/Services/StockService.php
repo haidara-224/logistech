@@ -24,6 +24,12 @@ class StockService implements StockServiceInterface
             $payload['commande_id'] = $referenceId;
         }
 
-        Mouvements_stock::create($payload);
+        Mouvements_stock::create([
+            'produit_id' => $produitId,
+            'type' => $type,
+            'quantite' => $quantite,
+            'source' => "commande",
+            'commande_id' => $referenceId,
+        ]);
     }
 }

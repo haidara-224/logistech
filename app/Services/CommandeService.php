@@ -27,7 +27,7 @@ class CommandeService implements CommandeServiceInterface
                 'client_id' => $data['client_id'] ?? null,
                 'user_id' => Auth::id(),
                 'status' => $data['status'] ?? 'en_attente',
-                'source' => $data['source'] ?? 'online',
+                'source' => $data['source'] ?? 'pos',
                 'montant_total' => 0,
             ]);
 
