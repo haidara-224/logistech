@@ -183,7 +183,7 @@ export function NotificationBell() {
                                         const config = TYPE_CONFIG[notif.type] ?? TYPE_CONFIG.contact;
                                         const Icon = config.icon;
                                         const href = notif.type === 'commande_online' && notif.data?.id
-                                            ? `/commandes/${notif.data.id}`
+                                            ? `/dashboard/commandes/${notif.data.id}`
                                             : config.href;
 
                                         return (
