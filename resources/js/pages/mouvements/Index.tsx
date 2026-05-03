@@ -211,7 +211,7 @@ export default function MouvementsIndex({ mouvements, stats, chart }: Props) {
 
                                 {/* Ajuster button */}
                                 <Link
-                                    href="/stock/ajustements"
+                                    href="/dashboard/stock/ajustements"
                                     className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     <Settings2 className="w-4 h-4" />
@@ -493,5 +493,5 @@ export default function MouvementsIndex({ mouvements, stats, chart }: Props) {
 }
 
 MouvementsIndex.layout = {
-    breadcrumbs: [{ title: 'Mouvements', href: '/mouvements' }],
+    breadcrumbs: [{ title: 'Mouvements', href: '/dashboard/mouvements' }],
 };

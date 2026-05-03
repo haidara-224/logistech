@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import type { Categorie, Produit } from '@/types/models';
+import AppLayoutLanding from '@/layouts/LandindLayout';
 
 interface PanierItem {
     produit_id: number;
@@ -89,7 +90,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
             <Head title="Boutique — Logistech Equip+" />
 
             <div className="min-h-screen bg-stone-50 dark:bg-[#060D1A] flex flex-col">
-                <Navbar isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} onDevis={() => {}} />
+             
 
                 {/* Hero boutique */}
                 <section className="relative py-16 pt-28 overflow-hidden">
@@ -365,3 +366,6 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
         </>
     );
 }
+BoutiqueIndex.layout = (page: any) => (
+  <AppLayoutLanding {...page.props}>{page}</AppLayoutLanding>
+);

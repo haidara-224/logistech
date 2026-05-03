@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\CommandeServiceInterface;
 use App\Http\Requests\StoreCommandeRequest;
+use App\Models\AuditLog;
 use App\Models\Client;
 use App\Models\Commande;
 use App\Models\Produit;
@@ -54,8 +55,20 @@ class CommandeController extends Controller
 
     public function destroy(Commande $commande): RedirectResponse
     {
+        $commande->load('client');
+        $clientName = $commande->client ? "{$commande->client->nom} {$commande->client->prenom}" : 'Client anonyme';
+        AuditLog::record('deleted', Commande::class, $commande->id, "Suppression de la commande #{$commande->id} ({$clientName}, {$commande->montant_total} GNF)", $commande->toArray());
         $commande->delete();
 
         return redirect()->route('commandes.index')->with('success', 'Commande supprimée');
+    }
+
+    public function destroyAll(): RedirectResponse
+    {
+        $count = Commande::count();
+        AuditLog::record('bulk_deleted', Commande::class, null, "Suppression en masse de {$count} commande(s)", ['count' => $count]);
+        Commande::query()->delete();
+
+        return redirect()->route('commandes.index')->with('success', 'Toutes les commandes ont été supprimées.');
     }
 }

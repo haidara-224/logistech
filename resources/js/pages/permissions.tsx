@@ -214,7 +214,7 @@ export default function PermissionsPage({ users, roles, permissions }: {
                                                 <h2 className="text-lg font-semibold">Nouvel utilisateur</h2>
                                             </div>
                                             
-                                            <Form method="post" action="/permissions/users" className="space-y-4">
+                                            <Form method="post" action="/dashboard/permissions/users" className="space-y-4">
                                                 {({ processing, errors }) => (
                                                     <>
                                                         <div className="space-y-2">
@@ -368,18 +368,27 @@ export default function PermissionsPage({ users, roles, permissions }: {
                                                                     initial={false}
                                                                     animate={{ opacity: hoveredRow === user.id ? 1 : 0.6 }}
                                                                 >
-                                                                    <Form method="put" action={`/permissions/users/${user.id}`} className="space-y-3">
-                                                                        <select 
-                                                                            id={`roles-${user.id}`} 
-                                                                            name="roles[]" 
-                                                                            multiple 
-                                                                            defaultValue={user.roles.map((role) => role.name)}
-                                                                            className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs"
-                                                                        >
-                                                                            {roles.map((role) => (
-                                                                                <option key={role.id} value={role.name}>{role.name}</option>
-                                                                            ))}
-                                                                        </select>
+                                                                    <Form method="put" action={`/dashboard/permissions/users/${user.id}`} className="space-y-3">
+                                                                        <div className="space-y-1.5">
+                                                                            {roles.map((role) => {
+                                                                                const checked = user.roles.some((r) => r.name === role.name);
+                                                                                return (
+                                                                                    <label
+                                                                                        key={role.id}
+                                                                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 border border-border bg-background hover:bg-muted/50 cursor-pointer transition-colors"
+                                                                                    >
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            name="roles[]"
+                                                                                            value={role.name}
+                                                                                            defaultChecked={checked}
+                                                                                            className="w-3.5 h-3.5 accent-[#C8962E] cursor-pointer"
+                                                                                        />
+                                                                                        <span className="text-xs font-medium text-foreground">{role.name}</span>
+                                                                                    </label>
+                                                                                );
+                                                                            })}
+                                                                        </div>
                                                                         <Button size="sm" variant="outline" className="w-full">
                                                                             <Save size={14} className="mr-1" />
                                                                             Mettre à jour
@@ -406,7 +415,7 @@ export default function PermissionsPage({ users, roles, permissions }: {
                                             </div>
                                             <h2 className="text-lg font-semibold">Créer un rôle</h2>
                                         </div>
-                                        <Form method="post" action="/permissions/roles" className="space-y-4">
+                                        <Form method="post" action="/dashboard/permissions/roles" className="space-y-4">
                                             {({ processing, errors }) => (
                                                 <>
                                                     <div className="space-y-2">
@@ -470,7 +479,7 @@ export default function PermissionsPage({ users, roles, permissions }: {
                                             </div>
                                             <h2 className="text-lg font-semibold">Nouvelle permission</h2>
                                         </div>
-                                        <Form method="post" action="/permissions/permissions" className="space-y-4">
+                                        <Form method="post" action="/dashboard/permissions/permissions" className="space-y-4">
                                             {({ processing, errors }) => (
                                                 <>
                                                     <div className="space-y-2">

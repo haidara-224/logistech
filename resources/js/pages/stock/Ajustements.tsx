@@ -64,7 +64,7 @@ export default function Ajustements({ produits, ajustements }: Props) {
         }
         setProcessing(true);
         router.post(
-            '/stock/ajustements',
+            '/dashboard/stock/ajustements',
             { produit_id: produitId, type, quantite: Number(quantite) },
             {
                 onFinish: () => setProcessing(false),
@@ -78,7 +78,7 @@ export default function Ajustements({ produits, ajustements }: Props) {
     };
 
     const handlePage = (page: number) => {
-        router.get('/stock/ajustements', { page }, { preserveState: true });
+        router.get('/dashboard/stock/ajustements', { page }, { preserveState: true });
     };
 
     return (
@@ -103,7 +103,7 @@ export default function Ajustements({ produits, ajustements }: Props) {
                         </div>
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                             <Link
-                                href="/mouvements"
+                                href="/dashboard/mouvements"
                                 className="inline-flex items-center gap-2 rounded-xl border border-[#C8962E]/40 bg-[#C8962E]/5 px-5 py-2.5 text-sm font-semibold text-[#C8962E] hover:bg-[#C8962E]/10 transition-all"
                             >
                                 <BarChart3 className="h-4 w-4" />
@@ -497,7 +497,7 @@ export default function Ajustements({ produits, ajustements }: Props) {
 
 Ajustements.layout = {
     breadcrumbs: [
-        { title: 'Stock', href: '/mouvements' },
-        { title: 'Ajustements', href: '/stock/ajustements' },
+        { title: 'Stock', href: '/dashboard/mouvements' },
+        { title: 'Ajustements', href: '/dashboard/stock/ajustements' },
     ],
 };

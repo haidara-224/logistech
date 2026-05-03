@@ -97,13 +97,13 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
               <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
                 <Phone className="w-4 h-4 text-[#C8962E]" />
                 <a href="tel:+224625421335" className="hover:text-[#C8962E] transition-colors">
-                  +224 625 421 335
+                  +224 614 60 44 44
                 </a>
               </div>
               <div className="flex items-center gap-3 text-gray-600 dark:text-white/40 text-sm">
                 <Mail className="w-4 h-4 text-[#C8962E]" />
-                <a href="mailto:sidymohamedcherifhaidara02@gmail.com" className="hover:text-[#C8962E] transition-colors">
-                  sidymohamedcherifhaidara02@gmail.com
+                <a href="mailto:contact@logistech.com" className="hover:text-[#C8962E] transition-colors">
+                  contact@logistech.com
                 </a>
               </div>
             </div>
@@ -225,7 +225,7 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
         </div>
 
         {/* Contact direct du développeur */}
-        {/* <div className="mt-4 pt-4 flex flex-col items-center gap-2 border-t border-gray-200/50 dark:border-white/5">
+        <div className="mt-4 pt-4 flex flex-col items-center gap-2 border-t border-gray-200/50 dark:border-white/5">
           <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-gray-400 dark:text-white/20">
             <a 
               href="mailto:sidymohamedcherifhaidara02@gmail.com"
@@ -243,7 +243,7 @@ export function Footer({ onDevis }: { onDevis: () => void }) {
               +224 625 421 335
             </a>
           </div>
-        </div> */}
+        </div>
       </div>
     </footer>
   );

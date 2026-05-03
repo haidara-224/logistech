@@ -131,7 +131,7 @@ function LivraisonCard({ livraison, index }: { livraison: Livraison; index: numb
 // ── New livraison form ───────────────────────────────────────────────────────
 function NewLivraisonForm({ expeditions }: { expeditions: Expedition[] }) {
     return (
-        <Form method="post" action="/logistique/livraisons" className="space-y-4">
+        <Form method="post" action="/dashboard/logistique/livraisons" className="space-y-4">
             {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
                 <>
                     <ThemedSelect name="expedition_id" label="Expédition" error={errors.expedition_id}>

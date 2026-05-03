@@ -23,7 +23,7 @@ export default function CommandesShow({ commande }: Props) {
             <Head title={`Commande #${commande.id}`} />
             <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
                 <div className="flex items-center gap-4">
-                    <Link href="/commandes" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <Link href="/dashboard/commandes" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                         <ArrowLeft className="h-4 w-4" />
                         Retour
                     </Link>
@@ -49,7 +49,7 @@ export default function CommandesShow({ commande }: Props) {
                             </span>
                             {commande.status === 'en_attente' && (
                                 <Link
-                                    href={`/commandes/${commande.id}/paiements/creer`}
+                                    href={`/dashboard/commandes/${commande.id}/paiements/creer`}
                                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold hover:shadow-lg transition-all"
                                 >
                                     <CreditCard className="h-4 w-4" />

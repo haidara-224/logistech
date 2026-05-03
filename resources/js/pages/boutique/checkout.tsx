@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Produit } from '@/types/models';
+import AppLayoutLanding from '@/layouts/LandindLayout';
 
 interface PanierItem {
     produit_id: number;
@@ -50,7 +51,7 @@ export default function CheckoutPage({ panier, isAdmin, isSuperAdmin }: Props) {
             <>
                 <Head title="Panier vide" />
                 <div className="min-h-screen bg-stone-50 dark:bg-[#060D1A] flex flex-col">
-                    <Navbar isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} onDevis={() => {}} />
+        
                     <div className="flex-1 flex items-center justify-center flex-col gap-4 py-20">
                         <ShoppingCart className="w-20 h-20 text-stone-300 dark:text-white/10" />
                         <p className="text-xl font-bold text-slate-700 dark:text-white/60">Votre panier est vide</p>
@@ -68,7 +69,7 @@ export default function CheckoutPage({ panier, isAdmin, isSuperAdmin }: Props) {
             <Head title="Commander — Logistech Equip+" />
 
             <div className="min-h-screen bg-stone-50 dark:bg-[#060D1A] flex flex-col">
-                <Navbar isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} onDevis={() => {}} />
+
 
                 <div className="flex-1 max-w-5xl mx-auto w-full px-5 sm:px-8 pt-28 pb-20">
                     <Link href="/boutique" className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-white/40 hover:text-[#C8962E] transition-colors mb-8">
@@ -190,3 +191,6 @@ export default function CheckoutPage({ panier, isAdmin, isSuperAdmin }: Props) {
         </>
     );
 }
+CheckoutPage.layout = (page: any) => (
+  <AppLayoutLanding {...page.props}>{page}</AppLayoutLanding>
+);

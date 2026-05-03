@@ -30,7 +30,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (search !== filters?.search) {
-                router.get('/clients', { search }, { preserveState: true, replace: true });
+                router.get('/dashboard/clients', { search }, { preserveState: true, replace: true });
             }
         }, 500);
         return () => clearTimeout(timer);
@@ -38,13 +38,13 @@ export default function ClientsIndex({ clients, filters }: Props) {
 
     const handleDelete = () => {
         if (!deleteTarget) { return; }
-        router.delete(`/clients/${deleteTarget.id}`, {
+        router.delete(`/dashboard/clients/${deleteTarget.id}`, {
             onSuccess: () => setDeleteTarget(null),
         });
     };
 
     const handlePage = (page: number) => {
-        router.get('/clients', { page, search }, { preserveState: true });
+        router.get('/dashboard/clients', { page, search }, { preserveState: true });
     };
 
     return (
@@ -67,7 +67,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
                             </div>
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Link
-                                    href="/clients/creer"
+                                    href="/dashboard/clients/creer"
                                     className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all"
                                 >
                                     <Plus className="h-4 w-4" />
@@ -107,7 +107,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
                                     {search ? 'Essayez avec un autre terme' : 'Ajoutez votre premier client'}
                                 </p>
                                 {!search && (
-                                    <Link href="/clients/creer" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg">
+                                    <Link href="/dashboard/clients/creer" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg">
                                         <Plus className="h-4 w-4" />
                                         Ajouter un client
                                     </Link>
@@ -175,13 +175,13 @@ export default function ClientsIndex({ clients, filters }: Props) {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
-                                                            href={`/clients/${client.id}`}
+                                                            href={`/dashboard/clients/${client.id}`}
                                                             className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                                         >
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
                                                         <Link
-                                                            href={`/clients/${client.id}/modifier`}
+                                                            href={`/dashboard/clients/${client.id}/modifier`}
                                                             className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors"
                                                         >
                                                             <Pencil className="h-4 w-4" />
@@ -256,5 +256,5 @@ export default function ClientsIndex({ clients, filters }: Props) {
 }
 
 ClientsIndex.layout = {
-    breadcrumbs: [{ title: 'Clients', href: '/clients' }],
+    breadcrumbs: [{ title: 'Clients', href: '/dashboard/clients' }],
 };

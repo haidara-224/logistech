@@ -6,6 +6,7 @@ use App\Contracts\CommandeServiceInterface;
 use App\Contracts\StockServiceInterface;
 use App\Models\Commande;
 use App\Models\Commande_item;
+use App\Models\Facture;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -54,6 +55,14 @@ class CommandeService implements CommandeServiceInterface
 
             $commande->montant_total = $total;
             $commande->save();
+
+            $count = Facture::count() + 1;
+            Facture::create([
+                'commande_id' => $commande->id,
+                'numero_facture' => 'FAC-'.now()->year.'-'.str_pad($count, 5, '0', STR_PAD_LEFT),
+                'montant_total' => $total,
+                'date_emission' => now(),
+            ]);
 
             return $commande;
         });

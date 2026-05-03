@@ -80,8 +80,10 @@ type FilterKey = (typeof filterOptions)[number]['key'];
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n);
 
 export default function CommandesIndex({ commandes }: Props) {
-    const { flash } = usePage().props as any;
+    const { flash, auth } = usePage().props as any;
+    const isSuperAdmin = auth?.is_super_admin ?? false;
     const [deleteTarget, setDeleteTarget] = useState<Commande | null>(null);
+    const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
     useEffect(() => {
@@ -91,13 +93,19 @@ export default function CommandesIndex({ commandes }: Props) {
 
     const handleDelete = () => {
         if (!deleteTarget) { return; }
-        router.delete(`/commandes/${deleteTarget.id}`, {
+        router.delete(`/dashboard/commandes/${deleteTarget.id}`, {
             onSuccess: () => setDeleteTarget(null),
         });
     };
 
+    const handleDeleteAll = () => {
+        router.delete('/dashboard/commandes', {
+            onSuccess: () => { setIsDeleteAllOpen(false); toast.success('Toutes les commandes ont été supprimées'); },
+        });
+    };
+
     const handlePage = (page: number) => {
-        router.get('/commandes', { page }, { preserveState: true });
+        router.get('/dashboard/commandes', { page }, { preserveState: true });
     };
 
     
@@ -117,7 +125,7 @@ export default function CommandesIndex({ commandes }: Props) {
         <>
             <Head title="Commandes" />
 
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+            <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                     {/* Header */}
@@ -127,22 +135,34 @@ export default function CommandesIndex({ commandes }: Props) {
                         className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                     >
                         <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#C8962E] to-[#E8B84B] bg-clip-text text-transparent">
+                            <h1 className="text-3xl font-bold bg-linear-to-r from-[#C8962E] to-[#E8B84B] bg-clip-text text-transparent">
                                 Commandes
                             </h1>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 {commandes.total} commande{commandes.total !== 1 ? 's' : ''} au total
                             </p>
                         </div>
-                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                            <Link
-                                href="/commandes/creer"
-                                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Nouvelle commande
-                            </Link>
-                        </motion.div>
+                        <div className="flex items-center gap-2">
+                            {isSuperAdmin && commandes.total > 0 && (
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                    onClick={() => setIsDeleteAllOpen(true)}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2.5 text-sm font-semibold text-white shadow transition-all"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Tout supprimer
+                                </motion.button>
+                            )}
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                <Link
+                                    href="/dashboard/commandes/creer"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Nouvelle commande
+                                </Link>
+                            </motion.div>
+                        </div>
                     </motion.div>
 
                     {/* Metric Cards */}
@@ -187,14 +207,14 @@ export default function CommandesIndex({ commandes }: Props) {
                         transition={{ delay: 0.25 }}
                         className="mb-5 flex items-center gap-2 flex-wrap"
                     >
-                        <ListFilter className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <ListFilter className="h-4 w-4 text-gray-400 shrink-0" />
                         {filterOptions.map((opt) => (
                             <button
                                 key={opt.key}
                                 onClick={() => setActiveFilter(opt.key)}
                                 className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
                                     activeFilter === opt.key
-                                        ? 'bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md'
+                                        ? 'bg-linear-to-r from-[#C8962E] to-[#E8B84B] text-white shadow-md'
                                         : 'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:border-[#C8962E]/40 hover:text-[#C8962E]'
                                 }`}
                             >
@@ -223,8 +243,8 @@ export default function CommandesIndex({ commandes }: Props) {
                                 </p>
                                 {activeFilter === 'all' && (
                                     <Link
-                                        href="/commandes/creer"
-                                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg"
+                                        href="/dashboard/commandes/creer"
+                                        className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-[#C8962E] to-[#E8B84B] px-5 py-2.5 text-sm font-semibold text-white shadow-lg"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Nouvelle commande
@@ -288,7 +308,7 @@ export default function CommandesIndex({ commandes }: Props) {
                                                         {/* Client */}
                                                         <td className="px-4 py-4">
                                                             <div className="flex items-center gap-2.5">
-                                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C8962E] to-[#E8B84B] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                                                <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#C8962E] to-[#E8B84B] flex items-center justify-center text-white font-semibold text-xs shrink-0">
                                                                     {(cmd.client?.nom ?? 'C').charAt(0).toUpperCase()}
                                                                 </div>
                                                                 <div>
@@ -350,7 +370,7 @@ export default function CommandesIndex({ commandes }: Props) {
                                                         <td className="px-4 py-4">
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <Link
-                                                                    href={`/commandes/${cmd.id}`}
+                                                                    href={`/dashboard/commandes/${cmd.id}`}
                                                                     className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
                                                                     title="Voir"
                                                                 >
@@ -417,6 +437,36 @@ export default function CommandesIndex({ commandes }: Props) {
                 </div>
             </div>
 
+            {/* Delete All Modal */}
+            <Dialog.Root open={isDeleteAllOpen} onOpenChange={setIsDeleteAllOpen}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
+                    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl z-50 p-6">
+                        <div className="text-center">
+                            <div className="w-14 h-14 mx-auto rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+                                <Trash2 className="h-7 w-7 text-red-600 dark:text-red-400" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Supprimer toutes les commandes</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                Cette action supprimera les{' '}
+                                <span className="font-semibold text-gray-900 dark:text-white">{commandes.total} commande{commandes.total !== 1 ? 's' : ''}</span>{' '}
+                                définitivement. Elle sera tracée dans le journal d'audit.
+                            </p>
+                            <div className="flex gap-3">
+                                <button onClick={() => setIsDeleteAllOpen(false)}
+                                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                                    Annuler
+                                </button>
+                                <button onClick={handleDeleteAll}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors">
+                                    Tout supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
+
             {/* Delete Modal */}
             <Dialog.Root open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
                 <Dialog.Portal>
@@ -459,5 +509,5 @@ export default function CommandesIndex({ commandes }: Props) {
 }
 
 CommandesIndex.layout = {
-    breadcrumbs: [{ title: 'Commandes', href: '/commandes' }],
+    breadcrumbs: [{ title: 'Commandes', href: '/dashboard/commandes' }],
 };

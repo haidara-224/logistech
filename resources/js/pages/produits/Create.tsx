@@ -13,7 +13,7 @@ export default function ProduitsCreate({ categories }: Props) {
             <Head title="Créer un produit" />
             <div className="max-w-2xl mx-auto px-4 py-8">
                 <Link
-                    href="/produits"
+                    href="/dashboard/produits"
                     className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4" />
@@ -33,7 +33,7 @@ export default function ProduitsCreate({ categories }: Props) {
 
 ProduitsCreate.layout = {
     breadcrumbs: [
-        { title: 'Produits', href: '/produits' },
-        { title: 'Créer', href: '/produits/creer' },
+        { title: 'Produits', href: '/dashboard/produits' },
+        { title: 'Créer', href: '/dashboard/produits/creer' },
     ],
 };

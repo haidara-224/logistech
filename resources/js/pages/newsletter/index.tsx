@@ -25,7 +25,7 @@ export default function NewsletterIndex({ abonnes, total }: Props) {
     );
 
     const handleDelete = (id: number) => {
-        router.delete(`/newsletter/${id}`, { preserveScroll: true });
+        router.delete(`/dashboard/newsletter/${id}`, { preserveScroll: true });
     };
 
     const exportCsv = () => {

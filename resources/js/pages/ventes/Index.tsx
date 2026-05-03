@@ -172,7 +172,7 @@ export default function VentesIndex({ commandes, stats, chart, topProduits }: Pr
     }));
 
     const handlePage = (page: number) => {
-        router.get('/ventes', { page }, { preserveState: true });
+        router.get('/dashboard/ventes', { page }, { preserveState: true });
     };
 
     const getPageNumbers = () => {
@@ -568,5 +568,5 @@ export default function VentesIndex({ commandes, stats, chart, topProduits }: Pr
 }
 
 VentesIndex.layout = {
-    breadcrumbs: [{ title: 'Ventes', href: '/ventes' }],
+    breadcrumbs: [{ title: 'Ventes', href: '/dashboard/ventes' }],
 };

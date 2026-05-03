@@ -82,7 +82,7 @@ export default function ProduitFormModal({ produit, categories, onClose, onSucce
         newFiles.forEach((f) => fd.append('images[]', f));
         deletedImageIds.forEach((id) => fd.append('deleted_image_ids[]', String(id)));
 
-        const url = isEditing ? `/produits/${produit!.id}` : '/produits';
+        const url = isEditing ? `/dashboard/produits/${produit!.id}` : '/dashboard/produits';
 
         router.post(url, fd, {
             forceFormData: true,

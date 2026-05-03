@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { CheckCircle, ShoppingBag, Phone, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/LandingPage/Navbar';
+import AppLayoutLanding from '@/layouts/LandindLayout';
 
 export default function CommandeConfirmation() {
     return (
@@ -9,7 +10,7 @@ export default function CommandeConfirmation() {
             <Head title="Commande confirmée — Logistech Equip+" />
 
             <div className="min-h-screen bg-stone-50 dark:bg-[#060D1A] flex flex-col">
-                <Navbar isAdmin={false} isSuperAdmin={false} onDevis={() => {}} />
+
 
                 <div className="flex-1 flex items-center justify-center px-5 py-20">
                     <motion.div
@@ -69,3 +70,6 @@ export default function CommandeConfirmation() {
         </>
     );
 }
+CommandeConfirmation.layout = (page: any) => (
+  <AppLayoutLanding {...page.props}>{page}</AppLayoutLanding>
+);

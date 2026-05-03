@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BoutiqueController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\CheckoutController;
@@ -43,10 +44,10 @@ Route::patch('/panier/{produitId}', [PanierController::class, 'update'])->name('
 Route::delete('/panier/{produitId}', [PanierController::class, 'destroy'])->name('panier.destroy');
 Route::delete('/panier', [PanierController::class, 'clear'])->name('panier.clear');
 
-Route::middleware(['auth', 'verified', 'role:admin|super admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashboard')->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
-    Route::get('/dashboard/recent-orders', [DashboardController::class, 'recentOrdersJson'])->name('dashboard.recent_orders');
+    Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/recent-orders', [DashboardController::class, 'recentOrdersJson'])->name('dashboard.recent_orders');
 
     // Notifications admin
     Route::get('/admin/notifications', function () {
@@ -74,7 +75,9 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->group(functio
     // Newsletter (admin)
     Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.index');
     Route::delete('/newsletter/{newsletterSubscription}', [NewsletterController::class, 'destroy'])->name('newsletter.destroy');
+
     // Product routes handled by controller (Inertia)
+    Route::delete('produits', [ProduitController::class, 'destroyAll'])->name('produits.destroy_all');
     Route::get('produits', [ProduitController::class, 'index'])->name('produits.index');
     Route::get('produits/creer', [ProduitController::class, 'create'])->name('produits.create');
     Route::post('produits', [ProduitController::class, 'store'])->name('produits.store');
@@ -102,6 +105,7 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->group(functio
     Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
     // Commande routes
+    Route::delete('commandes', [CommandeController::class, 'destroyAll'])->name('commandes.destroy_all');
     Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
     Route::get('commandes/creer', [CommandeController::class, 'create'])->name('commandes.create');
     Route::post('commandes', [CommandeController::class, 'store'])->name('commandes.store');
@@ -126,6 +130,11 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->group(functio
     Route::get('mouvements', [MouvementsStockController::class, 'index'])->name('mouvements.index');
     Route::get('stock/ajustements', [MouvementsStockController::class, 'ajustements'])->name('stock.ajustements');
     Route::post('stock/ajustements', [MouvementsStockController::class, 'store'])->name('stock.ajustements.store');
+});
+
+// Super admin only
+Route::middleware(['auth', 'verified', 'role:super admin'])->prefix('dashboard')->group(function () {
+    Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 });
 Route::get('/auth/redirect', function () {
     return Socialite::driver('google')->redirect();

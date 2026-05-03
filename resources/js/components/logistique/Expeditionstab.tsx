@@ -257,7 +257,7 @@ function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits
 
     return (
         <>
-            <Form method="post" action="/logistique/expeditions" className="space-y-4">
+            <Form method="post" action="/dashboard/logistique/expeditions" className="space-y-4">
                 {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
                     <>
                         <ThemedInput name="reference" label="Référence" placeholder="EXP-2026-001" error={errors.reference} />
@@ -356,7 +356,7 @@ interface EditExpeditionFormProps {
 
 function EditExpeditionForm({ expedition, camions, chauffeurs }: EditExpeditionFormProps) {
     return (
-        <Form method="put" action={`/logistique/expeditions/${expedition.id}`} className="space-y-4">
+        <Form method="put" action={`/dashboard/logistique/expeditions/${expedition.id}`} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
                 <ThemedInput name="reference" label="Référence" defaultValue={expedition.reference} />
                 <ThemedSelect name="statut" label="Statut" defaultValue={expedition.statut}>
@@ -458,7 +458,7 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                     >
                         {/* Actions */}
                         <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-                            <Form method="patch" action={`/logistique/expeditions/${expedition.id}/statut`} className="flex gap-2 flex-1">
+                            <Form method="patch" action={`/dashboard/logistique/expeditions/${expedition.id}/statut`} className="flex gap-2 flex-1">
                                 <select
                                     name="statut"
                                     defaultValue={expedition.statut}
@@ -471,7 +471,7 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                                 </select>
                                 <Button type="submit" variant="secondary" size="sm">MAJ statut</Button>
                             </Form>
-                            <Form method="delete" action={`/logistique/expeditions/${expedition.id}`}>
+                            <Form method="delete" action={`/dashboard/logistique/expeditions/${expedition.id}`}>
                                 <Button type="submit" variant="danger" size="sm" className="text-white">
                                     <Trash2 size={12} className="text-white" />
                                 </Button>

@@ -81,7 +81,7 @@ function ChauffeurRow({ chauffeur, index, onEdit, missionRef }: ChauffeurRowProp
                 <Button variant="ghost" size="sm" onClick={() => onEdit(chauffeur.id)}>
                     <Pencil size={12} />
                 </Button>
-                <Form method="delete" action={`/logistique/chauffeurs/${chauffeur.id}`}>
+                <Form method="delete" action={`/dashboard/logistique/chauffeurs/${chauffeur.id}`}>
                     <Button variant="danger" size="sm" type="submit">
                         <Trash2 size={16} className='text-white' />
                     </Button>
@@ -93,7 +93,7 @@ function ChauffeurRow({ chauffeur, index, onEdit, missionRef }: ChauffeurRowProp
 
 function NewChauffeurForm() {
     return (
-        <Form method="post" action="/logistique/chauffeurs" className="space-y-4">
+        <Form method="post" action="/dashboard/logistique/chauffeurs" className="space-y-4">
             {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
                 <>
                     <div className="grid grid-cols-2 gap-3">
@@ -125,7 +125,7 @@ function NewChauffeurForm() {
 
 function EditChauffeurForm({ chauffeur }: { chauffeur: Chauffeur }) {
     return (
-        <Form method="put" action={`/logistique/chauffeurs/${chauffeur.id}`} className="space-y-4">
+        <Form method="put" action={`/dashboard/logistique/chauffeurs/${chauffeur.id}`} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
                 <ThemedInput name="nom" label="Nom" defaultValue={chauffeur.nom} />
                 <ThemedInput name="prenom" label="Prénom" defaultValue={chauffeur.prenom ?? ''} />

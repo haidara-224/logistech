@@ -20,7 +20,7 @@ export default function ClientsShow({ client }: Props) {
         <>
             <Head title={`${client.nom} ${client.prenom ?? ''}`} />
             <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-                <Link href="/clients" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                <Link href="/dashboard/clients" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                     Retour aux clients
                 </Link>
@@ -42,7 +42,7 @@ export default function ClientsShow({ client }: Props) {
                             </div>
                         </div>
                         <Link
-                            href={`/clients/${client.id}/modifier`}
+                            href={`/dashboard/clients/${client.id}/modifier`}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors"
                         >
                             <Pencil className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default function ClientsShow({ client }: Props) {
                             Historique des commandes
                         </h2>
                         <Link
-                            href="/commandes/creer"
+                            href="/dashboard/commandes/creer"
                             className="text-sm text-[#C8962E] hover:text-[#E8B84B] font-medium transition-colors"
                         >
                             + Nouvelle commande
@@ -141,7 +141,7 @@ export default function ClientsShow({ client }: Props) {
 
 ClientsShow.layout = {
     breadcrumbs: [
-        { title: 'Clients', href: '/clients' },
+        { title: 'Clients', href: '/dashboard/clients' },
         { title: 'Détails', href: '#' },
     ],
 };

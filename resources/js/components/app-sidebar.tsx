@@ -47,55 +47,55 @@ const NAV_GROUPS: NavGroup[] = [
         label: 'Catalogue',
         icon: Package,
         items: [
-            { label: 'Produits', href: '/produits', icon: Package },
-            { label: 'Catégories', href: '/categories', icon: FolderGit2 },
+            { label: 'Produits', href: '/dashboard/produits', icon: Package },
+            { label: 'Catégories', href: '/dashboard/categories', icon: FolderGit2 },
         ],
     },
     {
         label: 'Ventes',
         icon: ShoppingCart,
         items: [
-            { label: 'Ventes', href: '/ventes', icon: ShoppingCart },
-            { label: 'Commandes', href: '/commandes', icon: BookOpen },
+            { label: 'Ventes', href: '/dashboard/ventes', icon: ShoppingCart },
+            { label: 'Commandes', href: '/dashboard/commandes', icon: BookOpen },
         ],
     },
     {
         label: 'Clients',
         icon: Users,
         items: [
-            { label: 'Clients', href: '/clients', icon: Users },
+            { label: 'Clients', href: '/dashboard/clients', icon: Users },
         ],
     },
     {
         label: 'Stock',
         icon: Box,
         items: [
-            { label: 'Mouvements', href: '/mouvements', icon: Repeat },
-            { label: 'Ajustements', href: '/stock/ajustements', icon: Box },
+            { label: 'Mouvements', href: '/dashboard/mouvements', icon: Repeat },
+            { label: 'Ajustements', href: '/dashboard/stock/ajustements', icon: Box },
         ],
     },
     {
         label: 'Logistique',
         icon: Truck,
         items: [
-            { label: 'Logistique', href: '/logistique', icon: Truck },
+            { label: 'Logistique', href: '/dashboard/logistique', icon: Truck },
         ],
     },
     {
         label: 'Finances',
         icon: DollarSign,
         items: [
-            { label: 'Paiements', href: '/paiements', icon: DollarSign },
-            { label: 'Factures', href: '/factures', icon: FileText },
+            { label: 'Paiements', href: '/dashboard/paiements', icon: DollarSign },
+            { label: 'Factures', href: '/dashboard/factures', icon: FileText },
         ],
     },
     {
         label: 'Communication',
         icon: Mail,
         items: [
-            { label: 'Demandes de devis', href: '/devis', icon: ClipboardList },
-            { label: 'Messages contact', href: '/contact', icon: Mail },
-            { label: 'Newsletter', href: '/newsletter', icon: Rss },
+            { label: 'Demandes de devis', href: '/dashboard/devis', icon: ClipboardList },
+            { label: 'Messages contact', href: '/dashboard/contact', icon: Mail },
+            { label: 'Newsletter', href: '/dashboard/newsletter', icon: Rss },
         ],
     },
 ];
@@ -105,11 +105,12 @@ export function AppSidebar() {
     const currentUrl = usePage().url;
 
     const parametresItems: NavItem[] = [
-        { label: 'Général', href: '/settings', icon: Settings },
+        { label: 'Général', href: '/dashboard/settings', icon: Settings },
         ...(auth?.is_super_admin
             ? [
-                  { label: 'Permissions', href: '/permissions', icon: HardHat },
-                  { label: 'Restauration', href: '/restore', icon: RotateCcw },
+                  { label: 'Permissions', href: '/dashboard/permissions', icon: HardHat },
+                  { label: 'Restauration', href: '/dashboard/restore', icon: RotateCcw },
+                  { label: 'Logs', href: '/dashboard/audit', icon: FileText },
               ]
             : []),
     ];

@@ -142,7 +142,7 @@ export default function PaiementsIndex({ paiements, stats, chart }: Props) {
     }, [flash]);
 
     const handlePage = (page: number) => {
-        router.get('/paiements', { page }, { preserveState: true });
+        router.get('/dashboard/paiements', { page }, { preserveState: true });
     };
 
     const enAttenteCount = paiements.data.filter((p) => p.status === 'en_attente').length;
@@ -441,7 +441,7 @@ export default function PaiementsIndex({ paiements, stats, chart }: Props) {
                                                     >
                                                         <td className="px-6 py-4">
                                                             <Link
-                                                                href={`/commandes/${paiement.commande_id}`}
+                                                                href={`/dashboard/commandes/${paiement.commande_id}`}
                                                                 className="font-mono text-sm text-[#C8962E] hover:text-[#E8B84B] font-semibold transition-colors"
                                                             >
                                                                 #{paiement.commande_id}
@@ -538,5 +538,5 @@ export default function PaiementsIndex({ paiements, stats, chart }: Props) {
 }
 
 PaiementsIndex.layout = {
-    breadcrumbs: [{ title: 'Paiements', href: '/paiements' }],
+    breadcrumbs: [{ title: 'Paiements', href: '/dashboard/paiements' }],
 };

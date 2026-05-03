@@ -13,14 +13,14 @@ export default function ClientsCreate() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/clients');
+        post('/dashboard/clients');
     };
 
     return (
         <>
             <Head title="Nouveau client" />
             <div className="max-w-2xl mx-auto px-4 py-8">
-                <Link href="/clients" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
+                <Link href="/dashboard/clients" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                     Retour aux clients
                 </Link>
@@ -128,7 +128,7 @@ export default function ClientsCreate() {
 
                         {/* Buttons */}
                         <div className="flex gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
-                            <Link href="/clients" className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center text-sm">
+                            <Link href="/dashboard/clients" className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center text-sm">
                                 Annuler
                             </Link>
                             <button type="submit" disabled={processing} className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50 text-sm">
@@ -144,7 +144,7 @@ export default function ClientsCreate() {
 
 ClientsCreate.layout = {
     breadcrumbs: [
-        { title: 'Clients', href: '/clients' },
-        { title: 'Nouveau', href: '/clients/creer' },
+        { title: 'Clients', href: '/dashboard/clients' },
+        { title: 'Nouveau', href: '/dashboard/clients/creer' },
     ],
 };

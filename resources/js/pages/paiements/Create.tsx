@@ -52,7 +52,7 @@ export default function PaiementsCreate({ commande }: Props) {
         e.preventDefault();
         setProcessing(true);
         router.post(
-            `/commandes/${commande.id}/paiements`,
+            `/dashboard/commandes/${commande.id}/paiements`,
             {
                 montant,
                 mode_paiement: modePaiement,
@@ -90,7 +90,7 @@ export default function PaiementsCreate({ commande }: Props) {
                         transition={{ duration: 0.3 }}
                     >
                         <Link
-                            href={`/commandes/${commande.id}`}
+                            href={`/dashboard/commandes/${commande.id}`}
                             className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors group"
                         >
                             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -338,7 +338,7 @@ export default function PaiementsCreate({ commande }: Props) {
                                     {/* Actions */}
                                     <div className="flex gap-3 pt-2">
                                         <Link
-                                            href={`/commandes/${commande.id}`}
+                                            href={`/dashboard/commandes/${commande.id}`}
                                             className="flex-1 flex items-center justify-center px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 font-medium hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm"
                                         >
                                             Annuler
@@ -366,8 +366,8 @@ export default function PaiementsCreate({ commande }: Props) {
 
 PaiementsCreate.layout = {
     breadcrumbs: [
-        { title: 'Commandes', href: '/commandes' },
-        { title: `#${0}`, href: '/commandes' },
+        { title: 'Commandes', href: '/dashboard/commandes' },
+        { title: `#${0}`, href: '/dashboard/commandes' },
         { title: 'Paiement', href: '#' },
     ],
 };

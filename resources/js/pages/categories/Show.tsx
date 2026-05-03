@@ -11,7 +11,7 @@ export default function CategoriesShow({ categorie }: Props) {
         <>
             <Head title={categorie.name} />
             <div className="max-w-4xl mx-auto px-4 py-8">
-                <Link href="/categories" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
+                <Link href="/dashboard/categories" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                     Retour aux catégories
                 </Link>
@@ -28,7 +28,7 @@ export default function CategoriesShow({ categorie }: Props) {
                             </div>
                         </div>
                         <Link
-                            href={`/categories/${categorie.id}/modifier`}
+                            href={`/dashboard/categories/${categorie.id}/modifier`}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors"
                         >
                             <Pencil className="h-4 w-4" />
@@ -77,7 +77,7 @@ export default function CategoriesShow({ categorie }: Props) {
 
 CategoriesShow.layout = {
     breadcrumbs: [
-        { title: 'Catégories', href: '/categories' },
+        { title: 'Catégories', href: '/dashboard/categories' },
         { title: 'Détails', href: '#' },
     ],
 };

@@ -18,7 +18,7 @@ export default function CategoriesEdit({ categorie }: Props) {
         <>
             <Head title={`Modifier - ${categorie.name}`} />
             <div className="max-w-lg mx-auto px-4 py-8">
-                <Link href="/categories" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
+                <Link href="/dashboard/categories" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                     Retour aux catégories
                 </Link>
@@ -40,7 +40,7 @@ export default function CategoriesEdit({ categorie }: Props) {
                             {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
                         </div>
                         <div className="flex gap-3 pt-2">
-                            <Link href="/categories" className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center">
+                            <Link href="/dashboard/categories" className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center">
                                 Annuler
                             </Link>
                             <button type="submit" disabled={processing} className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50">
@@ -56,7 +56,7 @@ export default function CategoriesEdit({ categorie }: Props) {
 
 CategoriesEdit.layout = {
     breadcrumbs: [
-        { title: 'Catégories', href: '/categories' },
+        { title: 'Catégories', href: '/dashboard/categories' },
         { title: 'Modifier', href: '#' },
     ],
 };

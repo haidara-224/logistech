@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProduitRequest;
 use App\Http\Requests\UpdateProduitRequest;
+use App\Models\AuditLog;
 use App\Models\Categorie;
 use App\Models\Image;
 use App\Models\ImageProduit;
@@ -65,7 +66,7 @@ class ProduitController extends Controller
             'produit_id' => $produit->id,
             'quantite' => $produit->quantite_stock,
             'type' => 'entree',
-              'source' => 'ajustement',
+            'source' => 'ajustement',
         ]);
 
         $this->storeImages($produit, $request->file('images', []));
@@ -112,14 +113,25 @@ class ProduitController extends Controller
                 'source' => 'ajustement',
             ]
         );
+
         return redirect()->back()->with('success', 'Produit mis à jour.');
     }
 
     public function destroy(Produit $produit): RedirectResponse
     {
-        $produit->delete();
+        AuditLog::record('deleted', Produit::class, $produit->id, "Suppression du produit \"{$produit->nom}\" (SKU: {$produit->sku})", $produit->toArray());
+        $produit->forceDelete();
 
         return redirect()->back()->with('success', 'Produit supprimé.');
+    }
+
+    public function destroyAll(): RedirectResponse
+    {
+        $count = Produit::withTrashed()->count();
+        AuditLog::record('bulk_force_deleted', Produit::class, null, "Suppression en masse de {$count} produit(s)", ['count' => $count]);
+        Produit::withTrashed()->forceDelete();
+
+        return redirect()->route('produits.index')->with('success', 'Tous les produits ont été supprimés.');
     }
 
     private function storeImages(Produit $produit, array $files): void

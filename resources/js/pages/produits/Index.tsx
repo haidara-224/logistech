@@ -44,13 +44,15 @@ function productImageUrl(produit: Produit): string | null {
 }
 
 export default function ProduitsIndex({ produits, stats, filters, categories }: Props) {
-    const { flash } = usePage().props as any;
+    const { flash, auth } = usePage().props as any;
+    const isSuperAdmin = auth?.is_super_admin ?? false;
     const [search, setSearch] = useState(filters?.search ?? '');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [selectedProduit, setSelectedProduit] = useState<Produit | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<{ id: number; nom: string } | null>(null);
+    const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
     const [pageLoading, setPageLoading] = useState(false);
 
     useEffect(() => {
@@ -61,7 +63,7 @@ export default function ProduitsIndex({ produits, stats, filters, categories }: 
     useEffect(() => {
         const t = setTimeout(() => {
             if (search !== (filters?.search ?? '')) {
-                router.get('/produits', { search }, { preserveState: true, replace: true });
+                router.get('/dashboard/produits', { search }, { preserveState: true, replace: true });
             }
         }, 400);
         return () => clearTimeout(t);
@@ -69,13 +71,19 @@ export default function ProduitsIndex({ produits, stats, filters, categories }: 
 
     const handlePageChange = (page: number) => {
         setPageLoading(true);
-        router.get('/produits', { page, search }, { preserveState: true, onFinish: () => setPageLoading(false) });
+        router.get('/dashboard/produits', { page, search }, { preserveState: true, onFinish: () => setPageLoading(false) });
     };
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/produits/${deleteTarget.id}`, {
+        router.delete(`/dashboard/produits/${deleteTarget.id}`, {
             onSuccess: () => { setIsDeleteOpen(false); toast.success('Produit supprimé'); },
+        });
+    };
+
+    const handleDeleteAll = () => {
+        router.delete('/dashboard/produits', {
+            onSuccess: () => { setIsDeleteAllOpen(false); toast.success('Tous les produits ont été supprimés'); },
         });
     };
 
@@ -114,14 +122,26 @@ export default function ProduitsIndex({ produits, stats, filters, categories }: 
                             <p className="text-xs text-gray-500 dark:text-gray-400">Gérez votre inventaire et suivez les stocks</p>
                         </div>
                     </div>
-                    <motion.button
-                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                        onClick={() => { setSelectedProduit(null); setIsFormOpen(true); }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Nouveau produit
-                    </motion.button>
+                    <div className="flex items-center gap-2">
+                        {isSuperAdmin && (
+                            <motion.button
+                                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                onClick={() => setIsDeleteAllOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-500/20 transition-all"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                Tout supprimer
+                            </motion.button>
+                        )}
+                        <motion.button
+                            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                            onClick={() => { setSelectedProduit(null); setIsFormOpen(true); }}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Nouveau produit
+                        </motion.button>
+                    </div>
                 </motion.div>
 
                 {/* Stats */}
@@ -383,6 +403,32 @@ export default function ProduitsIndex({ produits, stats, filters, categories }: 
                             onClose={() => setIsFormOpen(false)}
                             onSuccess={() => { setIsFormOpen(false); router.reload(); }}
                         />
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
+
+            {/* Delete All modal */}
+            <Dialog.Root open={isDeleteAllOpen} onOpenChange={setIsDeleteAllOpen}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
+                    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-2xl bg-white dark:bg-gray-900 shadow-2xl z-50 p-6 text-center">
+                        <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                            <Trash2 className="w-7 h-7 text-red-500" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Supprimer tous les produits</h3>
+                        <p className="text-sm text-gray-500 mb-6">
+                            Cette action supprimera <span className="font-semibold text-red-600">{stats.total_produits} produit{stats.total_produits !== 1 ? 's' : ''}</span> de façon irréversible. Êtes-vous certain ?
+                        </p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setIsDeleteAllOpen(false)}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                Annuler
+                            </button>
+                            <button onClick={handleDeleteAll}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors">
+                                Tout supprimer
+                            </button>
+                        </div>
                     </Dialog.Content>
                 </Dialog.Portal>
             </Dialog.Root>

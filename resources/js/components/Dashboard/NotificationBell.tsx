@@ -13,10 +13,10 @@ interface ActivityNotification {
 }
 
 const TYPE_CONFIG = {
-    devis: { icon: FileText, color: 'text-[#C8962E]', bg: 'bg-[#C8962E]/10', label: 'Devis', href: '/devis' },
-    contact: { icon: Mail, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Contact', href: '/contact' },
-    newsletter: { icon: Rss, color: 'text-purple-500', bg: 'bg-purple-500/10', label: 'Newsletter', href: '/newsletter' },
-    commande_online: { icon: ShoppingCart, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Commande', href: '/commandes' },
+    devis: { icon: FileText, color: 'text-[#C8962E]', bg: 'bg-[#C8962E]/10', label: 'Devis', href: '/dashboard/devis' },
+    contact: { icon: Mail, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Contact', href: '/dashboard/contact' },
+    newsletter: { icon: Rss, color: 'text-purple-500', bg: 'bg-purple-500/10', label: 'Newsletter', href: '/dashboard/newsletter' },
+    commande_online: { icon: ShoppingCart, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Commande', href: '/dashboard/commandes' },
 };
 
 export function NotificationBell() {
@@ -29,7 +29,7 @@ export function NotificationBell() {
 
     // Load persisted notifications from DB on mount
     useEffect(() => {
-        fetch('/admin/notifications', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        fetch('/dashboard/admin/notifications', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((r) => r.json())
             .then((rows: Array<{ id: number; type: string; message: string; data: Record<string, unknown>; read_at: string | null; created_at: string }>) => {
                 const mapped: ActivityNotification[] = rows.map((row) => ({
@@ -91,7 +91,7 @@ export function NotificationBell() {
 
     const markAllRead = () => {
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-        fetch('/admin/notifications/read-all', {
+        fetch('/dashboard/admin/notifications/read-all', {
             method: 'PATCH',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',

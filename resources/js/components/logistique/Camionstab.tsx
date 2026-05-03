@@ -67,7 +67,7 @@ function CamionRow({ camion, index, onEdit, missionRef }: CamionRowProps) {
                 <Button variant="ghost" size="sm" onClick={() => onEdit(camion.id)}>
                     <Pencil size={12} />
                 </Button>
-                <Form method="delete" action={`/logistique/camions/${camion.id}`}>
+                <Form method="delete" action={`/dashboard/logistique/camions/${camion.id}`}>
                     <Button variant="danger" size="sm" type="submit">
                         <Trash2 size={16} className="text-white" />
                     </Button>
@@ -80,7 +80,7 @@ function CamionRow({ camion, index, onEdit, missionRef }: CamionRowProps) {
 // ── New form ──────────────────────────────────────────────────────────────────
 function NewCamionForm() {
     return (
-        <Form method="post" action="/logistique/camions" className="space-y-4">
+        <Form method="post" action="/dashboard/logistique/camions" className="space-y-4">
             {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
                 <>
                     <ThemedInput name="immatriculation" label="Immatriculation" placeholder="TG-1234-A" error={errors.immatriculation} />
@@ -111,7 +111,7 @@ function NewCamionForm() {
 // ── Edit form ─────────────────────────────────────────────────────────────────
 function EditCamionForm({ camion }: { camion: Camion }) {
     return (
-        <Form method="put" action={`/logistique/camions/${camion.id}`} className="space-y-4">
+        <Form method="put" action={`/dashboard/logistique/camions/${camion.id}`} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
                 <ThemedInput name="immatriculation" label="Immatriculation" defaultValue={camion.immatriculation} />
                 <ThemedInput name="marque" label="Marque" defaultValue={camion.marque ?? ''} />

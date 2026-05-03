@@ -44,12 +44,12 @@ export default function ContactIndex({ contacts, stats }: Props) {
     const handleExpand = (id: number, lu: boolean) => {
         setExpanded((prev) => (prev === id ? null : id));
         if (!lu) {
-            router.patch(`/contact/${id}/read`, {}, { preserveScroll: true });
+            router.patch(`/dashboard/contact/${id}/read`, {}, { preserveScroll: true });
         }
     };
 
     const handleDelete = (id: number) => {
-        router.delete(`/contact/${id}`, { preserveScroll: true });
+        router.delete(`/dashboard/contact/${id}`, { preserveScroll: true });
     };
 
     const fmt = (d: string) =>

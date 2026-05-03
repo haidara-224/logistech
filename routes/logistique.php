@@ -7,7 +7,7 @@ use App\Http\Controllers\Logistique\LivraisonController;
 use App\Http\Controllers\Logistique\LogistiqueController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'role:admin|super admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashboard')->group(function () {
     Route::get('logistique', [LogistiqueController::class, 'index'])->name('logistique.index');
 
     Route::post('logistique/camions', [CamionController::class, 'store'])->name('logistique.camions.store');

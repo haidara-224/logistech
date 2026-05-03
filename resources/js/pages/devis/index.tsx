@@ -87,12 +87,12 @@ export default function DevisIndex({ devis, stats }: Props) {
     });
 
     const updateStatut = (id: number, statut: string) => {
-        router.patch(`/devis/${id}`, { statut }, { preserveScroll: true });
+        router.patch(`/dashboard/devis/${id}`, { statut }, { preserveScroll: true });
     };
 
     const handleDelete = (id: number) => {
         setDeleting(id);
-        router.delete(`/devis/${id}`, {
+        router.delete(`/dashboard/devis/${id}`, {
             onFinish: () => setDeleting(null),
             preserveScroll: true,
         });
