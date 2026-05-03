@@ -13,6 +13,8 @@ class AuditLogController extends Controller
         $search = request()->input('search', '');
         $action = request()->input('action', '');
         $model = request()->input('model', '');
+        $dateFrom = request()->input('date_from', '');
+        $dateTo = request()->input('date_to', '');
 
         $query = AuditLog::with('user')->orderByDesc('created_at');
 
@@ -31,6 +33,14 @@ class AuditLogController extends Controller
 
         if ($model) {
             $query->where('model_type', 'like', "%{$model}%");
+        }
+
+        if ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
         }
 
         $logs = $query->paginate(50);
@@ -41,7 +51,7 @@ class AuditLogController extends Controller
 
         return Inertia::render('audit/Index', [
             'logs' => $logs,
-            'filters' => ['search' => $search, 'action' => $action, 'model' => $model],
+            'filters' => ['search' => $search, 'action' => $action, 'model' => $model, 'date_from' => $dateFrom, 'date_to' => $dateTo],
             'actions' => $actions,
             'models' => $models->unique()->values(),
         ]);
@@ -52,6 +62,8 @@ class AuditLogController extends Controller
         $search = request()->input('search', '');
         $action = request()->input('action', '');
         $model = request()->input('model', '');
+        $dateFrom = request()->input('date_from', '');
+        $dateTo = request()->input('date_to', '');
 
         $query = AuditLog::with('user')->orderByDesc('created_at');
 
@@ -72,9 +84,17 @@ class AuditLogController extends Controller
             $query->where('model_type', 'like', "%{$model}%");
         }
 
+        if ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
         $logs = $query->limit(2000)->get();
 
-        $filters = array_filter(['search' => $search, 'action' => $action, 'model' => $model]);
+        $filters = array_filter(['search' => $search, 'action' => $action, 'model' => $model, 'date_from' => $dateFrom, 'date_to' => $dateTo]);
 
         return response()->view('audit.export', [
             'logs' => $logs,

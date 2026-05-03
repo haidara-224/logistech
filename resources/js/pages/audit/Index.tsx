@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
     ShieldAlert, Search, ChevronLeft, ChevronRight,
     Trash2, User, Clock, X, Plus, Pencil, RotateCcw,
-    Filter, AlertTriangle, Package, FileDown,
+    Filter, AlertTriangle, Package, FileDown, Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,7 +28,7 @@ interface Props {
         per_page: number;
         total: number;
     };
-    filters: { search: string; action: string; model: string };
+    filters: { search: string; action: string; model: string; date_from: string; date_to: string };
     actions: string[];
     models: string[];
 }
@@ -71,17 +71,19 @@ const getModelShortName = (modelType: string) =>
 
 export default function AuditIndex({ logs, filters, actions, models }: Props) {
     const { flash } = usePage().props as any;
-    const [search, setSearch] = useState(filters.search ?? '');
-    const [action, setAction] = useState(filters.action ?? '');
-    const [model, setModel] = useState(filters.model ?? '');
+    const [search, setSearch]     = useState(filters.search ?? '');
+    const [action, setAction]     = useState(filters.action ?? '');
+    const [model, setModel]       = useState(filters.model ?? '');
+    const [dateFrom, setDateFrom] = useState(filters.date_from ?? '');
+    const [dateTo, setDateTo]     = useState(filters.date_to ?? '');
 
     useEffect(() => {
         if (flash?.success) { toast.success(flash.success); }
         if (flash?.error) { toast.error(flash.error); }
     }, [flash]);
 
-    const applyFilters = (overrides: Partial<{ search: string; action: string; model: string }>) => {
-        const params = { search, action, model, ...overrides };
+    const applyFilters = (overrides: Partial<{ search: string; action: string; model: string; date_from: string; date_to: string }>) => {
+        const params = { search, action, model, date_from: dateFrom, date_to: dateTo, ...overrides };
         router.get('/dashboard/audit', params, { preserveState: true, replace: true });
     };
 
@@ -100,24 +102,36 @@ export default function AuditIndex({ logs, filters, actions, models }: Props) {
         applyFilters({ model: value });
     };
 
+    const handleDateFrom = (value: string) => {
+        setDateFrom(value);
+        applyFilters({ date_from: value });
+    };
+
+    const handleDateTo = (value: string) => {
+        setDateTo(value);
+        applyFilters({ date_to: value });
+    };
+
     const clearFilters = () => {
-        setSearch(''); setAction(''); setModel('');
+        setSearch(''); setAction(''); setModel(''); setDateFrom(''); setDateTo('');
         router.get('/dashboard/audit', {}, { preserveState: true, replace: true });
     };
 
-    const hasFilters = search || action || model;
+    const hasFilters = search || action || model || dateFrom || dateTo;
 
     const openExport = () => {
         const params = new URLSearchParams();
-        if (search) params.set('search', search);
-        if (action) params.set('action', action);
-        if (model) params.set('model', model);
+        if (search)   params.set('search', search);
+        if (action)   params.set('action', action);
+        if (model)    params.set('model', model);
+        if (dateFrom) params.set('date_from', dateFrom);
+        if (dateTo)   params.set('date_to', dateTo);
         const qs = params.toString();
         window.open(`/dashboard/audit/export${qs ? `?${qs}` : ''}`, '_blank');
     };
 
     const handlePage = (page: number) => {
-        router.get('/dashboard/audit', { page, search, action, model }, { preserveState: true });
+        router.get('/dashboard/audit', { page, search, action, model, date_from: dateFrom, date_to: dateTo }, { preserveState: true });
     };
 
     return (
@@ -206,6 +220,30 @@ export default function AuditIndex({ logs, filters, actions, models }: Props) {
                                     <option key={m} value={m}>{MODEL_LABELS[m] ?? m}</option>
                                 ))}
                             </select>
+                        </div>
+
+                        {/* Filtre date du */}
+                        <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                            <input
+                                type="date"
+                                value={dateFrom}
+                                onChange={(e) => handleDateFrom(e.target.value)}
+                                className="pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 transition-all cursor-pointer"
+                                title="Date de début"
+                            />
+                        </div>
+
+                        {/* Filtre date au */}
+                        <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                            <input
+                                type="date"
+                                value={dateTo}
+                                onChange={(e) => handleDateTo(e.target.value)}
+                                className="pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 transition-all cursor-pointer"
+                                title="Date de fin"
+                            />
                         </div>
                     </motion.div>
 
