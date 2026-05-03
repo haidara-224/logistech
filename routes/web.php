@@ -135,6 +135,7 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
 // Super admin only
 Route::middleware(['auth', 'verified', 'role:super admin'])->prefix('dashboard')->group(function () {
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+    Route::get('audit/export', [AuditLogController::class, 'export'])->name('audit.export');
 });
 Route::get('/auth/redirect', function () {
     return Socialite::driver('google')->redirect();

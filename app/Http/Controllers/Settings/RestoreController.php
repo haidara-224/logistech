@@ -85,4 +85,58 @@ class RestoreController extends Controller
 
         return back()->with('success', 'Toutes les données restaurées.');
     }
+
+    public function emptyTrash(): RedirectResponse
+    {
+        Camion::onlyTrashed()->forceDelete();
+        Chauffeur::onlyTrashed()->forceDelete();
+        Expedition::onlyTrashed()->forceDelete();
+        User::onlyTrashed()->forceDelete();
+        Produit::onlyTrashed()->forceDelete();
+        Commande::onlyTrashed()->forceDelete();
+
+        return back()->with('success', 'Corbeille vidée — suppression définitive effectuée.');
+    }
+
+    public function forceDeleteCamion(int $id): RedirectResponse
+    {
+        Camion::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', 'Camion supprimé définitivement.');
+    }
+
+    public function forceDeleteChauffeur(int $id): RedirectResponse
+    {
+        Chauffeur::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', 'Chauffeur supprimé définitivement.');
+    }
+
+    public function forceDeleteExpedition(int $id): RedirectResponse
+    {
+        Expedition::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', 'Expédition supprimée définitivement.');
+    }
+
+    public function forceDeleteUser(int $id): RedirectResponse
+    {
+        User::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', 'Utilisateur supprimé définitivement.');
+    }
+
+    public function forceDeleteProduit(int $id): RedirectResponse
+    {
+        Produit::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', 'Produit supprimé définitivement.');
+    }
+
+    public function forceDeleteCommande(int $id): RedirectResponse
+    {
+        Commande::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', 'Commande supprimée définitivement.');
+    }
 }

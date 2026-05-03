@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { ShoppingCart, Package, ChevronLeft, CreditCard, User, Phone, Mail, MapPin, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Package, ChevronLeft, ChevronDown, CreditCard, User, Phone, Mail, MapPin, CheckCircle } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { Navbar } from '@/components/LandingPage/Navbar';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ const inputCls = 'bg-white dark:bg-white/[0.04] border-stone-200 dark:border-whi
 export default function CheckoutPage({ panier, isAdmin, isSuperAdmin }: Props) {
     const items = Object.values(panier);
     const total = items.reduce((s, i) => s + i.prix * i.quantite, 0);
+    const [summaryOpen, setSummaryOpen] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         nom: '',
@@ -149,13 +150,30 @@ export default function CheckoutPage({ panier, isAdmin, isSuperAdmin }: Props) {
 
                         {/* Résumé commande — 2 colonnes */}
                         <div className="lg:col-span-2">
+                            {/* Mobile: toggle collapsible */}
+                            <button
+                                type="button"
+                                onClick={() => setSummaryOpen(!summaryOpen)}
+                                className="lg:hidden w-full flex items-center justify-between px-5 py-4 rounded-2xl bg-white dark:bg-white/[0.025] border border-stone-200 dark:border-white/[0.07] mb-2"
+                            >
+                                <span className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                                    <ShoppingCart className="w-4 h-4 text-[#C8962E]" />
+                                    Résumé ({items.length} article{items.length > 1 ? 's' : ''})
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-black text-[#C8962E]">{fmtGnf(total)}</span>
+                                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${summaryOpen ? 'rotate-180' : ''}`} />
+                                </div>
+                            </button>
+
+                            <div className={`lg:block ${summaryOpen ? 'block' : 'hidden'}`}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className="bg-white dark:bg-white/[0.025] rounded-2xl border border-stone-200 dark:border-white/[0.07] p-6 sticky top-24"
+                                className="bg-white dark:bg-white/[0.025] rounded-2xl border border-stone-200 dark:border-white/[0.07] p-6 lg:sticky lg:top-24"
                             >
-                                <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-4 hidden lg:flex items-center gap-2">
                                     <ShoppingCart className="w-4 h-4 text-[#C8962E]" />
                                     Résumé ({items.length} article{items.length > 1 ? 's' : ''})
                                 </h3>
@@ -184,6 +202,7 @@ export default function CheckoutPage({ panier, isAdmin, isSuperAdmin }: Props) {
                                     </div>
                                 </div>
                             </motion.div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    use SoftDeletes,HasFactory;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'nom',
@@ -17,7 +18,7 @@ class Client extends Model
         'quartier',
         'piece',
         'email',
-        'telephone'
+        'telephone',
     ];
 
     public function commandes(): HasMany

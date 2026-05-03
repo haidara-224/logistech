@@ -119,8 +119,7 @@ class ProduitController extends Controller
 
     public function destroy(Produit $produit): RedirectResponse
     {
-        AuditLog::record('deleted', Produit::class, $produit->id, "Suppression du produit \"{$produit->nom}\" (SKU: {$produit->sku})", $produit->toArray());
-        $produit->forceDelete();
+        $produit->delete();
 
         return redirect()->back()->with('success', 'Produit supprimé.');
     }

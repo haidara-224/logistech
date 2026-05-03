@@ -55,9 +55,6 @@ class CommandeController extends Controller
 
     public function destroy(Commande $commande): RedirectResponse
     {
-        $commande->load('client');
-        $clientName = $commande->client ? "{$commande->client->nom} {$commande->client->prenom}" : 'Client anonyme';
-        AuditLog::record('deleted', Commande::class, $commande->id, "Suppression de la commande #{$commande->id} ({$clientName}, {$commande->montant_total} GNF)", $commande->toArray());
         $commande->delete();
 
         return redirect()->route('commandes.index')->with('success', 'Commande supprimée');

@@ -113,7 +113,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
               {NAV_LINKS.map(link => {
                 const isActive = activeLink === link.href.slice(1);
                 return (
-                  <a
+                  <Link
                     key={link.label}
                     href={link.href}
                     className={cn(
@@ -132,7 +132,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
                         transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                       />
                     )}
-                  </a>
+                  </Link>
                 );
               })}
             </div>

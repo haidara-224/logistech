@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Produit extends Model
 {
-    use SoftDeletes,HasFactory;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'nom',
@@ -45,6 +45,7 @@ class Produit extends Model
     {
         $in = $this->mouvements()->where('type', 'entree')->sum('quantite') ?: 0;
         $out = $this->mouvements()->where('type', 'sortie')->sum('quantite') ?: 0;
+
         return (int) ($in - $out);
     }
 }

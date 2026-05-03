@@ -270,7 +270,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setCartOpen(true)}
-                        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white font-bold shadow-2xl shadow-[#C8962E]/40"
+                        className="fixed top-20 right-4 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white font-bold shadow-2xl shadow-[#C8962E]/40"
                     >
                         <ShoppingCart className="w-5 h-5" />
                         <span>{fmtGnf(panierTotal)}</span>
@@ -299,16 +299,21 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                             transition={{ type: 'spring', damping: 25, stiffness: 250 }}
                             className="fixed right-0 top-0 bottom-0 w-full max-w-md z-50 bg-white dark:bg-[#0B1120] shadow-2xl flex flex-col"
                         >
-                            {/* Header panier */}
-                            <div className="flex items-center justify-between p-5 border-b border-stone-200 dark:border-white/10">
-                                <div className="flex items-center gap-2">
-                                    <ShoppingCart className="w-5 h-5 text-[#C8962E]" />
-                                    <h2 className="font-bold text-lg text-slate-900 dark:text-white">Mon panier</h2>
-                                    <Badge className="bg-[#C8962E]/10 text-[#C8962E] border-0 text-xs">{panierCount} article{panierCount > 1 ? 's' : ''}</Badge>
-                                </div>
-                                <button onClick={() => setCartOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-stone-100 dark:hover:bg-white/10 transition-colors">
-                                    <X className="w-4 h-4 text-slate-500 dark:text-white/50" />
+                            {/* Bouton fermeture */}
+                            <div className="flex justify-end px-4 pt-4 pb-1">
+                                <button
+                                    onClick={() => setCartOpen(false)}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-slate-600 dark:text-white/70" />
                                 </button>
+                            </div>
+
+                            {/* Header panier */}
+                            <div className="flex items-center gap-2 px-5 pb-4 border-b border-stone-200 dark:border-white/10">
+                                <ShoppingCart className="w-5 h-5 text-[#C8962E]" />
+                                <h2 className="font-bold text-lg text-slate-900 dark:text-white">Mon panier</h2>
+                                <Badge className="bg-[#C8962E]/10 text-[#C8962E] border-0 text-xs">{panierCount} article{panierCount > 1 ? 's' : ''}</Badge>
                             </div>
 
                             {/* Items */}
@@ -358,6 +363,12 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                                     Commander maintenant
                                     <ChevronRight className="w-4 h-4" />
                                 </Link>
+                                <button
+                                    onClick={() => setCartOpen(false)}
+                                    className="sm:hidden w-full py-3 rounded-xl border border-stone-200 dark:border-white/10 text-slate-500 dark:text-white/50 text-sm font-semibold hover:bg-stone-50 dark:hover:bg-white/5 transition-colors"
+                                >
+                                    Fermer
+                                </button>
                             </div>
                         </motion.div>
                     </>

@@ -33,6 +33,13 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
         Route::post('/restore/produits/{id}', [RestoreController::class, 'restoreproduit'])->name('settings.restore.produits');
         Route::post('/restore/commandes/{id}', [RestoreController::class, 'restoreCommande'])->name('settings.restore.commandes');
         Route::post('/restore/all', [RestoreController::class, 'restoreAll'])->name('settings.restore.all');
+        Route::delete('/restore/empty', [RestoreController::class, 'emptyTrash'])->name('settings.restore.empty');
+        Route::delete('/restore/camions/{id}', [RestoreController::class, 'forceDeleteCamion'])->name('settings.restore.camions.force');
+        Route::delete('/restore/chauffeurs/{id}', [RestoreController::class, 'forceDeleteChauffeur'])->name('settings.restore.chauffeurs.force');
+        Route::delete('/restore/expeditions/{id}', [RestoreController::class, 'forceDeleteExpedition'])->name('settings.restore.expeditions.force');
+        Route::delete('/restore/users/{id}', [RestoreController::class, 'forceDeleteUser'])->name('settings.restore.users.force');
+        Route::delete('/restore/produits/{id}', [RestoreController::class, 'forceDeleteProduit'])->name('settings.restore.produits.force');
+        Route::delete('/restore/commandes/{id}', [RestoreController::class, 'forceDeleteCommande'])->name('settings.restore.commandes.force');
 
         Route::get('/permissions', [PermissionController::class, 'index'])->name('settings.permissions.index');
         Route::post('/permissions/users', [PermissionController::class, 'storeUser'])->name('settings.permissions.users.store');
