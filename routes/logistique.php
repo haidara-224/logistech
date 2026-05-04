@@ -5,6 +5,7 @@ use App\Http\Controllers\Logistique\ChauffeurController;
 use App\Http\Controllers\Logistique\ExpeditionController;
 use App\Http\Controllers\Logistique\LivraisonController;
 use App\Http\Controllers\Logistique\LogistiqueController;
+use App\Http\Controllers\Logistique\MaintenanceCamionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashboard')->group(function () {
@@ -24,4 +25,8 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
     Route::delete('logistique/expeditions/{expedition}', [ExpeditionController::class, 'destroy'])->name('logistique.expeditions.destroy');
 
     Route::post('logistique/livraisons', [LivraisonController::class, 'store'])->name('logistique.livraisons.store');
+
+    Route::post('logistique/maintenances', [MaintenanceCamionController::class, 'store'])->name('logistique.maintenances.store');
+    Route::put('logistique/maintenances/{maintenanceCamion}', [MaintenanceCamionController::class, 'update'])->name('logistique.maintenances.update');
+    Route::delete('logistique/maintenances/{maintenanceCamion}', [MaintenanceCamionController::class, 'destroy'])->name('logistique.maintenances.destroy');
 });

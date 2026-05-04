@@ -20,10 +20,18 @@ class Mouvements_stock extends Model
         'quantite',
         'source',
         'commande_id',
+        'user_id',
+        'note',
+        'prix_unitaire',
     ];
 
     public function produit(): BelongsTo
     {
         return $this->belongsTo(Produit::class, 'produit_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

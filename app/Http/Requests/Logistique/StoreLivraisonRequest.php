@@ -15,7 +15,7 @@ class StoreLivraisonRequest extends FormRequest
     {
         return [
             'expedition_id' => 'required|exists:expeditions,id',
-            'etat' => 'required|in:en préparation,en cours,livré',
+            'etat' => 'required|in:en préparation,en cours,livré,annulé',
             'commentaire' => 'nullable|string',
             'date_statut' => 'required|date',
         ];

@@ -61,6 +61,19 @@ export interface Livraison {
     expedition: Expedition;
 }
 
+export interface MaintenanceCamion {
+    id: number;
+    camion_id: number;
+    camion?: Camion;
+    type: string;
+    description?: string;
+    cout: number | null;
+    kilometrage?: number | null;
+    date_maintenance: string;
+    prochaine_maintenance?: string | null;
+    statut: 'planifiée' | 'en cours' | 'terminée';
+}
+
 export interface Stats {
     camions_disponibles: number;
     camions_en_maintenance: number;
@@ -70,6 +83,9 @@ export interface Stats {
     livraisons_livrees: number;
     chauffeurs_en_mission: number;
     taux_ponctualite: number | null;
+    cout_expeditions: number;
+    maintenances_planifiees: number;
+    cout_maintenance_annuel: number;
 }
 
 export interface LogistiqueProps {
@@ -82,4 +98,6 @@ export interface LogistiqueProps {
     produits: Produit[];
     retards: Expedition[];
     stats: Stats;
+    maintenances: MaintenanceCamion[];
+    maintenances_prochaines: MaintenanceCamion[];
 }

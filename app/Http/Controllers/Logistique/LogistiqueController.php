@@ -7,6 +7,7 @@ use App\Models\Camion;
 use App\Models\Chauffeur;
 use App\Models\Expedition;
 use App\Models\Livraison;
+use App\Models\MaintenanceCamion;
 use App\Models\Produit;
 use Inertia\Inertia;
 
@@ -42,6 +43,20 @@ class LogistiqueController extends Controller
             ->filter(fn ($e) => $e->date_arrivee_prevue && $e->date_depart && $e->date_depart->lte($e->date_arrivee_prevue))
             ->count();
 
+        $maintenances = MaintenanceCamion::with('camion')
+            ->orderByDesc('date_maintenance')
+            ->get();
+
+        $prochaines = MaintenanceCamion::with('camion')
+            ->whereNotNull('prochaine_maintenance')
+            ->where('prochaine_maintenance', '>=', now())
+            ->where('prochaine_maintenance', '<=', now()->addDays(30))
+            ->orderBy('prochaine_maintenance')
+            ->get();
+
+        $coutMaintenance = MaintenanceCamion::whereYear('date_maintenance', now()->year)
+            ->sum('cout');
+
         return Inertia::render('logistique/Index', [
             'camions' => $camions,
             'chauffeurs' => $chauffeurs,
@@ -60,7 +75,12 @@ class LogistiqueController extends Controller
                 'livraisons_livrees' => $livrees,
                 'chauffeurs_en_mission' => $chauffeurs->where('statut', 'en mission')->count(),
                 'taux_ponctualite' => $avecDate > 0 ? (int) round(($alTemps / $avecDate) * 100) : null,
+                'cout_expeditions' => $expeditions->sum('cout_total'),
+                'maintenances_planifiees' => $prochaines->count(),
+                'cout_maintenance_annuel' => $coutMaintenance,
             ],
+            'maintenances' => $maintenances,
+            'maintenances_prochaines' => $prochaines,
         ]);
     }
 }

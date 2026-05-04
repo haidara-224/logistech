@@ -24,11 +24,14 @@ class Expedition extends Model
         'date_arrivee_prevue',
         'statut',
         'details',
+        'cout_total',
+        'distance_km',
     ];
 
     protected $casts = [
         'date_depart' => 'date',
         'date_arrivee_prevue' => 'date',
+        'cout_total' => 'decimal:2',
     ];
 
     public function camion(): BelongsTo

@@ -130,6 +130,7 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
     Route::get('mouvements', [MouvementsStockController::class, 'index'])->name('mouvements.index');
     Route::get('stock/ajustements', [MouvementsStockController::class, 'ajustements'])->name('stock.ajustements');
     Route::post('stock/ajustements', [MouvementsStockController::class, 'store'])->name('stock.ajustements.store');
+    Route::get('stock/rapport', [MouvementsStockController::class, 'exportStock'])->name('stock.rapport');
 });
 
 // Super admin only

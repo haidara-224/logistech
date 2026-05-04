@@ -2,17 +2,26 @@
 
 namespace App\Http\Requests\Logistique;
 
+use App\Models\Expedition;
 use App\Models\Produit;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreExpeditionRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
-    public function rules()
+    protected function prepareForValidation(): void
+    {
+        if (empty($this->reference)) {
+            $next = Expedition::count() + 1;
+            $this->merge(['reference' => 'Ref_'.$next]);
+        }
+    }
+
+    public function rules(): array
     {
         return [
             'reference' => 'required|string|max:255|unique:expeditions,reference',
@@ -42,6 +51,7 @@ class StoreExpeditionRequest extends FormRequest
 
                 if ($produit->quantite_stock <= 0) {
                     $validator->errors()->add("produits.$index.produit_id", 'Produit en rupture de stock.');
+
                     continue;
                 }
 

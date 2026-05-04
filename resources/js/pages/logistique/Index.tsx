@@ -1,12 +1,13 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Truck, Users, Package, MapPin, BarChart3, Activity } from 'lucide-react';
+import { Truck, Users, Package, MapPin, BarChart3, Activity, Wrench } from 'lucide-react';
 import StatsDashboard from '@/components/logistique/Statsdashboard';
 import CamionsTab from '@/components/logistique/Camionstab';
 import ChauffeursTab from '@/components/logistique/Chauffeurstab';
 import ExpeditionsTab from '@/components/logistique/Expeditionstab';
 import LivraisonsTab from '@/components/logistique/Livraisonstab';
+import MaintenancesTab from '@/components/logistique/Maintenancestab';
 import { LogistiqueProps } from '@/types/logistique';
 
 const TABS = [
@@ -15,6 +16,7 @@ const TABS = [
     { id: 'chauffeurs',   label: 'Chauffeurs',    icon: Users,     accent: '#8B5CF6' },
     { id: 'expeditions',  label: 'Expéditions',   icon: MapPin,    accent: '#10B981' },
     { id: 'livraisons',   label: 'Livraisons',    icon: Package,   accent: '#F59E0B' },
+    { id: 'maintenances', label: 'Maintenances',  icon: Wrench,    accent: '#F97316' },
 ];
 
 export default function LogistiqueIndex(props: LogistiqueProps) {
@@ -29,7 +31,7 @@ export default function LogistiqueIndex(props: LogistiqueProps) {
 
                 {/* Top header bar */}
                 <header className="border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-50">
-                    <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="max-w-400 mx-auto px-6 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-linear-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-500/20">
                                 <img src="/logo.jpeg" alt="Logo" className="w-5 h-5" />
@@ -46,7 +48,7 @@ export default function LogistiqueIndex(props: LogistiqueProps) {
                     </div>
                 </header>
 
-                <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <div className="max-w-400 mx-auto px-6 py-8">
 
                     {/* Page title */}
                     <div className="mb-8">
@@ -138,6 +140,13 @@ export default function LogistiqueIndex(props: LogistiqueProps) {
                                 <LivraisonsTab
                                     livraisons={props.livraisons}
                                     expeditions={props.expeditions}
+                                />
+                            )}
+                            {activeTab === 'maintenances' && (
+                                <MaintenancesTab
+                                    maintenances={props.maintenances}
+                                    maintenances_prochaines={props.maintenances_prochaines}
+                                    camions={props.camions}
                                 />
                             )}
                         </motion.div>

@@ -19,7 +19,7 @@ class ExpeditionController extends Controller
 
         $expedition = Expedition::create(array_filter($validated, fn ($value) => $value !== null));
 
-        if (!empty($validated['produits'])) {
+        if (! empty($validated['produits'])) {
             foreach ($validated['produits'] as $item) {
                 $quantity = (int) ($item['quantite'] ?? 1);
                 $expedition->produits()->attach($item['produit_id'], ['quantite' => $quantity]);
@@ -33,8 +33,8 @@ class ExpeditionController extends Controller
                         'produit_id' => $produit->id,
                         'type' => 'sortie',
                         'quantite' => $quantity,
-                  
-                        'source' => 'expedition ',
+
+                        'source' => 'expedition',
                     ]);
                 }
             }

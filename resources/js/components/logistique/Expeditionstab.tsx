@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Form } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown, Search, X, Check, Phone, Truck, History, AlertTriangle, Calendar } from 'lucide-react';
+import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown, Search, X, Check, Phone, Truck, History, Calendar } from 'lucide-react';
 import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
 import { Camion, Chauffeur, Expedition, Produit } from '@/types/logistique';
 
@@ -40,6 +40,9 @@ function ProductRow({ row, index, onUpdate, onRemove, onOpenModal }: ProductRowP
             transition={{ duration: 0.2 }}
             className="rounded-xl border border-border bg-muted/30 p-4"
         >
+            {/* Hidden input so produit_id is included in form submission */}
+            <input type="hidden" name={`produits[${index}][produit_id]`} value={row.produit_id} />
+
             <div className="grid grid-cols-[1fr_100px_auto] gap-3 items-end">
                 <div>
                     {index === 0 && (
@@ -260,8 +263,6 @@ function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits
             <Form method="post" action="/dashboard/logistique/expeditions" className="space-y-4">
                 {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
                     <>
-                        <ThemedInput name="reference" label="Référence" placeholder="EXP-2026-001" error={errors.reference} />
-
                         <div className="grid grid-cols-2 gap-3">
                             <ThemedSelect name="camion_id" label="Camion" error={errors.camion_id}>
                                 {camionsDisponibles.length === 0
