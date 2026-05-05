@@ -116,7 +116,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
               {NAV_LINKS.map(link => {
                 const isActive = activeLink === link.href.slice(1);
                 return (
-                  <Link key={link.href} href={link.href}
+                  <a key={link.href} href={link.href}
                     className={cn('relative px-4 py-2 text-[13.5px] font-medium rounded-lg transition-all duration-250',
                       isActive ? 'text-[#C8962E]' : cn(textColor, 'hover:text-[#C8962E]'))}
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -126,7 +126,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
                       <motion.div layoutId="navActive" className="absolute inset-0 rounded-lg bg-[#C8962E]/10"
                         transition={{ type: 'spring', stiffness: 400, damping: 35 }} />
                     )}
-                  </Link>
+                  </a>
                 );
               })}
             </div>
