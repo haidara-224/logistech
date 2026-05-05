@@ -6,10 +6,12 @@ use App\Http\Controllers\Logistique\ExpeditionController;
 use App\Http\Controllers\Logistique\LivraisonController;
 use App\Http\Controllers\Logistique\LogistiqueController;
 use App\Http\Controllers\Logistique\MaintenanceCamionController;
+use App\Http\Controllers\Logistique\PlanificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashboard')->group(function () {
     Route::get('logistique', [LogistiqueController::class, 'index'])->name('logistique.index');
+    Route::get('planification', [PlanificationController::class, 'index'])->name('planification.index');
 
     Route::post('logistique/camions', [CamionController::class, 'store'])->name('logistique.camions.store');
     Route::put('logistique/camions/{camion}', [CamionController::class, 'update'])->name('logistique.camions.update');

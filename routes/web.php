@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BoutiqueController;
 use App\Http\Controllers\CategorieController;
@@ -125,6 +126,12 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
 
     // Ventes (commandes payées / CA)
     Route::get('ventes', [VenteController::class, 'index'])->name('ventes.index');
+
+    // Agenda
+    Route::get('agenda', [AgendaController::class, 'index'])->name('agenda.index');
+    Route::post('agenda', [AgendaController::class, 'store'])->name('agenda.store');
+    Route::put('agenda/{agendaEvenement}', [AgendaController::class, 'update'])->name('agenda.update');
+    Route::delete('agenda/{agendaEvenement}', [AgendaController::class, 'destroy'])->name('agenda.destroy');
 
     // Mouvements & Ajustements de stock
     Route::get('mouvements', [MouvementsStockController::class, 'index'])->name('mouvements.index');

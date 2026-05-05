@@ -29,9 +29,13 @@ interface ProductRowProps {
     onRemove: (index: number) => void;
     onOpenModal: (index: number) => void;
     produits: Produit[];
+    errors?: Record<string, string>;
 }
 
-function ProductRow({ row, index, onUpdate, onRemove, onOpenModal }: ProductRowProps) {
+function ProductRow({ row, index, onUpdate, onRemove, onOpenModal, errors }: ProductRowProps) {
+    const errProduit  = errors?.[`produits.${index}.produit_id`];
+    const errQuantite = errors?.[`produits.${index}.quantite`];
+
     return (
         <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -53,22 +57,26 @@ function ProductRow({ row, index, onUpdate, onRemove, onOpenModal }: ProductRowP
                     <button
                         type="button"
                         onClick={() => onOpenModal(index)}
-                        className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground text-left flex items-center justify-between hover:border-ring transition-all duration-200 cursor-pointer"
+                        className={`w-full bg-card border rounded-xl px-3.5 py-2.5 text-sm text-foreground text-left flex items-center justify-between hover:border-ring transition-all duration-200 cursor-pointer ${errProduit ? 'border-destructive' : 'border-border'}`}
                     >
                         <span className={row.produit_id ? 'text-foreground' : 'text-muted-foreground/50'}>
                             {row.produit ? `${row.produit.nom} (${row.produit.sku})` : 'Sélectionner un produit'}
                         </span>
                         <ChevronDown size={14} className="text-muted-foreground" />
                     </button>
+                    {errProduit && <p className="text-xs text-destructive mt-1">{errProduit}</p>}
                 </div>
-                <ThemedInput
-                    label={index === 0 ? 'Qté' : undefined}
-                    type="number"
-                    min={1}
-                    value={row.quantite}
-                    onChange={e => onUpdate(index, 'quantite', e.target.value)}
-                    name={`produits[${index}][quantite]`}
-                />
+                <div>
+                    <ThemedInput
+                        label={index === 0 ? 'Qté' : undefined}
+                        type="number"
+                        min={1}
+                        value={row.quantite}
+                        onChange={e => onUpdate(index, 'quantite', e.target.value)}
+                        name={`produits[${index}][quantite]`}
+                        error={errQuantite}
+                    />
+                </div>
                 <Button variant="danger" size="sm" type="button" onClick={() => onRemove(index)}>
                     <Trash2 size={12} className='text-white' />
                 </Button>
@@ -283,16 +291,16 @@ function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                            <ThemedInput name="origine" label="Origine" placeholder="Entrepôt principal" />
-                            <ThemedInput name="destination" label="Destination" placeholder="Site client" />
+                            <ThemedInput name="origine" label="Origine" placeholder="Entrepôt principal" error={errors.origine} />
+                            <ThemedInput name="destination" label="Destination" placeholder="Site client" error={errors.destination} />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                            <ThemedInput name="date_depart" label="Date de départ" type="date" />
-                            <ThemedInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" />
+                            <ThemedInput name="date_depart" label="Date de départ" type="date" error={errors.date_depart} />
+                            <ThemedInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" error={errors.date_arrivee_prevue} />
                         </div>
 
-                        <ThemedSelect name="statut" label="Statut">
+                        <ThemedSelect name="statut" label="Statut" error={errors.statut}>
                             <option value="en préparation">En préparation</option>
                             <option value="en cours">En cours</option>
                             <option value="livré">Livré</option>
@@ -313,6 +321,7 @@ function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits
                                         onUpdate={updateRow}
                                         onRemove={removeRow}
                                         onOpenModal={(idx) => setModalIndex(idx)}
+                                        errors={errors}
                                     />
                                 ))}
                             </AnimatePresence>

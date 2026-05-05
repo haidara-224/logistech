@@ -16,8 +16,11 @@ class StoreExpeditionRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if (empty($this->reference)) {
-            $next = Expedition::count() + 1;
-            $this->merge(['reference' => 'Ref_'.$next]);
+            $n = Expedition::withTrashed()->count() + 1;
+            while (Expedition::withTrashed()->where('reference', 'Ref_'.$n)->exists()) {
+                $n++;
+            }
+            $this->merge(['reference' => 'Ref_'.$n]);
         }
     }
 

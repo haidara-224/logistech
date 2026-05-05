@@ -55,4 +55,11 @@ class Expedition extends Model
     {
         return $this->hasMany(Livraison::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Expedition $expedition) {
+            $expedition->livraisons()->delete();
+        });
+    }
 }

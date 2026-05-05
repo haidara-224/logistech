@@ -11,12 +11,12 @@ import MaintenancesTab from '@/components/logistique/Maintenancestab';
 import { LogistiqueProps } from '@/types/logistique';
 
 const TABS = [
-    { id: 'dashboard',    label: 'Vue globale',  icon: BarChart3, accent: '#F97316' },
-    { id: 'camions',      label: 'Camions',       icon: Truck,     accent: '#3B82F6' },
-    { id: 'chauffeurs',   label: 'Chauffeurs',    icon: Users,     accent: '#8B5CF6' },
-    { id: 'expeditions',  label: 'Expéditions',   icon: MapPin,    accent: '#10B981' },
-    { id: 'livraisons',   label: 'Livraisons',    icon: Package,   accent: '#F59E0B' },
-    { id: 'maintenances', label: 'Maintenances',  icon: Wrench,    accent: '#F97316' },
+    { id: 'dashboard',      label: 'Vue globale',   icon: BarChart3, accent: '#F97316' },
+    { id: 'camions',        label: 'Camions',        icon: Truck,     accent: '#3B82F6' },
+    { id: 'chauffeurs',     label: 'Chauffeurs',     icon: Users,     accent: '#8B5CF6' },
+    { id: 'expeditions',    label: 'Expéditions',    icon: MapPin,    accent: '#10B981' },
+    { id: 'livraisons',     label: 'Livraisons',     icon: Package,   accent: '#F59E0B' },
+    { id: 'maintenances',   label: 'Maintenances',   icon: Wrench,    accent: '#F97316' },
 ];
 
 export default function LogistiqueIndex(props: LogistiqueProps) {
@@ -149,6 +149,7 @@ export default function LogistiqueIndex(props: LogistiqueProps) {
                                     camions={props.camions}
                                 />
                             )}
+
                         </motion.div>
                     </AnimatePresence>
                 </div>

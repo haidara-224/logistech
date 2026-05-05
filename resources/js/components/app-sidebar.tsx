@@ -1,7 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarDays,
     FolderGit2,
+    GanttChartSquare,
     LayoutGrid,
     ShoppingCart,
     Users,
@@ -79,6 +81,14 @@ const NAV_GROUPS: NavGroup[] = [
         icon: Truck,
         items: [
             { label: 'Logistique', href: '/dashboard/logistique', icon: Truck },
+            { label: 'Planification', href: '/dashboard/planification', icon: GanttChartSquare },
+        ],
+    },
+    {
+        label: 'Agenda',
+        icon: CalendarDays,
+        items: [
+            { label: 'Agenda', href: '/dashboard/agenda', icon: CalendarDays },
         ],
     },
     {
