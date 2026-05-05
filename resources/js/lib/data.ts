@@ -11,30 +11,30 @@ export type ServiceId = "charpente" | "transport" | "froid" | "batiment" | "logi
 
 export interface ServiceData {
   id: ServiceId;
-  icon: LucideIcon;  
+  icon: LucideIcon;
   color: string;
   title: string;
   short: string;
   desc: string;
   img: string;
-  images?: string[];  // ← optional array for carousel
+  images?: string[];
   features: string[];
 }
 
 export const SERVICES_DATA: ServiceData[] = [
   {
     id: "charpente",
-    icon: HardHat,  // ← minuscule
+    icon: HardHat,
     color: "#C8962E",
     title: "Charpente Métallique",
     short: "Structures sur mesure",
     desc: "De la conception à la finition, nous réalisons vos structures métalliques avec précision. Bâtiments industriels, agricoles, commerciaux — chaque charpente est dimensionnée pour durer.",
-  img: '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg',   // fallback
-  images: [                                   // carousel complet
-    '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (2).jpeg',
-    '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (3).jpeg',
-    '/LOgistech FRoid/WhatsApp Image 2026-04-28 at 7.34.05 PM.jpeg',
-  ],
+    img: '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg',
+    images: [
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (2).jpeg',
+      '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (3).jpeg',
+      '/LOgistech FRoid/WhatsApp Image 2026-04-28 at 7.34.05 PM.jpeg',
+    ],
     features: ["Bâtiments industriels", "Structures agricoles", "Commerce & retail", "Charpentes sur mesure"],
   },
   {
@@ -60,13 +60,13 @@ export const SERVICES_DATA: ServiceData[] = [
     title: "Froid Industriel",
     short: "Génie climatique",
     desc: "Installation, ingénierie et maintenance de systèmes frigorifiques. Chambres froides, vitrines réfrigérées, centrales frigorifiques — expertise complète de la chaîne du froid.",
-    img:     '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.18 PM.jpeg',
-      images: [
-        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.19 PM.jpeg',
-        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.20 PM.jpeg',
-        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.17 PM (1).jpeg',
-        '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.49 PM.jpeg',
-      ],
+    img: '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.18 PM.jpeg',
+    images: [
+      '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.19 PM.jpeg',
+      '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.20 PM.jpeg',
+      '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.17 PM (1).jpeg',
+      '/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.49 PM.jpeg',
+    ],
     features: ["Chambres froides", "Vitrines réfrigérées", "Maintenance préventive", "Dépannage réactif"],
   },
   {
@@ -80,8 +80,6 @@ export const SERVICES_DATA: ServiceData[] = [
     images: [
       '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.23 PM.jpeg',
       '/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.24 PM (1).jpeg',
-
-      
     ],
     features: ["Logements neufs", "Développement immobilier", "Génie civil", "Rénovation"],
   },
@@ -96,3 +94,13 @@ export const SERVICES_DATA: ServiceData[] = [
     features: ["Stockage sur mesure", "Gestion des flux", "Supply chain", "Solutions 360°"],
   },
 ];
+
+export function getServicesData(t: (key: string, fallback?: string) => string): ServiceData[] {
+  return SERVICES_DATA.map(svc => ({
+    ...svc,
+    title: t(`svc_${svc.id}_title`, svc.title),
+    short: t(`svc_${svc.id}_short`, svc.short),
+    desc: t(`svc_${svc.id}_desc`, svc.desc),
+    features: svc.features.map((f, i) => t(`svc_${svc.id}_f${i + 1}`, f)),
+  }));
+}

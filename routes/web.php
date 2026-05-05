@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BoutiqueController;
 use App\Http\Controllers\CategorieController;
@@ -24,6 +25,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
+
+Route::post('/language', [LanguageController::class, 'store'])->name('language.store');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/images', [HomeController::class, 'images'])->name('images');

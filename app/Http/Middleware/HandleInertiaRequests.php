@@ -44,6 +44,8 @@ class HandleInertiaRequests extends Middleware
                 'is_super_admin' => $request->user()?->hasRole('super admin') ?? false,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'locale'       => app()->getLocale(),
+            'translations' => trans('ui'),
         ];
     }
 }

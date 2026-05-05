@@ -2,46 +2,30 @@ import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { FileText, ArrowRight, ChevronDown, HardHat, Truck, Snowflake, Building2, Package, Shield, Award, Zap } from 'lucide-react';
 import { Counter } from './ui-primitives';
+import { useTranslation } from '@/hooks/use-translation';
 
 const HERO_IMAGES = [
-  {
-    url: "/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.52 PM (1).jpeg",
-    title: "Froid Industriel",
-    description: "Solutions de refroidissement haute performance"
-  },
-  {
-    url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM.jpeg",
-    title: "Installation Technique",
-    description: "Équipements dernier cri"
-  },
-  {
-    url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.37 PM (1).jpeg",
-    title: "Transport & Logistique",
-    description: "Flotte moderne et réactive"
-  },
-  {
-    url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg",
-    title: "Charpente Métallique",
-    description: "Structures robustes et durables"
-  },
+  { url: "/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.52 PM (1).jpeg", titleKey: 'svc_froid_title', descKey: 'hero_img1_desc' },
+  { url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM.jpeg", titleKey: 'hero_img2_title', descKey: 'hero_img2_desc' },
+  { url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.37 PM (1).jpeg", titleKey: 'svc_transport_title', descKey: 'hero_img3_desc' },
+  { url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg", titleKey: 'svc_charpente_title', descKey: 'hero_img4_desc' },
 ];
 
 const STATS = [
-  { value: 5, suffix: '+', label: "Années d'expérience", icon: Award },
-  { value: 200, suffix: '+', label: 'Produits disponibles', icon: Package },
-  { value: 50, suffix: '+', label: 'Clients satisfaits', icon: Shield },
+  { value: 5, suffix: '+', labelKey: 'hero_stat_years', icon: Award },
+  { value: 200, suffix: '+', labelKey: 'hero_stat_products', icon: Package },
+  { value: 50, suffix: '+', labelKey: 'hero_stat_clients', icon: Shield },
 ];
 
-const SERVICES = [
-  { name: "Charpente Métallique", icon: HardHat, color: "#C8962E" },
-  { name: "Transport Routier", icon: Truck, color: "#3B82F6" },
-  { name: "Froid Industriel", icon: Snowflake, color: "#06B6D4" },
-  { name: "Bâtiment & Construction", icon: Building2, color: "#10B981" },
+const SERVICES_KEYS = [
+  { nameKey: 'svc_charpente_title', icon: HardHat, color: "#C8962E" },
+  { nameKey: 'svc_transport_title', icon: Truck, color: "#3B82F6" },
+  { nameKey: 'svc_froid_title', icon: Snowflake, color: "#06B6D4" },
+  { nameKey: 'svc_batiment_title', icon: Building2, color: "#10B981" },
 ];
 
-interface HeroProps { onDevis: () => void }
-
-export function Hero({ onDevis }: HeroProps) {
+export function Hero(_: { onDevis: () => void }) {
+  const { t, locale } = useTranslation();
   const { scrollY } = useScroll();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
@@ -49,8 +33,7 @@ export function Hero({ onDevis }: HeroProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  
-  // Détection mobile
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -58,11 +41,16 @@ export function Hero({ onDevis }: HeroProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Parallax réduit sur mobile
+  // Reset typewriter on locale change
+  useEffect(() => {
+    setTypedText('');
+    setIsDeleting(false);
+    setServiceIndex(0);
+  }, [locale]);
+
   const yOffset = useTransform(scrollY, [0, 500], [0, isMobile ? 30 : 150]);
   const opacity = useTransform(scrollY, [0, 400], [1, isMobile ? 0.7 : 0.5]);
 
-  // Carousel images
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -70,9 +58,8 @@ export function Hero({ onDevis }: HeroProps) {
     return () => clearInterval(interval);
   }, [isMobile]);
 
-  // Typewriter ralenti sur mobile
   useEffect(() => {
-    const currentService = SERVICES[serviceIndex].name;
+    const currentServiceName = t(SERVICES_KEYS[serviceIndex].nameKey);
     let timeout: NodeJS.Timeout;
 
     if (isDeleting) {
@@ -80,13 +67,13 @@ export function Hero({ onDevis }: HeroProps) {
         setTypedText(prev => prev.slice(0, -1));
         if (typedText === "") {
           setIsDeleting(false);
-          setServiceIndex((prev) => (prev + 1) % SERVICES.length);
+          setServiceIndex((prev) => (prev + 1) % SERVICES_KEYS.length);
         }
       }, isMobile ? 60 : 40);
     } else {
       timeout = setTimeout(() => {
-        setTypedText(currentService.slice(0, typedText.length + 1));
-        if (typedText.length + 1 === currentService.length) {
+        setTypedText(currentServiceName.slice(0, typedText.length + 1));
+        if (typedText.length + 1 === currentServiceName.length) {
           setTimeout(() => setIsDeleting(true), isMobile ? 3000 : 2500);
         }
       }, isMobile ? 90 : 60);
@@ -95,19 +82,17 @@ export function Hero({ onDevis }: HeroProps) {
     return () => clearTimeout(timeout);
   }, [typedText, isDeleting, serviceIndex, isMobile]);
 
-  // Curseur
   useEffect(() => {
     const interval = setInterval(() => setShowCursor(prev => !prev), isMobile ? 800 : 500);
     return () => clearInterval(interval);
   }, [isMobile]);
 
-  const currentService = SERVICES[serviceIndex];
-  const CurrentIcon = currentService.icon;
+  const currentService = SERVICES_KEYS[serviceIndex];
   const currentColor = currentService.color;
 
   return (
     <section className="relative min-h-screen overflow-hidden">
-      
+
       {/* Background Carousel */}
       <div className="absolute inset-0">
         <AnimatePresence mode="sync">
@@ -121,19 +106,17 @@ export function Hero({ onDevis }: HeroProps) {
           >
             <img
               src={HERO_IMAGES[currentIndex].url}
-              alt={HERO_IMAGES[currentIndex].title}
+              alt={t(HERO_IMAGES[currentIndex].titleKey)}
               className="w-full h-full object-cover"
             />
           </motion.div>
         </AnimatePresence>
-        
-        {/* Overlay élégant pour la lisibilité */}
+
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
-        
-        {/* Effet de lumière - désactivé sur mobile */}
+
         {!isMobile && (
-          <motion.div 
+          <motion.div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[120px]"
             style={{ background: `${currentColor}20` }}
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
@@ -143,17 +126,16 @@ export function Hero({ onDevis }: HeroProps) {
       </div>
 
       {/* Contenu principal */}
-      <motion.div 
+      <motion.div
         className="relative z-10 min-h-screen flex items-center"
         style={{ y: yOffset, opacity }}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full py-16 sm:py-20">
-          
+
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            
+
             {/* Colonne gauche - Texte */}
             <div>
-              {/* Badge - simplifié sur mobile */}
               <motion.div
                 initial={{ opacity: 0, x: isMobile ? 0 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -162,12 +144,11 @@ export function Hero({ onDevis }: HeroProps) {
               >
                 <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-[#C8962E]" />
                 <span className="text-[#C8962E] text-[10px] sm:text-sm font-semibold uppercase tracking-wider">
-                  Leader Guinée
+                  {t('hero_badge')}
                 </span>
                 <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#C8962E] animate-pulse" />
               </motion.div>
 
-              {/* Titre - taille réduite sur mobile */}
               <motion.h1
                 initial={{ opacity: 0, x: isMobile ? 0 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -175,38 +156,33 @@ export function Hero({ onDevis }: HeroProps) {
                 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                L'excellence en{" "}
-                <span 
+                {t('hero_title1')}{" "}
+                <span
                   className="relative inline-block"
                   style={{ color: currentColor }}
                 >
                   {isMobile ? typedText.slice(0, 15) + (typedText.length > 15 ? '...' : '') : typedText}
-                  <span 
+                  <span
                     className="inline-block w-[2px] sm:w-[3px] h-6 sm:h-10 align-middle ml-0.5 sm:ml-1"
-                    style={{ 
+                    style={{
                       background: currentColor,
                       opacity: showCursor ? 1 : 0,
                     }}
                   />
                 </span>
                 <br />
-                à votre service
+                {t('hero_title2')}
               </motion.h1>
 
-              {/* Description - simplifiée sur mobile */}
               <motion.p
                 initial={{ opacity: 0, x: isMobile ? 0 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: isMobile ? 0.3 : 0.7, delay: isMobile ? 0.1 : 0.2 }}
                 className="text-white/70 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed max-w-lg"
               >
-                {isMobile 
-                  ? "Solutions intégrées pour l'industrie et la construction en Guinée."
-                  : "Solutions intégrées pour l'industrie et la construction en Guinée. De la conception à la réalisation, nous bâtissons l'avenir ensemble."
-                }
+                {isMobile ? t('hero_subtitle_short') : t('hero_subtitle_full')}
               </motion.p>
 
-              {/* Boutons - réduits sur mobile */}
               <motion.div
                 initial={{ opacity: 0, x: isMobile ? 0 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -216,13 +192,13 @@ export function Hero({ onDevis }: HeroProps) {
                 <a
                   href="#gallery"
                   className="group px-5 sm:px-8 py-2.5 sm:py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-xl text-sm sm:text-base"
-                  style={{ 
+                  style={{
                     background: `linear-gradient(135deg, ${currentColor}, ${currentColor}dd)`,
                     boxShadow: `0 10px 30px ${currentColor}40`
                   }}
                 >
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Galerie
+                  {t('hero_gallery')}
                   <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                 </a>
 
@@ -230,12 +206,11 @@ export function Hero({ onDevis }: HeroProps) {
                   href="#services"
                   className="px-5 sm:px-8 py-2.5 sm:py-4 rounded-xl font-semibold text-white border border-white/30 backdrop-blur-sm flex items-center justify-center gap-2 transition-all hover:bg-white/10 text-sm sm:text-base"
                 >
-                  Nos services
+                  {t('hero_services')}
                   <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                 </a>
               </motion.div>
 
-              {/* Stats - compactes sur mobile */}
               <motion.div
                 initial={{ opacity: 0, x: isMobile ? 0 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -250,7 +225,7 @@ export function Hero({ onDevis }: HeroProps) {
                         <Counter to={stat.value} suffix={stat.suffix} />
                       </div>
                       <p className="text-white/40 text-[8px] sm:text-xs uppercase tracking-wider whitespace-nowrap">
-                        {isMobile ? stat.label.split(' ')[0] : stat.label}
+                        {isMobile ? t(stat.labelKey).split(' ')[0] : t(stat.labelKey)}
                       </p>
                     </div>
                   </div>
@@ -258,7 +233,7 @@ export function Hero({ onDevis }: HeroProps) {
               </motion.div>
             </div>
 
-            {/* Colonne droite - Carte d'image active (cachée sur mobile) */}
+            {/* Colonne droite - Carte image active (cachée sur mobile) */}
             {!isMobile && (
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
@@ -270,17 +245,17 @@ export function Hero({ onDevis }: HeroProps) {
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <img
                       src={HERO_IMAGES[currentIndex].url}
-                      alt={HERO_IMAGES[currentIndex].title}
+                      alt={t(HERO_IMAGES[currentIndex].titleKey)}
                       className="w-full h-[500px] object-cover rounded-2xl"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-2xl" />
-                    
+
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <h3 className="text-2xl font-bold text-white mb-2">
-                        {HERO_IMAGES[currentIndex].title}
+                        {t(HERO_IMAGES[currentIndex].titleKey)}
                       </h3>
                       <p className="text-white/60">
-                        {HERO_IMAGES[currentIndex].description}
+                        {t(HERO_IMAGES[currentIndex].descKey)}
                       </p>
                     </div>
                   </div>
@@ -291,8 +266,8 @@ export function Hero({ onDevis }: HeroProps) {
                         key={idx}
                         onClick={() => setCurrentIndex(idx)}
                         className={`transition-all duration-300 rounded-full ${
-                          idx === currentIndex 
-                            ? 'w-8 h-1.5 bg-[#C8962E]' 
+                          idx === currentIndex
+                            ? 'w-8 h-1.5 bg-[#C8962E]'
                             : 'w-1.5 h-1.5 bg-white/40'
                         }`}
                       />
@@ -313,7 +288,7 @@ export function Hero({ onDevis }: HeroProps) {
           transition={{ delay: 1 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2"
         >
-          <span className="text-white/30 text-xs uppercase tracking-widest">Explorer</span>
+          <span className="text-white/30 text-xs uppercase tracking-widest">{t('hero_explore')}</span>
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
@@ -323,7 +298,7 @@ export function Hero({ onDevis }: HeroProps) {
         </motion.div>
       )}
 
-      {/* Miniatures mobiles - simplifiées */}
+      {/* Miniatures mobiles */}
       {isMobile && (
         <div className="absolute bottom-8 left-0 right-0 z-20">
           <div className="flex justify-center gap-1.5 px-4">

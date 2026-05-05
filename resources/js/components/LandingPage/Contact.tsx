@@ -1,15 +1,8 @@
 import { CheckCircle, Clock, Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
-import { FadeIn } from "./ui-primitives";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { router } from "@inertiajs/react";
-
-const CONTACT_INFO = [
-  { icon: MapPin, label: "Adresse",   value: "Conakry, Guinée"              },
-  { icon: Phone,  label: "Téléphone", value: "+224 600 000 000"              },
-  { icon: Mail,   label: "Email",     value: "contact@logistech-equip.com"  },
-  { icon: Clock,  label: "Horaires",  value: "Lun–Sam : 08h–18h"           },
-];
+import { useTranslation } from "@/hooks/use-translation";
 
 const SOCIALS = [
   { icon: Facebook,  href: "#", label: "Facebook"  },
@@ -26,12 +19,20 @@ const inputCls = [
 ].join(" ");
 
 export function Contact() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ nom: "", email: "", tel: "", message: "" });
   const [sent, setSent]  = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const CONTACT_INFO = [
+    { icon: MapPin, label: t('contact_address'), value: t('contact_location')              },
+    { icon: Phone,  label: t('contact_phone'),   value: "+224 614 60 44 44"               },
+    { icon: Mail,   label: t('contact_email'),   value: "contact@logistech-equip.com"     },
+    { icon: Clock,  label: t('contact_hours'),   value: t('contact_hours_value')          },
+  ];
+
   const handleSend = () => {
-    if (submitting) return;
+    if (submitting) { return; }
     setSubmitting(true);
     router.post('/contact', {
       nom: form.nom,
@@ -56,10 +57,8 @@ export function Contact() {
     <section
       id="contact"
       className="relative bg-stone-50 dark:bg-[#060D1A]"
-      /* ── FIX: no overflow-hidden, no fixed height — section grows naturally ── */
       style={{ paddingTop: '7rem', paddingBottom: '7rem' }}
     >
-      {/* Top accent line */}
       <div
         className="absolute top-0 inset-x-0 h-px pointer-events-none"
         style={{ background: "linear-gradient(90deg,transparent,rgba(200,150,46,0.3),transparent)" }}
@@ -73,7 +72,7 @@ export function Contact() {
             className="text-[#C8962E] text-[10px] uppercase tracking-[0.3em] font-semibold"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
-            Contactez-nous
+            {t('contact_badge')}
           </span>
           <h2
             className="mt-3 text-slate-900 dark:text-white"
@@ -85,180 +84,155 @@ export function Contact() {
               letterSpacing: "-0.02em",
             }}
           >
-            Parlons de votre projet
+            {t('contact_title')}
           </h2>
         </div>
 
-        {/* ── Grid: stacks on mobile (form first, map second) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* ════════════════════════════════════
-              LEFT — Form card
-              ════════════════════════════════════ */}
-      
-            <div
-              className="rounded-2xl p-6 sm:p-8 bg-white border border-stone-200 shadow-sm dark:bg-white/[0.025] dark:border-white/[0.07]"
-            >
-              {/* Contact info pills */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-7">
-                {CONTACT_INFO.map(item => (
+          {/* ── LEFT: Form card ── */}
+          <div className="rounded-2xl p-6 sm:p-8 bg-white border border-stone-200 shadow-sm dark:bg-white/[0.025] dark:border-white/[0.07]">
+            {/* Contact info pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-7">
+              {CONTACT_INFO.map(item => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 dark:bg-white/[0.03] border border-stone-100 dark:border-white/[0.05]"
+                >
                   <div
-                    key={item.label}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 dark:bg-white/[0.03] border border-stone-100 dark:border-white/[0.05]"
+                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(200,150,46,0.12)" }}
                   >
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(200,150,46,0.12)" }}
+                    <item.icon size={16} className="text-[#C8962E]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-wider" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      {item.label}
+                    </p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-white truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      {item.value}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-stone-100 dark:bg-white/[0.06] mb-7" />
+
+            {/* Form fields */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { key: "nom", label: t('contact_name'), placeholder: t('contact_name_ph'), type: "text" },
+                  { key: "tel", label: t('contact_phone'), placeholder: t('contact_phone_ph'), type: "tel" },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label
+                      className="text-[10px] uppercase tracking-widest mb-1.5 block text-slate-400 dark:text-white/35"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
-                      <item.icon size={16} className="text-[#C8962E]" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-wider" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                        {item.label}
-                      </p>
-                      <p className="text-sm font-medium text-slate-800 dark:text-white truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                        {item.value}
-                      </p>
-                    </div>
+                      {f.label}
+                    </label>
+                    <input
+                      type={f.type}
+                      placeholder={f.placeholder}
+                      value={(form as any)[f.key]}
+                      onChange={set(f.key)}
+                      className={inputCls}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    />
                   </div>
                 ))}
               </div>
 
-              {/* Divider */}
-              <div className="h-px bg-stone-100 dark:bg-white/[0.06] mb-7" />
-
-              {/* Form fields */}
-              <div className="space-y-4">
-
-                {/* Name + Phone row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    { key: "nom", label: "Nom",       placeholder: "Votre nom", type: "text" },
-                    { key: "tel", label: "Téléphone", placeholder: "+224 …",    type: "tel"  },
-                  ].map(f => (
-                    <div key={f.key}>
-                      <label
-                        className="text-[10px] uppercase tracking-widest mb-1.5 block text-slate-400 dark:text-white/35"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      >
-                        {f.label}
-                      </label>
-                      <input
-                        type={f.type}
-                        placeholder={f.placeholder}
-                        value={(form as any)[f.key]}
-                        onChange={set(f.key)}
-                        className={inputCls}
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label
-                    className="text-[10px] uppercase tracking-widest mb-1.5 block text-slate-400 dark:text-white/35"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="email@exemple.com"
-                    value={form.email}
-                    onChange={set("email")}
-                    className={inputCls}
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  />
-                </div>
-
-                {/* Message */}
-                <div>
-                  <label
-                    className="text-[10px] uppercase tracking-widest mb-1.5 block text-slate-400 dark:text-white/35"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Décrivez votre besoin…"
-                    value={form.message}
-                    onChange={set("message")}
-                    className={inputCls + " resize-none"}
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  />
-                </div>
-
-                {/* Submit / success */}
-                <AnimatePresence mode="wait">
-                  {sent ? (
-                    <motion.div
-                      key="ok"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/25"
-                    >
-                      <CheckCircle size={17} className="text-emerald-500 flex-shrink-0" />
-                      <span
-                        className="text-emerald-700 dark:text-emerald-400 text-sm"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      >
-                        Message envoyé ! Nous vous répondons sous 24h.
-                      </span>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      key="btn"
-                      onClick={handleSend}
-                      disabled={submitting}
-                      whileHover={{ scale: submitting ? 1 : 1.02, y: submitting ? 0 : -1 }}
-                      whileTap={{ scale: submitting ? 1 : 0.98 }}
-                      className="w-full py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2.5 transition-shadow hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
-                      style={{
-                        background: "linear-gradient(135deg,#C8962E,#E8B84B)",
-                        boxShadow: "0 8px 24px rgba(200,150,46,0.3)",
-                        fontFamily: "'DM Sans', sans-serif",
-                      }}
-                    >
-                      <Mail size={16} />
-                      {submitting ? 'Envoi en cours...' : 'Envoyer le message'}
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+              <div>
+                <label
+                  className="text-[10px] uppercase tracking-widest mb-1.5 block text-slate-400 dark:text-white/35"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  {t('contact_email')}
+                </label>
+                <input
+                  type="email"
+                  placeholder={t('contact_email_ph')}
+                  value={form.email}
+                  onChange={set("email")}
+                  className={inputCls}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                />
               </div>
+
+              <div>
+                <label
+                  className="text-[10px] uppercase tracking-widest mb-1.5 block text-slate-400 dark:text-white/35"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  {t('contact_message')}
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder={t('contact_message_ph')}
+                  value={form.message}
+                  onChange={set("message")}
+                  className={inputCls + " resize-none"}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                />
+              </div>
+
+              <AnimatePresence mode="wait">
+                {sent ? (
+                  <motion.div
+                    key="ok"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/25"
+                  >
+                    <CheckCircle size={17} className="text-emerald-500 flex-shrink-0" />
+                    <span
+                      className="text-emerald-700 dark:text-emerald-400 text-sm"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      {t('contact_sent_title')} {t('contact_sent_desc')}
+                    </span>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="btn"
+                    onClick={handleSend}
+                    disabled={submitting}
+                    whileHover={{ scale: submitting ? 1 : 1.02, y: submitting ? 0 : -1 }}
+                    whileTap={{ scale: submitting ? 1 : 0.98 }}
+                    className="w-full py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2.5 transition-shadow hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{
+                      background: "linear-gradient(135deg,#C8962E,#E8B84B)",
+                      boxShadow: "0 8px 24px rgba(200,150,46,0.3)",
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    <Mail size={16} />
+                    {submitting ? t('contact_sending') : t('contact_send')}
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
-     
+          </div>
 
-          {/* ════════════════════════════════════
-              RIGHT — Map + socials
-              FIX: no fixed minHeight on wrapper,
-              map iframe has explicit height
-              ════════════════════════════════════ */}
+          {/* ── RIGHT: Map + socials ── */}
           <div className="flex flex-col gap-4">
-
-            {/* Map */}
             <div
               className="relative rounded-2xl overflow-hidden border border-stone-200 dark:border-[#C8962E]/20 shadow-sm"
-              /* ── FIX: use a fixed px height so the iframe is predictable on all screens ── */
               style={{ height: 400 }}
             >
               <iframe
                 src="https://www.openstreetmap.org/export/embed.html?bbox=-13.7797,9.4650,-13.5797,9.6650&layer=mapnik&marker=9.5654,-13.6773"
                 width="100%"
                 height="100%"
-                style={{
-                  border: 0,
-                  display: "block",
-                  filter: "saturate(0.7) brightness(1.02)",
-                }}
+                style={{ border: 0, display: "block", filter: "saturate(0.7) brightness(1.02)" }}
                 loading="lazy"
-                title="LOGISTECH EQUIP+ - Conakry"
+                title={t('contact_map_title')}
               />
 
-              {/* Map overlay card */}
               <div
                 className="absolute bottom-4 left-4 right-4 p-3.5 rounded-xl flex items-center gap-3"
                 style={{
@@ -275,17 +249,11 @@ export function Contact() {
                   <MapPin size={16} className="text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p
-                    className="font-semibold text-sm text-slate-900 truncate"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
+                  <p className="font-semibold text-sm text-slate-900 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     LOGISTECH EQUIP+
                   </p>
-                  <p
-                    className="text-xs text-slate-500 truncate"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    Conakry, République de Guinée
+                  <p className="text-xs text-slate-500 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    {t('contact_location_full')}
                   </p>
                 </div>
                 <a
@@ -295,12 +263,11 @@ export function Contact() {
                   className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#C8962E] border border-[#C8962E]/25 hover:bg-[#C8962E]/10 transition-colors"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  Itinéraire
+                  {t('contact_directions')}
                 </a>
               </div>
             </div>
 
-            {/* Socials */}
             <div className="flex gap-3">
               {SOCIALS.map(s => (
                 <a
@@ -333,7 +300,6 @@ export function Contact() {
         </div>
       </div>
 
-      {/* Bottom accent */}
       <div
         className="absolute bottom-0 inset-x-0 h-px pointer-events-none"
         style={{ background: "linear-gradient(90deg,transparent,rgba(200,150,46,0.2),transparent)" }}
