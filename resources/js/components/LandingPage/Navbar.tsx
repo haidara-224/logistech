@@ -22,7 +22,8 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
   const [langOpen,    setLangOpen]    = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
-  const { auth }               = usePage().props as any;
+  const { auth, landing }      = usePage().props as any;
+  const logoSrc                = landing?.logo || '/logo.jpeg';
   const currentUrl             = usePage().url;
   const { resolvedAppearance } = useAppearance();
   const { t, locale }          = useTranslation();
@@ -103,7 +104,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
             {/* Logo */}
             <motion.a href="/" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-3 shrink-0">
               <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-[#C8962E]/30 shadow-md">
-                <img src="/logo.jpeg" alt="LOGISTECH EQUIP+" className="w-full h-full object-cover" />
+                <img src={logoSrc} alt="LOGISTECH EQUIP+" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col leading-none">
                 <span className={cn('font-bold text-[15px] tracking-wide', isDark ? 'text-white' : 'text-gray-900')} style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
@@ -271,7 +272,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
                 style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg overflow-hidden ring-2 ring-[#C8962E]/30">
-                    <img src="/logo.jpeg" alt="LOGISTECH" className="w-full h-full object-cover" />
+                    <img src={logoSrc} alt="LOGISTECH" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p className={cn('font-bold text-sm', isDark ? 'text-white' : 'text-gray-900')} style={{ fontFamily: "'Playfair Display', serif" }}>LOGISTECH</p>

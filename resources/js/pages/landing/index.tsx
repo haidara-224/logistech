@@ -77,8 +77,10 @@ const SERVICES_META = [
     { id: 'logistique',label: 'Logistique',            icon: Package,    color: '#8B5CF6' },
 ];
 
-const CSRF = () =>
-    (document.querySelector('meta[name=csrf-token]') as HTMLMetaElement)?.content ?? '';
+const CSRF = () => {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+};
 
 // ─── Shared components ────────────────────────────────────────────────────────
 
@@ -138,7 +140,7 @@ function uploadFile(section: string, file: File): Promise<string> {
     fd.append('image', file);
     return fetch(`/dashboard/landing/upload/${section}`, {
         method: 'POST', body: fd,
-        headers: { 'X-CSRF-TOKEN': CSRF() },
+        headers: { 'X-XSRF-TOKEN': CSRF() },
     }).then(r => r.json()).then(d => d.url as string);
 }
 
@@ -261,13 +263,17 @@ function LogoTab({ logo: init }: { logo: string | null }) {
 
     const upload = async (file: File) => {
         setLoading(true);
-        const fd = new FormData();
-        fd.append('image', file);
-        const data = await fetch('/dashboard/landing/logo', {
-            method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': CSRF() },
-        }).then(r => r.json());
-        setLogo(data.url);
-        setLoading(false);
+        try {
+            const fd = new FormData();
+            fd.append('image', file);
+            const r = await fetch('/dashboard/landing/logo', {
+                method: 'POST', body: fd, headers: { 'X-XSRF-TOKEN': CSRF() },
+            });
+            const data = await r.json();
+            if (data.url) setLogo(data.url);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -435,13 +441,17 @@ function AboutTab({ aboutImage: init }: { aboutImage: string | null }) {
 
     const upload = async (file: File) => {
         setLoading(true);
-        const fd = new FormData();
-        fd.append('image', file);
-        const data = await fetch('/dashboard/landing/about', {
-            method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': CSRF() },
-        }).then(r => r.json());
-        setImg(data.url);
-        setLoading(false);
+        try {
+            const fd = new FormData();
+            fd.append('image', file);
+            const r = await fetch('/dashboard/landing/about', {
+                method: 'POST', body: fd, headers: { 'X-XSRF-TOKEN': CSRF() },
+            });
+            const data = await r.json();
+            if (data.url) setImg(data.url);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

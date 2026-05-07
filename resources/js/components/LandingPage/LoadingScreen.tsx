@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { HardHat, Truck, Snowflake, Building2, Package } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
+import { usePage } from "@inertiajs/react";
 
 interface LoadingScreenProps {
   onLoadingComplete?: () => void;
@@ -13,6 +14,8 @@ const ICON_COLORS = ["#C8962E", "#3B82F6", "#06B6D4", "#10B981", "#8B5CF6"];
 
 export function LoadingScreen({ onLoadingComplete, minDisplayTime = 2000 }: LoadingScreenProps) {
   const { t } = useTranslation();
+  const { landing } = usePage().props as any;
+  const logoSrc = landing?.logo || '/logo.jpg';
   const [isLoading, setIsLoading] = useState(true);
   const [currentIcon, setCurrentIcon] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -139,7 +142,7 @@ export function LoadingScreen({ onLoadingComplete, minDisplayTime = 2000 }: Load
 
               {/* Logo central */}
               <motion.div
-                className="relative w-[120px] h-[120px] rounded-2xl overflow-hidden shadow-2xl"
+                className="relative w-[250px] h-[250px] rounded-2xl overflow-hidden shadow-2xl"
                 style={{
                   background: `linear-gradient(135deg, ${currentColor}, ${currentColor}cc)`,
                   boxShadow: `0 0 40px ${currentColor}40`
@@ -149,7 +152,7 @@ export function LoadingScreen({ onLoadingComplete, minDisplayTime = 2000 }: Load
               >
                 <div className="w-full h-full bg-black/10 backdrop-blur-[2px] flex items-center justify-center">
                   <img 
-                    src="/logo.jpeg" 
+                    src={logoSrc}
                     alt="LOGISTECH EQUIP+" 
                     className="w-full h-full object-cover"
                   />
