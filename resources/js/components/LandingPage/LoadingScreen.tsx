@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { HardHat, Truck, Snowflake, Building2, Package } from "lucide-react";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface LoadingScreenProps {
   onLoadingComplete?: () => void;
@@ -11,6 +12,7 @@ const ICONS = [HardHat, Truck, Snowflake, Building2, Package];
 const ICON_COLORS = ["#C8962E", "#3B82F6", "#06B6D4", "#10B981", "#8B5CF6"];
 
 export function LoadingScreen({ onLoadingComplete, minDisplayTime = 2000 }: LoadingScreenProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [currentIcon, setCurrentIcon] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -217,7 +219,7 @@ export function LoadingScreen({ onLoadingComplete, minDisplayTime = 2000 }: Load
               transition={{ delay: 0.4 }}
               className={`${getSubTextColor()} text-[10px] tracking-[0.3em] font-medium`}
             >
-              CHARGEMENT
+              {t('loading_text')}
             </motion.p>
 
             {/* Points de progression */}
@@ -242,7 +244,7 @@ export function LoadingScreen({ onLoadingComplete, minDisplayTime = 2000 }: Load
               transition={{ delay: 0.6 }}
               className={`${getSubTextColor()} text-[9px] tracking-wider mt-6 max-w-[200px] text-center opacity/50`}
             >
-              Bâtissons l'avenir ensemble
+              {t('loading_slogan')}
             </motion.p>
           </div>
 

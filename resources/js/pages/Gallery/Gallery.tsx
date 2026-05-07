@@ -1,8 +1,9 @@
 import AppLayoutLanding from "@/layouts/LandindLayout";
-import { Head, usePage } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, X, MapPin, Calendar, Eye, Heart, Share2, Download, ChevronLeft, ChevronRight, Grid3x3, LayoutGrid, ZoomIn } from "lucide-react";
+import { Search, X, MapPin, Calendar, Eye, Heart, Grid3x3, LayoutGrid, ZoomIn } from "lucide-react";
+import { useTranslation } from "@/hooks/use-translation";
 
 type GalleryFilter = "all" | "charpente" | "transport" | "froid" | "batiment" | "logistique";
 
@@ -18,20 +19,29 @@ const GALLERY_ITEMS = [
   { id: 9, cat: "charpente", img: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (2).jpeg", title: "Structure Métallique", loc: "Dixinn", date: "2024", likes: 23, views: 112 },
 ];
 
-const FILTERS = [
-  { key: "all", label: "Tous", icon: Grid3x3, color: "#C8962E" },
-  { key: "charpente", label: "Charpente", icon: null, color: "#C8962E" },
-  { key: "transport", label: "Transport", icon: null, color: "#3B82F6" },
-  { key: "froid", label: "Froid", icon: null, color: "#06B6D4" },
-  { key: "batiment", label: "Bâtiment", icon: null, color: "#10B981" },
-];
+const FILTER_META: Record<string, { labelKey: string; color: string }> = {
+  all:       { labelKey: "gallery_filter_all",       color: "#C8962E" },
+  charpente: { labelKey: "gallery_filter_charpente", color: "#C8962E" },
+  transport: { labelKey: "gallery_filter_transport", color: "#3B82F6" },
+  froid:     { labelKey: "gallery_filter_froid",     color: "#06B6D4" },
+  batiment:  { labelKey: "gallery_filter_batiment",  color: "#10B981" },
+};
+const FILTER_KEYS = ["all", "charpente", "transport", "froid", "batiment"];
 
 export default function GalleryPage() {
+  const { t, locale } = useTranslation();
   const [filter, setFilter] = useState<GalleryFilter>("all");
   const [viewMode, setViewMode] = useState<"grid" | "masonry">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [likedImages, setLikedImages] = useState<number[]>([]);
+
+  const FILTERS = FILTER_KEYS.map(key => ({ key, label: t(FILTER_META[key].labelKey), color: FILTER_META[key].color }));
+
+  const projectCountLabel = (n: number) =>
+    locale === 'fr'
+      ? `${n} ${n > 1 ? t('gpage_projects') : t('gpage_project')} ${n > 1 ? t('gpage_founds') : t('gpage_found')}`
+      : `${n} ${n > 1 ? t('gpage_projects') : t('gpage_project')} ${t('gpage_found')}`;
 
   const filtered = GALLERY_ITEMS.filter(item => {
     const matchFilter = filter === "all" || item.cat === filter;
@@ -48,7 +58,7 @@ export default function GalleryPage() {
 
   return (
     <>
-      <Head title="Galerie - LOGISTECH EQUIP+" />
+      <Head title={`${t('gpage_title')} - LOGISTECH EQUIP+`} />
       
       <div className="min-h-screen bg-gradient-to-br from-stone-50 via-white to-stone-100 dark:from-[#0A0F1A] dark:via-[#0B1120] dark:to-[#0A0F1A]">
         
@@ -70,10 +80,10 @@ export default function GalleryPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-5xl md:text-7xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Notre Galerie
+                {t('gpage_title')}
               </h1>
               <p className="text-white/70 text-lg max-w-2xl mx-auto">
-                Découvrez nos réalisations à travers la Guinée
+                {t('gpage_subtitle')}
               </p>
             </motion.div>
           </div>
@@ -89,7 +99,7 @@ export default function GalleryPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Rechercher un projet..."
+                placeholder={t('gpage_search_ph')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#C8962E] transition-all"
@@ -137,7 +147,7 @@ export default function GalleryPage() {
           {/* Compteur */}
           <div className="mb-6 text-right">
             <p className="text-sm text-gray-500 dark:text-white/40">
-              {filtered.length} projet{filtered.length > 1 ? 's' : ''} trouvé{filtered.length > 1 ? 's' : ''}
+              {projectCountLabel(filtered.length)}
             </p>
           </div>
 
@@ -262,7 +272,7 @@ export default function GalleryPage() {
           {/* Empty state */}
           {filtered.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-gray-500 dark:text-white/40">Aucun projet trouvé</p>
+              <p className="text-gray-500 dark:text-white/40">{t('gpage_empty')}</p>
             </div>
           )}
         </div>

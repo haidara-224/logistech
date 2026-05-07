@@ -132,6 +132,14 @@ return [
     'testi_subtitle'    => 'Découvrez les retours de nos partenaires et clients satisfaits',
     'testi_clients'     => '+50 clients satisfaits',
     'testi_rate'        => 'Taux de recommandation 98%',
+    'testi_1_role'      => 'Directeur, Société Minière de Guinée',
+    'testi_1_text'      => "LOGISTECH EQUIP+ a réalisé notre hangar industriel dans les délais impartis. Qualité irréprochable, équipe professionnelle. Je recommande sans hésitation.",
+    'testi_2_role'      => 'Gérante, Supermarché Le Marché',
+    'testi_2_text'      => "Nos chambres froides ont été installées avec une précision remarquable. Le service après-vente est réactif et disponible. Excellent partenaire.",
+    'testi_3_role'      => 'PDG, Import-Export IK',
+    'testi_3_text'      => "Le transport de nos marchandises depuis Conakry vers la Côte d'Ivoire se passe toujours sans accroc. Fiabilité et ponctualité au rendez-vous.",
+    'testi_4_role'      => 'Promotrice immobilière',
+    'testi_4_text'      => "La construction de notre résidence a été menée avec rigueur. L'équipe a su respecter nos exigences qualité tout en livrant dans les temps.",
 
     // ── CTA ───────────────────────────────────────────────────────────────────
     'cta_badge'          => 'Prêt à démarrer ?',
@@ -201,7 +209,6 @@ return [
     'footer_newsletter_desc'  => 'Actualités, offres et projets en avant-première.',
     'footer_newsletter_ph'    => 'Votre adresse email',
     'footer_newsletter_btn'   => 'S\'abonner',
-    'footer_newsletter_sent'  => 'Merci !',
     'footer_hours'        => 'Lun–Sam : 08h–18h',
     'footer_rights'       => 'Tous droits réservés.',
     'footer_made_with'    => 'Fait avec',
@@ -243,6 +250,38 @@ return [
     'cart_checkout'       => 'Commander maintenant',
     'cart_close'          => 'Fermer',
 
+    // ── Checkout ──────────────────────────────────────────────────────────────
+    'checkout_empty_title'  => 'Panier vide',
+    'checkout_empty_msg'    => 'Votre panier est vide',
+    'checkout_back_shop'    => 'Retour à la boutique',
+    'checkout_your_info'    => 'Vos informations',
+    'checkout_last_name'    => 'Nom',
+    'checkout_last_name_ph' => 'Votre nom',
+    'checkout_first_name'   => 'Prénom',
+    'checkout_first_name_ph'=> 'Votre prénom',
+    'checkout_email_ph'     => 'votre@email.com',
+    'checkout_phone'        => 'Téléphone',
+    'checkout_phone_ph'     => '+224 6XX XXX XXX',
+    'checkout_zone'         => 'Quartier / Zone de livraison',
+    'checkout_zone_ph'      => 'Ex : Kaloum, Dixinn...',
+    'checkout_payment_note' => 'Paiement à la livraison — notre équipe vous contactera pour confirmer la commande.',
+    'checkout_processing'   => 'Validation en cours...',
+    'checkout_confirm_btn'  => 'Confirmer la commande',
+    'checkout_summary'      => 'Résumé',
+    'checkout_total'        => 'Total',
+    'checkout_article'      => 'article',
+    'checkout_articles'     => 'articles',
+
+    // ── Confirmation ──────────────────────────────────────────────────────────
+    'confirm_title'         => 'Commande confirmée !',
+    'confirm_subtitle'      => 'Merci pour votre commande. Notre équipe vous contactera dans les plus brefs délais pour confirmer la livraison.',
+    'confirm_call_label'    => 'Nous vous appelons',
+    'confirm_call_value'    => 'Sous 24h',
+    'confirm_payment_label' => 'Paiement',
+    'confirm_payment_value' => 'À la livraison',
+    'confirm_continue'      => 'Continuer mes achats',
+    'confirm_back_home'     => "Retour à l'accueil",
+
     // ── Dashboard ─────────────────────────────────────────────────────────────
     'dash_title'         => 'Tableau de bord',
     'dash_catalogue'     => 'Catalogue',
@@ -269,4 +308,18 @@ return [
     'dash_restore'       => 'Restauration',
     'dash_logs'          => 'Logs',
     'dash_general'       => 'Général',
+
+    // Loading screen
+    'loading_text'   => 'CHARGEMENT',
+    'loading_slogan' => 'Bâtissons l\'avenir ensemble',
+
+    // Gallery page (/images)
+    'gpage_title'     => 'Notre Galerie',
+    'gpage_subtitle'  => 'Découvrez nos réalisations à travers la Guinée',
+    'gpage_search_ph' => 'Rechercher un projet...',
+    'gpage_empty'     => 'Aucun projet trouvé',
+    'gpage_project'   => 'projet',
+    'gpage_projects'  => 'projets',
+    'gpage_found'     => 'trouvé',
+    'gpage_founds'    => 'trouvés',
 ];

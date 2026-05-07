@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, FileText, LogIn, UserPlus, LayoutDashboard, ChevronRight, Sparkles, Globe, Check } from 'lucide-react';
+import { Menu, X, FileText, LogIn, LayoutDashboard, ChevronRight, Sparkles, Globe, Check } from 'lucide-react';
 import { Link, router, usePage } from '@inertiajs/react';
 import { dashboard, login, register } from '@/routes';
 import AppearanceToggleTab from './Appearancetoggletab';
@@ -22,17 +22,18 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
   const [langOpen,    setLangOpen]    = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
-  const { auth }               = usePage().props;
+  const { auth }               = usePage().props as any;
+  const currentUrl             = usePage().url;
   const { resolvedAppearance } = useAppearance();
   const { t, locale }          = useTranslation();
   const isDark                 = resolvedAppearance === 'dark';
 
   const NAV_LINKS = [
-    { label: t('nav_home'),     href: '/',         icon: '🏠' },
-    { label: t('nav_services'), href: '#services', icon: '⚡' },
-    { label: t('nav_about'),    href: '#about',    icon: '✨' },
-    { label: t('nav_contact'),  href: '#contact',  icon: '💬' },
-    { label: t('nav_shop'),     href: '/boutique', icon: '🛍️' },
+    { label: t('nav_home'),     href: '/',          icon: '🏠' },
+    { label: t('nav_services'), href: '#services',  icon: '⚡' },
+    { label: t('nav_about'),    href: '#about',     icon: '✨' },
+    { label: t('nav_contact'),  href: '#contact',   icon: '💬' },
+    { label: t('nav_shop'),     href: '/boutique',  icon: '🛍️' },
   ];
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
       setScrolled(window.scrollY > 40);
       const pos = window.scrollY + 130;
       for (const { href } of NAV_LINKS) {
+        if (!href.startsWith('#')) { continue; }
         const el = document.getElementById(href.slice(1));
         if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) {
           setActiveLink(href.slice(1));
@@ -114,19 +116,27 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
             {/* Center links */}
             <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
               {NAV_LINKS.map(link => {
-                const isActive = activeLink === link.href.slice(1);
-                return (
-                  <a key={link.href} href={link.href}
-                    className={cn('relative px-4 py-2 text-[13.5px] font-medium rounded-lg transition-all duration-250',
-                      isActive ? 'text-[#C8962E]' : cn(textColor, 'hover:text-[#C8962E]'))}
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    {link.label}
-                    {isActive && (
-                      <motion.div layoutId="navActive" className="absolute inset-0 rounded-lg bg-[#C8962E]/10"
-                        transition={{ type: 'spring', stiffness: 400, damping: 35 }} />
-                    )}
+                const isAnchor   = link.href.startsWith('#');
+                const isOnHome   = currentUrl === '/';
+                const resolvedHref = isAnchor && !isOnHome ? '/' + link.href : link.href;
+                const isActive = isAnchor
+                  ? isOnHome && activeLink === link.href.slice(1)
+                  : link.href === '/' ? currentUrl === '/' : currentUrl.startsWith(link.href);
+                const cls = cn('relative px-4 py-2 text-[13.5px] font-medium rounded-lg transition-all duration-250',
+                  isActive ? 'text-[#C8962E]' : cn(textColor, 'hover:text-[#C8962E]'));
+                const sty = { fontFamily: "'DM Sans', sans-serif" };
+                const indicator = isActive && (
+                  <motion.div layoutId="navActive" className="absolute inset-0 rounded-lg bg-[#C8962E]/10"
+                    transition={{ type: 'spring', stiffness: 400, damping: 35 }} />
+                );
+                return isAnchor ? (
+                  <a key={link.href} href={resolvedHref} className={cls} style={sty}>
+                    {link.label}{indicator}
                   </a>
+                ) : (
+                  <Link key={link.href} href={link.href} className={cls} style={sty}>
+                    {link.label}{indicator}
+                  </Link>
                 );
               })}
             </div>
@@ -288,19 +298,23 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
 
               {/* Links */}
               <div className="px-3 py-3">
-                {NAV_LINKS.map((link) => (
-                  <a key={link.href} href={link.href} onClick={() => setOpen(false)}
-                    className={cn('flex items-center justify-between px-4 py-3 rounded-xl mb-0.5 transition-all group',
-                      isDark ? 'hover:bg-white/8 text-gray-200' : 'hover:bg-gray-50 text-gray-700')}
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="text-lg">{link.icon}</span>
-                      <span className="font-medium text-sm">{link.label}</span>
-                    </span>
-                    <ChevronRight size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
-                  </a>
-                ))}
+                {NAV_LINKS.map((link) => {
+                  const isAnchor = link.href.startsWith('#');
+                  const resolvedHref = isAnchor && currentUrl !== '/' ? '/' + link.href : link.href;
+                  return (
+                    <a key={link.href} href={resolvedHref} onClick={() => setOpen(false)}
+                      className={cn('flex items-center justify-between px-4 py-3 rounded-xl mb-0.5 transition-all group',
+                        isDark ? 'hover:bg-white/8 text-gray-200' : 'hover:bg-gray-50 text-gray-700')}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="text-lg">{link.icon}</span>
+                        <span className="font-medium text-sm">{link.label}</span>
+                      </span>
+                      <ChevronRight size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
+                    </a>
+                  );
+                })}
               </div>
 
               {/* Actions */}

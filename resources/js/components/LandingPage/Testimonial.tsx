@@ -4,35 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Quote, Star, User } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 
-const TESTIMONIALS = [
-  {
-    name: "Mamadou Diallo",
-    role: "Directeur, Société Minière de Guinée",
-    rating: 5,
-    text: "LOGISTECH EQUIP+ a réalisé notre hangar industriel dans les délais impartis. Qualité irréprochable, équipe professionnelle. Je recommande sans hésitation.",
-    color: "#C8962E",
-  },
-  {
-    name: "Fatoumata Camara",
-    role: "Gérante, Supermarché Le Marché",
-    rating: 5,
-    text: "Nos chambres froides ont été installées avec une précision remarquable. Le service après-vente est réactif et disponible. Excellent partenaire.",
-    color: "#E8B84B",
-  },
-  {
-    name: "Ibrahima Sory Kouyaté",
-    role: "PDG, Import-Export IK",
-    rating: 5,
-    text: "Le transport de nos marchandises depuis Conakry vers la Côte d'Ivoire se passe toujours sans accroc. Fiabilité et ponctualité au rendez-vous.",
-    color: "#D4A030",
-  },
-  {
-    name: "Mariama Baldé",
-    role: "Promotrice immobilière",
-    rating: 5,
-    text: "La construction de notre résidence a été menée avec rigueur. L'équipe a su respecter nos exigences qualité tout en livrant dans les temps.",
-    color: "#C8962E",
-  },
+const TESTIMONIALS_META = [
+  { name: "Mamadou Diallo",        roleKey: "testi_1_role", textKey: "testi_1_text", rating: 5, color: "#C8962E" },
+  { name: "Fatoumata Camara",      roleKey: "testi_2_role", textKey: "testi_2_text", rating: 5, color: "#E8B84B" },
+  { name: "Ibrahima Sory Kouyaté", roleKey: "testi_3_role", textKey: "testi_3_text", rating: 5, color: "#D4A030" },
+  { name: "Mariama Baldé",         roleKey: "testi_4_role", textKey: "testi_4_text", rating: 5, color: "#C8962E" },
 ];
 
 function Stars({ n }: { n: number }) {
@@ -50,11 +26,11 @@ export function Testimonials() {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrent(c => (c + 1) % TESTIMONIALS.length), 6000);
+    const timer = setInterval(() => setCurrent(c => (c + 1) % TESTIMONIALS_META.length), 6000);
     return () => clearInterval(timer);
   }, []);
 
-  const active = TESTIMONIALS[current];
+  const activeMeta = TESTIMONIALS_META[current];
 
   return (
     <section id="testimonials" className="relative py-32 overflow-hidden bg-gradient-to-br from-amber-50 via-white to-amber-50/50 dark:from-[#060D1A] dark:via-[#0B1628] dark:to-[#060D1A]">
@@ -63,7 +39,7 @@ export function Testimonials() {
         className="absolute inset-0 opacity-30 dark:opacity-10 pointer-events-none"
         style={{ backgroundImage: 'radial-gradient(circle, #C8962E 1px, transparent 1px)', backgroundSize: '40px 40px' }}
       />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-amber-400/5 dark:bg-[#C8962E]/5 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full bg-amber-400/5 dark:bg-[#C8962E]/5 blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
 
@@ -101,24 +77,24 @@ export function Testimonials() {
               style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}
               className="text-2xl lg:text-3xl leading-relaxed mb-10 text-gray-700 dark:text-white/80"
             >
-              "{active.text}"
+              "{t(activeMeta.textKey)}"
             </p>
 
             <div className="flex flex-col items-center gap-4">
               <div
                 className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
                 style={{
-                  background: `linear-gradient(135deg, ${active.color}20, ${active.color}10)`,
-                  border: `1px solid ${active.color}30`,
+                  background: `linear-gradient(135deg, ${activeMeta.color}20, ${activeMeta.color}10)`,
+                  border: `1px solid ${activeMeta.color}30`,
                 }}
               >
-                <User size={40} style={{ color: active.color }} strokeWidth={1.5} />
+                <User size={40} style={{ color: activeMeta.color }} strokeWidth={1.5} />
               </div>
 
               <div className="text-center">
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{active.name}</p>
-                <p className="text-amber-600 dark:text-[#C8962E] text-sm mt-1">{active.role}</p>
-                <div className="mt-3"><Stars n={active.rating} /></div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{activeMeta.name}</p>
+                <p className="text-amber-600 dark:text-[#C8962E] text-sm mt-1">{t(activeMeta.roleKey)}</p>
+                <div className="mt-3"><Stars n={activeMeta.rating} /></div>
               </div>
             </div>
           </motion.div>
@@ -126,7 +102,7 @@ export function Testimonials() {
 
         {/* Dots navigation */}
         <div className="flex justify-center gap-3 mb-20">
-          {TESTIMONIALS.map((_, i) => (
+          {TESTIMONIALS_META.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrent(i)}
@@ -142,7 +118,7 @@ export function Testimonials() {
 
         {/* Cards grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {TESTIMONIALS.map((testimonial, i) => {
+          {TESTIMONIALS_META.map((testimonial, i) => {
             const isActive = current === i;
             return (
               <FadeIn key={testimonial.name} delay={i * 0.1}>
@@ -150,8 +126,8 @@ export function Testimonials() {
                   onClick={() => setCurrent(i)}
                   className={`w-full text-left p-6 rounded-2xl transition-all duration-300 group
                     ${isActive
-                      ? "bg-white shadow-xl shadow-amber-100/50 dark:bg-white/[0.03] dark:shadow-none dark:border-[#C8962E]/30"
-                      : "bg-white/80 backdrop-blur-sm border border-gray-200/50 hover:border-amber-300 dark:bg-white/[0.02] dark:border-white/[0.05] dark:hover:border-[#C8962E]/20"
+                      ? "bg-white shadow-xl shadow-amber-100/50 dark:bg-white/3 dark:shadow-none dark:border-[#C8962E]/30"
+                      : "bg-white/80 backdrop-blur-sm border border-gray-200/50 hover:border-amber-300 dark:bg-white/2 dark:border-white/5 dark:hover:border-[#C8962E]/20"
                     }`}
                   style={isActive ? {
                     border: `1px solid ${testimonial.color}30`,
@@ -161,7 +137,7 @@ export function Testimonials() {
                   <div className="mb-4"><Stars n={testimonial.rating} /></div>
 
                   <p className="text-sm leading-relaxed mb-5 line-clamp-3 text-gray-600 dark:text-white/60">
-                    "{testimonial.text}"
+                    "{t(testimonial.textKey)}"
                   </p>
 
                   <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-white/5">
@@ -173,7 +149,7 @@ export function Testimonials() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{testimonial.name}</p>
-                      <p className="text-xs text-gray-400 dark:text-white/30 truncate">{testimonial.role.split(",")[0]}</p>
+                      <p className="text-xs text-gray-400 dark:text-white/30 truncate">{t(testimonial.roleKey).split(",")[0]}</p>
                     </div>
                   </div>
                 </button>

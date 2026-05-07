@@ -1,16 +1,15 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback } from 'react';
 import {
     ShoppingCart, Package, Search, Filter, X, Plus, Minus,
-    Truck, ShieldCheck, RefreshCcw, Star, ChevronRight, Store
+    Truck, ShieldCheck, RefreshCcw, ChevronRight, Store
 } from 'lucide-react';
-import { Navbar } from '@/components/LandingPage/Navbar';
 import { Footer } from '@/components/LandingPage/Footer';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
 import type { Categorie, Produit } from '@/types/models';
 import AppLayoutLanding from '@/layouts/LandindLayout';
 
@@ -32,7 +31,8 @@ interface Props {
 const fmtGnf = (n: number) =>
     new Intl.NumberFormat('fr-GN', { style: 'currency', currency: 'GNF', maximumFractionDigits: 0 }).format(n);
 
-export default function BoutiqueIndex({ produits, categories, panier: initialPanier, isAdmin, isSuperAdmin }: Props) {
+export default function BoutiqueIndex({ produits, categories, panier: initialPanier }: Props) {
+    const { t, locale } = useTranslation();
     const [panier, setPanier] = useState<Record<string, PanierItem>>(initialPanier ?? {});
     const [cartOpen, setCartOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -48,6 +48,10 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
         return matchSearch && matchCat;
     });
 
+    const productCountLabel = (n: number) => locale === 'fr'
+        ? `${n} produit${n !== 1 ? 's' : ''} disponible${n !== 1 ? 's' : ''}`
+        : `${n} product${n !== 1 ? 's' : ''} available`;
+
     const addToCart = useCallback(async (produit: Produit) => {
         setAdding(produit.id);
         try {
@@ -58,13 +62,13 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
             });
             const data = await res.json();
             setPanier(data.panier);
-            toast.success(`${produit.nom} ajouté au panier`);
+            toast.success(`${produit.nom} ${locale === 'fr' ? 'ajouté au panier' : 'added to cart'}`);
         } catch {
-            toast.error('Erreur lors de l\'ajout au panier');
+            toast.error(locale === 'fr' ? "Erreur lors de l'ajout au panier" : 'Error adding to cart');
         } finally {
             setAdding(null);
         }
-    }, []);
+    }, [locale]);
 
     const updateQty = useCallback(async (produitId: number, quantite: number) => {
         const res = await fetch(`/panier/${produitId}`, {
@@ -90,7 +94,6 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
             <Head title="Boutique — Logistech Equip+" />
 
             <div className="min-h-screen bg-stone-50 dark:bg-[#060D1A] flex flex-col">
-             
 
                 {/* Hero boutique */}
                 <section className="relative py-16 pt-28 overflow-hidden">
@@ -99,22 +102,22 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                             <div className="flex items-center gap-2 mb-3">
                                 <Store className="w-5 h-5 text-[#C8962E]" />
-                                <span className="text-[#C8962E] text-xs font-semibold uppercase tracking-widest">Boutique en ligne</span>
+                                <span className="text-[#C8962E] text-xs font-semibold uppercase tracking-widest">{t('shop_badge')}</span>
                             </div>
                             <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white mb-3">
-                                Nos <span className="text-[#C8962E]">Produits</span>
+                                {t('shop_title1')} <span className="text-[#C8962E]">{t('shop_title2')}</span>
                             </h1>
                             <p className="text-slate-500 dark:text-white/50 max-w-xl">
-                                Équipements industriels disponibles en stock — livraison rapide à Conakry et dans toute la Guinée.
+                                {t('shop_subtitle')}
                             </p>
                         </motion.div>
 
                         {/* Badges promo */}
                         <div className="flex flex-wrap gap-3 mt-6">
                             {[
-                                { icon: Truck, text: 'Livraison Conakry' },
-                                { icon: ShieldCheck, text: 'Produits certifiés' },
-                                { icon: RefreshCcw, text: 'Retour 7 jours' },
+                                { icon: Truck,       text: t('shop_badge_delivery')  },
+                                { icon: ShieldCheck, text: t('shop_badge_certified') },
+                                { icon: RefreshCcw,  text: t('shop_badge_return')    },
                             ].map(({ icon: Icon, text }) => (
                                 <span key={text} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-white/5 border border-stone-200 dark:border-white/10 text-xs text-slate-600 dark:text-white/60">
                                     <Icon className="w-3.5 h-3.5 text-[#C8962E]" />
@@ -132,7 +135,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                         <div className="relative flex-1 max-w-sm">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <Input
-                                placeholder="Rechercher un produit..."
+                                placeholder={t('shop_search_ph')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-9 bg-white dark:bg-white/5 border-stone-200 dark:border-white/10"
@@ -144,7 +147,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                                 onClick={() => setCategorieId(null)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${categorieId === null ? 'bg-[#C8962E] text-white' : 'bg-white dark:bg-white/5 border border-stone-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-[#C8962E]'}`}
                             >
-                                Tous
+                                {t('shop_filter_all')}
                             </button>
                             {categories.map((cat) => (
                                 <button
@@ -159,18 +162,15 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                     </div>
 
                     {/* Résultats */}
-                    <p className="text-sm text-slate-400 mb-4">{produitsFiltres.length} produit{produitsFiltres.length !== 1 ? 's' : ''} disponible{produitsFiltres.length !== 1 ? 's' : ''}</p>
+                    <p className="text-sm text-slate-400 mb-4">{productCountLabel(produitsFiltres.length)}</p>
 
                     {produitsFiltres.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-24 text-center">
                             <Package className="w-16 h-16 text-slate-300 dark:text-white/10 mb-4" />
-                            <p className="text-slate-500 dark:text-white/40 text-lg font-medium">Aucun produit disponible</p>
+                            <p className="text-slate-500 dark:text-white/40 text-lg font-medium">{t('shop_empty')}</p>
                         </div>
                     ) : (
-                        <motion.div
-                            layout
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                        >
+                        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             <AnimatePresence>
                                 {produitsFiltres.map((produit, i) => {
                                     const inCart = panier[String(produit.id)];
@@ -202,13 +202,13 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                                                 })()}
                                                 <div className="absolute top-3 left-3">
                                                     <Badge className="bg-emerald-500 text-white text-xs px-2 py-0.5 border-0">
-                                                        En stock ({produit.stock_reel})
+                                                        {t('shop_in_stock')} ({produit.stock_reel})
                                                     </Badge>
                                                 </div>
                                                 {inCart && (
                                                     <div className="absolute top-3 right-3">
                                                         <Badge className="bg-[#C8962E] text-white text-xs px-2 py-0.5 border-0">
-                                                            {inCart.quantite} dans le panier
+                                                            {inCart.quantite} {t('shop_in_cart')}
                                                         </Badge>
                                                     </div>
                                                 )}
@@ -216,7 +216,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
 
                                             <div className="p-4">
                                                 <p className="text-[10px] font-semibold text-[#C8962E] uppercase tracking-wider mb-1">
-                                                    {produit.categorie?.name ?? 'Général'}
+                                                    {produit.categorie?.name ?? t('shop_general_cat')}
                                                 </p>
                                                 <h3 className="font-bold text-slate-900 dark:text-white mb-1 line-clamp-2 text-sm leading-snug">
                                                     {produit.nom}
@@ -243,7 +243,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                                                         ) : (
                                                             <>
                                                                 <Plus className="w-3.5 h-3.5" />
-                                                                Ajouter
+                                                                {t('shop_add')}
                                                             </>
                                                         )}
                                                     </motion.button>
@@ -290,14 +290,14 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setCartOpen(false)}
-                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-110"
                         />
                         <motion.div
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-                            className="fixed right-0 top-0 bottom-0 w-full max-w-md z-50 bg-white dark:bg-[#0B1120] shadow-2xl flex flex-col"
+                            className="fixed right-0 top-0 bottom-0 w-full max-w-md z-120 bg-white dark:bg-[#0B1120] shadow-2xl flex flex-col"
                         >
                             {/* Bouton fermeture */}
                             <div className="flex justify-end px-4 pt-4 pb-1">
@@ -312,8 +312,10 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                             {/* Header panier */}
                             <div className="flex items-center gap-2 px-5 pb-4 border-b border-stone-200 dark:border-white/10">
                                 <ShoppingCart className="w-5 h-5 text-[#C8962E]" />
-                                <h2 className="font-bold text-lg text-slate-900 dark:text-white">Mon panier</h2>
-                                <Badge className="bg-[#C8962E]/10 text-[#C8962E] border-0 text-xs">{panierCount} article{panierCount > 1 ? 's' : ''}</Badge>
+                                <h2 className="font-bold text-lg text-slate-900 dark:text-white">{t('cart_title')}</h2>
+                                <Badge className="bg-[#C8962E]/10 text-[#C8962E] border-0 text-xs">
+                                    {panierCount} {panierCount > 1 ? t('cart_articles') : t('cart_article')}
+                                </Badge>
                             </div>
 
                             {/* Items */}
@@ -327,7 +329,7 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                                         exit={{ opacity: 0, x: -20 }}
                                         className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 dark:bg-white/[0.03] border border-stone-100 dark:border-white/[0.06]"
                                     >
-                                        <div className="w-12 h-12 rounded-lg bg-stone-200 dark:bg-white/10 flex items-center justify-center flex-shrink-0">
+                                        <div className="w-12 h-12 rounded-lg bg-stone-200 dark:bg-white/10 flex items-center justify-center shrink-0">
                                             <Package className="w-6 h-6 text-stone-400 dark:text-white/30" />
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -353,21 +355,21 @@ export default function BoutiqueIndex({ produits, categories, panier: initialPan
                             {/* Footer panier */}
                             <div className="p-5 border-t border-stone-200 dark:border-white/10 space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-500 dark:text-white/50 font-medium">Total</span>
+                                    <span className="text-slate-500 dark:text-white/50 font-medium">{t('cart_total')}</span>
                                     <span className="text-2xl font-black text-slate-900 dark:text-white">{fmtGnf(panierTotal)}</span>
                                 </div>
                                 <Link
                                     href="/boutique/checkout"
                                     className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white font-bold hover:opacity-90 transition-opacity"
                                 >
-                                    Commander maintenant
+                                    {t('cart_checkout')}
                                     <ChevronRight className="w-4 h-4" />
                                 </Link>
                                 <button
                                     onClick={() => setCartOpen(false)}
                                     className="sm:hidden w-full py-3 rounded-xl border border-stone-200 dark:border-white/10 text-slate-500 dark:text-white/50 text-sm font-semibold hover:bg-stone-50 dark:hover:bg-white/5 transition-colors"
                                 >
-                                    Fermer
+                                    {t('cart_close')}
                                 </button>
                             </div>
                         </motion.div>
