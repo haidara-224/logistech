@@ -2,21 +2,23 @@ import { useState } from "react";
 import { FadeIn } from "./ui-primitives";
 import { Filter, MapPin, X, Grid3x3, LayoutGrid } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { useTranslation } from "@/hooks/use-translation";
 
 type GalleryFilter = "tous" | "charpente" | "transport" | "froid" | "batiment";
 
-const GALLERY_ITEMS = [
-  { id:1, cat:"charpente" as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg", title:"Charpente Industrielle",    loc:"Conakry"         },
-  { id:2, cat:"transport" as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.25 PM.jpeg",     title:"Flotte de Transport",       loc:"Route Coyah"     },
-  { id:3, cat:"froid"     as GalleryFilter, img:"/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.20 PM.jpeg",        title:"Chambre Froide",            loc:"Port de Conakry" },
-  { id:4, cat:"batiment"  as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.23 PM.jpeg",     title:"Construction",              loc:"Kipé"            },
-  { id:5, cat:"charpente" as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg", title:"Hangar Agricole",           loc:"Kindia"          },
-  { id:6, cat:"transport" as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.35 PM.jpeg",     title:"Transport International",   loc:"Labé"            },
-  { id:7, cat:"froid"     as GalleryFilter, img:"/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.49 PM.jpeg",        title:"Installation Frigorifique", loc:"Ratoma"          },
-  { id:8, cat:"batiment"  as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.24 PM (1).jpeg", title:"Bâtiment Commercial",       loc:"Matoto"          },
-  { id:9, cat:"charpente" as GalleryFilter, img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (2).jpeg", title:"Structure Métallique",      loc:"Dixinn"          },
+type GalleryItem = { id: number; cat: GalleryFilter; img: string; title: string; loc: string };
+
+const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [
+  { id:1, cat:"charpente", img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg", title:"Charpente Industrielle",    loc:"Conakry"         },
+  { id:2, cat:"transport", img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.25 PM.jpeg",     title:"Flotte de Transport",       loc:"Route Coyah"     },
+  { id:3, cat:"froid",     img:"/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.20 PM.jpeg",        title:"Chambre Froide",            loc:"Port de Conakry" },
+  { id:4, cat:"batiment",  img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.23 PM.jpeg",     title:"Construction",              loc:"Kipé"            },
+  { id:5, cat:"charpente", img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (1).jpeg", title:"Hangar Agricole",           loc:"Kindia"          },
+  { id:6, cat:"transport", img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.35 PM.jpeg",     title:"Transport International",   loc:"Labé"            },
+  { id:7, cat:"froid",     img:"/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.49 PM.jpeg",        title:"Installation Frigorifique", loc:"Ratoma"          },
+  { id:8, cat:"batiment",  img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.24 PM (1).jpeg", title:"Bâtiment Commercial",       loc:"Matoto"          },
+  { id:9, cat:"charpente", img:"/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM (2).jpeg", title:"Structure Métallique",      loc:"Dixinn"          },
 ];
 
 const FILTER_META: Record<GalleryFilter, { color: string; labelKey: string }> = {
@@ -35,14 +37,25 @@ function catColor(cat: GalleryFilter) {
 
 export function Gallery(_: { onDevis: () => void }) {
   const { t } = useTranslation();
+  const { landing } = usePage().props as any;
   const [filter,   setFilter]   = useState<GalleryFilter>("tous");
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "masonry">("grid");
 
+  const GALLERY_ITEMS: GalleryItem[] = (landing?.galleryItems?.length > 0)
+    ? landing.galleryItems.map((item: any) => ({
+        id:    item.id,
+        cat:   item.cat as GalleryFilter,
+        img:   item.image_path,
+        title: item.title ?? '',
+        loc:   item.location ?? '',
+      }))
+    : DEFAULT_GALLERY_ITEMS;
+
   const FILTERS = FILTER_KEYS.map(key => ({ key, label: t(FILTER_META[key].labelKey), color: FILTER_META[key].color }));
 
-  const filtered = filter === "tous" ? GALLERY_ITEMS : GALLERY_ITEMS.filter(i => i.cat === filter);
-  const lightboxItem = lightbox !== null ? GALLERY_ITEMS.find(i => i.id === lightbox) : null;
+  const filtered = filter === "tous" ? GALLERY_ITEMS : GALLERY_ITEMS.filter((i: GalleryItem) => i.cat === filter);
+  const lightboxItem = lightbox !== null ? GALLERY_ITEMS.find((i: GalleryItem) => i.id === lightbox) : null;
 
   const getMasonryHeight = (index: number) => {
     const heights = ["320px", "380px", "300px", "420px", "350px", "370px", "310px", "400px", "340px"];

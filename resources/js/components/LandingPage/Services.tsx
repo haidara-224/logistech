@@ -4,6 +4,7 @@ import { FileText, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FadeIn, SectionHeading, SectionLabel } from './ui-primitives';
 import { getServicesData } from '@/lib/data';
 import { useTranslation } from '@/hooks/use-translation';
+import { usePage } from '@inertiajs/react';
 
 interface ServicesProps { onDevis: () => void }
 
@@ -136,8 +137,9 @@ function ServiceCarousel({ images, color, title }: { images: string[]; color: st
 }
 
 export function Services({ onDevis }: ServicesProps) {
-  const { t } = useTranslation();
-  const SERVICES_DATA = getServicesData(t);
+  const { t, locale } = useTranslation();
+  const { landing } = usePage().props as any;
+  const SERVICES_DATA = getServicesData(t, locale, landing?.services);
 
   const [activeIdx, setActiveIdx] = useState(0);
   const [isUserInteracting, setIsUserInteracting] = useState(false);

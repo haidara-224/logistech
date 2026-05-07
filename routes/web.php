@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AgendaController;
-use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BoutiqueController;
 use App\Http\Controllers\CategorieController;
@@ -13,6 +12,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DevisController;
 use App\Http\Controllers\FactureController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LandingSectionController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MouvementsStockController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaiementController;
@@ -52,6 +53,18 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
 
     Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/recent-orders', [DashboardController::class, 'recentOrdersJson'])->name('dashboard.recent_orders');
+
+    // Landing page management
+    Route::get('landing', [LandingSectionController::class, 'index'])->name('landing.index');
+    Route::post('landing/upload/{section}', [LandingSectionController::class, 'uploadImage'])->name('landing.upload');
+    Route::post('landing/hero', [LandingSectionController::class, 'saveHeroContent'])->name('landing.hero.save');
+    Route::post('landing/logo', [LandingSectionController::class, 'saveLogo'])->name('landing.logo.save');
+    Route::post('landing/about', [LandingSectionController::class, 'saveAboutImage'])->name('landing.about.save');
+    Route::post('landing/services/{service}', [LandingSectionController::class, 'saveServiceContent'])->name('landing.services.save');
+    Route::post('landing/gallery', [LandingSectionController::class, 'storeGalleryItem'])->name('landing.gallery.store');
+    Route::put('landing/gallery/{item}', [LandingSectionController::class, 'updateGalleryItem'])->name('landing.gallery.update');
+    Route::delete('landing/gallery/{item}', [LandingSectionController::class, 'destroyGalleryItem'])->name('landing.gallery.destroy');
+    Route::post('landing/gallery/reorder', [LandingSectionController::class, 'reorderGalleryItems'])->name('landing.gallery.reorder');
 
     // Notifications admin
     Route::get('/admin/notifications', function () {

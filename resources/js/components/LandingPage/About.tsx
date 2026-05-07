@@ -2,6 +2,7 @@ import { ArrowRight, Award, Clock, FileText, Shield, Sparkles, TrendingUp, Users
 import { FadeIn } from "./ui-primitives";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/use-translation";
+import { usePage } from "@inertiajs/react";
 
 const VALUES_ICONS = [
   { icon: Clock, color: "#C8962E", titleKey: 'about_v1_title', descKey: 'about_v1_desc' },
@@ -16,8 +17,12 @@ const ACHIEVEMENTS_META = [
   { value: "24/7", labelKey: 'about_a3_label', icon: Sparkles },
 ];
 
+const DEFAULT_ABOUT_IMAGE = "/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.17 PM (1).jpeg";
+
 export function About({ onDevis }: { onDevis: () => void }) {
   const { t } = useTranslation();
+  const { landing } = usePage().props as any;
+  const aboutImage: string = landing?.aboutImage || DEFAULT_ABOUT_IMAGE;
 
   return (
     <section id="about" className="relative py-24 md:py-32 overflow-hidden">
@@ -37,7 +42,7 @@ export function About({ onDevis }: { onDevis: () => void }) {
 
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.15.17 PM (1).jpeg"
+                  src={aboutImage}
                   alt="LOGISTECH EQUIP+"
                   className="w-full h-[500px] md:h-[600px] object-cover"
                 />

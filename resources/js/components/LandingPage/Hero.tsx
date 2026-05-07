@@ -3,8 +3,11 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { FileText, ArrowRight, ChevronDown, HardHat, Truck, Snowflake, Building2, Package, Shield, Award, Zap } from 'lucide-react';
 import { Counter } from './ui-primitives';
 import { useTranslation } from '@/hooks/use-translation';
+import { usePage } from '@inertiajs/react';
 
-const HERO_IMAGES = [
+interface HeroImageNormalized { url: string; title: string; desc: string; }
+
+const DEFAULT_HERO_IMAGES = [
   { url: "/LOgistech FRoid/WhatsApp Image 2026-04-29 at 12.00.52 PM (1).jpeg", titleKey: 'svc_froid_title', descKey: 'hero_img1_desc' },
   { url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.34.02 PM.jpeg", titleKey: 'hero_img2_title', descKey: 'hero_img2_desc' },
   { url: "/Logistech Transport/WhatsApp Image 2026-04-28 at 7.20.37 PM (1).jpeg", titleKey: 'svc_transport_title', descKey: 'hero_img3_desc' },
@@ -26,6 +29,26 @@ const SERVICES_KEYS = [
 
 export function Hero(_: { onDevis: () => void }) {
   const { t, locale } = useTranslation();
+  const { landing } = usePage().props as any;
+
+  const hl         = landing?.heroLabels;
+  const dynBadge    = hl ? (locale === 'fr' ? hl.badge_fr    : hl.badge_en)    : '';
+  const dynTitle1   = hl ? (locale === 'fr' ? hl.title1_fr   : hl.title1_en)   : '';
+  const dynTitle2   = hl ? (locale === 'fr' ? hl.title2_fr   : hl.title2_en)   : '';
+  const dynSubtitle = hl ? (locale === 'fr' ? hl.subtitle_fr : hl.subtitle_en) : '';
+
+  const HERO_IMAGES: HeroImageNormalized[] = (landing?.heroImages?.length > 0)
+    ? landing.heroImages.map((img: any) => ({
+        url:   img.url,
+        title: locale === 'fr' ? (img.title_fr || '') : (img.title_en || ''),
+        desc:  locale === 'fr' ? (img.desc_fr  || '') : (img.desc_en  || ''),
+      }))
+    : DEFAULT_HERO_IMAGES.map(img => ({
+        url:   img.url,
+        title: t(img.titleKey),
+        desc:  t(img.descKey),
+      }));
+
   const { scrollY } = useScroll();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
@@ -106,7 +129,7 @@ export function Hero(_: { onDevis: () => void }) {
           >
             <img
               src={HERO_IMAGES[currentIndex].url}
-              alt={t(HERO_IMAGES[currentIndex].titleKey)}
+              alt={HERO_IMAGES[currentIndex].title}
               className="w-full h-full object-cover"
             />
           </motion.div>
@@ -144,7 +167,7 @@ export function Hero(_: { onDevis: () => void }) {
               >
                 <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-[#C8962E]" />
                 <span className="text-[#C8962E] text-[10px] sm:text-sm font-semibold uppercase tracking-wider">
-                  {t('hero_badge')}
+                  {dynBadge || t('hero_badge')}
                 </span>
                 <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#C8962E] animate-pulse" />
               </motion.div>
@@ -156,7 +179,7 @@ export function Hero(_: { onDevis: () => void }) {
                 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                {t('hero_title1')}{" "}
+                {dynTitle1 || t('hero_title1')}{" "}
                 <span
                   className="relative inline-block"
                   style={{ color: currentColor }}
@@ -171,7 +194,7 @@ export function Hero(_: { onDevis: () => void }) {
                   />
                 </span>
                 <br />
-                {t('hero_title2')}
+                {dynTitle2 || t('hero_title2')}
               </motion.h1>
 
               <motion.p
@@ -180,7 +203,9 @@ export function Hero(_: { onDevis: () => void }) {
                 transition={{ duration: isMobile ? 0.3 : 0.7, delay: isMobile ? 0.1 : 0.2 }}
                 className="text-white/70 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed max-w-lg"
               >
-                {isMobile ? t('hero_subtitle_short') : t('hero_subtitle_full')}
+                {dynSubtitle
+                  ? (isMobile ? dynSubtitle.slice(0, 120) + (dynSubtitle.length > 120 ? '...' : '') : dynSubtitle)
+                  : (isMobile ? t('hero_subtitle_short') : t('hero_subtitle_full'))}
               </motion.p>
 
               <motion.div
@@ -245,17 +270,17 @@ export function Hero(_: { onDevis: () => void }) {
                   <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                     <img
                       src={HERO_IMAGES[currentIndex].url}
-                      alt={t(HERO_IMAGES[currentIndex].titleKey)}
+                      alt={HERO_IMAGES[currentIndex].title}
                       className="w-full h-[500px] object-cover rounded-2xl"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-2xl" />
 
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <h3 className="text-2xl font-bold text-white mb-2">
-                        {t(HERO_IMAGES[currentIndex].titleKey)}
+                        {HERO_IMAGES[currentIndex].title}
                       </h3>
                       <p className="text-white/60">
-                        {t(HERO_IMAGES[currentIndex].descKey)}
+                        {HERO_IMAGES[currentIndex].desc}
                       </p>
                     </div>
                   </div>

@@ -20,6 +20,7 @@ import {
     Rss,
     ClipboardList,
     ChevronRight,
+    Globe,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -112,6 +113,13 @@ export function AppSidebar() {
                 { label: t('dash_quotes'),     href: '/dashboard/devis',      icon: ClipboardList },
                 { label: t('dash_messages'),   href: '/dashboard/contact',    icon: Mail          },
                 { label: t('dash_newsletter'), href: '/dashboard/newsletter', icon: Rss           },
+            ],
+        },
+        {
+            label: t('dash_site'),
+            icon: Globe,
+            items: [
+                { label: t('dash_landing'), href: '/dashboard/landing', icon: Globe },
             ],
         },
     ];

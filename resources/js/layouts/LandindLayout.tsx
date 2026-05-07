@@ -23,13 +23,11 @@ export default function AppLayoutLanding({
     const [devisOpen, setDevisOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    // ── Body overflow: ONLY lock when modal is open ──────────────────────────
-    // Never lock during loading — that's what caused the scroll to stay broken
-    // after the loading screen disappeared.
+ 
     useEffect(() => {
         if (devisOpen) {
             document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden'; // also lock <html>
+            document.documentElement.style.overflow = 'hidden'; 
         } else {
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
@@ -40,7 +38,7 @@ export default function AppLayoutLanding({
         };
     }, [devisOpen]);
 
-    // ── When loading completes, make sure scroll is fully restored ────────────
+  
     useEffect(() => {
         if (!isLoading) {
             document.body.style.overflow = '';
@@ -50,16 +48,15 @@ export default function AppLayoutLanding({
 
     return (
         <>
-            {/* Loading screen — rendered at root level, no overflow side-effects */}
+            
             <LoadingScreen
                 onLoadingComplete={() => setIsLoading(false)}
                 minDisplayTime={2500}
             />
 
-            {/* Main app shell — always in DOM once loading is done */}
+      
             {!isLoading && (
-                // ── CRITICAL: this wrapper must NEVER have overflow:hidden/scroll ──
-                // Use a plain div with no overflow, no height constraints
+           
                 <div style={{ position: 'relative', minHeight: '100vh' }}>
                     <Navbar
                         onDevis={() => setDevisOpen(true)}
@@ -68,7 +65,7 @@ export default function AppLayoutLanding({
                         isSuperAdmin={isSuperAdmin}
                     />
 
-                    {/* main: no overflow, no height — grows with content naturally */}
+                 
                     <main style={{ display: 'block', position: 'relative' }}>
                         {children}
                     </main>

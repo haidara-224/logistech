@@ -95,12 +95,34 @@ export const SERVICES_DATA: ServiceData[] = [
   },
 ];
 
-export function getServicesData(t: (key: string, fallback?: string) => string): ServiceData[] {
-  return SERVICES_DATA.map(svc => ({
-    ...svc,
-    title: t(`svc_${svc.id}_title`, svc.title),
-    short: t(`svc_${svc.id}_short`, svc.short),
-    desc: t(`svc_${svc.id}_desc`, svc.desc),
-    features: svc.features.map((f, i) => t(`svc_${svc.id}_f${i + 1}`, f)),
-  }));
+export interface DynamicServiceData {
+  images: string[];
+  title_fr: string; title_en: string;
+  short_fr: string; short_en: string;
+  desc_fr: string;  desc_en: string;
+  features_fr: string[]; features_en: string[];
+}
+
+export function getServicesData(
+  t: (key: string, fallback?: string) => string,
+  locale?: string,
+  dynamicServices?: Record<string, DynamicServiceData>,
+): ServiceData[] {
+  const lang = locale === 'en' ? 'en' : 'fr';
+  return SERVICES_DATA.map(svc => {
+    const dyn       = dynamicServices?.[svc.id];
+    const dynTitle  = dyn ? (lang === 'fr' ? dyn.title_fr : dyn.title_en) : '';
+    const dynShort  = dyn ? (lang === 'fr' ? dyn.short_fr : dyn.short_en) : '';
+    const dynDesc   = dyn ? (lang === 'fr' ? dyn.desc_fr  : dyn.desc_en)  : '';
+    const dynFeats  = dyn ? (lang === 'fr' ? dyn.features_fr : dyn.features_en).filter(Boolean) : [];
+    const dynImages = dyn?.images?.length ? dyn.images : undefined;
+    return {
+      ...svc,
+      title:    dynTitle || t(`svc_${svc.id}_title`, svc.title),
+      short:    dynShort || t(`svc_${svc.id}_short`, svc.short),
+      desc:     dynDesc  || t(`svc_${svc.id}_desc`,  svc.desc),
+      features: dynFeats.length > 0 ? dynFeats : svc.features.map((f, i) => t(`svc_${svc.id}_f${i + 1}`, f)),
+      ...(dynImages ? { images: dynImages } : {}),
+    };
+  });
 }
