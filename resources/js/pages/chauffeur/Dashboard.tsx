@@ -8,7 +8,8 @@ import {
     Play, Shield, Sun, Truck, User, X, XCircle, Zap,
     Monitor, Umbrella, Plus, BriefcaseMedical,
 } from 'lucide-react';
-import { useAppearance } from '@/hooks/use-appearance.tsx';
+import { useAppearance } from '@/hooks/use-appearance';
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1142,7 +1143,7 @@ export default function ChauffeurDashboard({
                 <div className="shrink-0 px-4 pt-4 pb-2 flex items-center justify-between border-b border-gray-200 dark:border-white/[0.05] bg-white/80 dark:bg-[#060d1a]/80 backdrop-blur-xl">
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-lg bg-emerald-600 flex items-center justify-center">
-                            <Zap size={12} className="text-white" />
+                            <img src="/logo.jpg" alt="" />
                         </div>
                         <span className="text-xs font-bold text-gray-400 dark:text-white/40 tracking-widest uppercase">Logistech</span>
                     </div>
