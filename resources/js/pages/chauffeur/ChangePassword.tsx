@@ -80,7 +80,7 @@ export default function ChangePassword() {
                                     value={form.data.password}
                                     onChange={e => form.setData('password', e.target.value)}
                                     placeholder="Minimum 6 caractères"
-                                    className="w-full h-12 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-10 pr-12 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50"
+                                    className="w-full h-12 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-10 pr-12 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50"
                                 />
                                 <button
                                     type="button"
@@ -126,7 +126,7 @@ export default function ChangePassword() {
                                     value={form.data.password_confirmation}
                                     onChange={e => form.setData('password_confirmation', e.target.value)}
                                     placeholder="Répétez le mot de passe"
-                                    className="w-full h-12 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-10 pr-12 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50"
+                                    className="w-full h-12 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-10 pr-12 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-500/50"
                                 />
                                 <button
                                     type="button"

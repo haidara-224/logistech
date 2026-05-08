@@ -274,14 +274,14 @@ function CongeModal({ onClose }: { onClose: () => void }) {
                             <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Date de début</p>
                             <input type="date" value={form.data.date_debut} min={today}
                                 onChange={e => form.setData('date_debut', e.target.value)}
-                                className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-sm text-gray-900 dark:text-white" />
+                                className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-base md:text-sm text-gray-900 dark:text-white" />
                             {form.errors.date_debut && <p className="text-red-500 text-xs mt-1">{form.errors.date_debut}</p>}
                         </div>
                         <div>
                             <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Date de fin</p>
                             <input type="date" value={form.data.date_fin} min={form.data.date_debut}
                                 onChange={e => form.setData('date_fin', e.target.value)}
-                                className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-sm text-gray-900 dark:text-white" />
+                                className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-base md:text-sm text-gray-900 dark:text-white" />
                             {form.errors.date_fin && <p className="text-red-500 text-xs mt-1">{form.errors.date_fin}</p>}
                         </div>
                     </div>
@@ -297,7 +297,7 @@ function CongeModal({ onClose }: { onClose: () => void }) {
                         <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Motif (optionnel)</p>
                         <textarea value={form.data.motif} onChange={e => form.setData('motif', e.target.value)}
                             placeholder="Précisez si nécessaire…" rows={3}
-                            className="w-full rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
+                            className="w-full rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
                     </div>
                 </div>
 
@@ -451,12 +451,12 @@ function IncidentModal({ onClose, expedition }: { onClose: () => void; expeditio
                         <div>
                             <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Date & heure</p>
                             <input type="datetime-local" value={form.data.date_incident} onChange={e => form.setData('date_incident', e.target.value)}
-                                className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-sm text-gray-900 dark:text-white" />
+                                className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-base md:text-sm text-gray-900 dark:text-white" />
                         </div>
                         <div>
                             <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Lieu</p>
                             <input type="text" value={form.data.lieu} onChange={e => form.setData('lieu', e.target.value)}
-                                placeholder="Route, km…" className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20" />
+                                placeholder="Route, km…" className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20" />
                         </div>
                     </div>
 
@@ -464,7 +464,7 @@ function IncidentModal({ onClose, expedition }: { onClose: () => void; expeditio
                         <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Description *</p>
                         <textarea value={form.data.description} onChange={e => form.setData('description', e.target.value)}
                             placeholder="Décrivez ce qui s'est passé…" rows={3}
-                            className="w-full rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
+                            className="w-full rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
                         {form.errors.description && <p className="text-red-500 text-xs mt-1">{form.errors.description}</p>}
                     </div>
 
@@ -782,7 +782,7 @@ function VoyageTab({ expedition, onDeclareIncident }: { expedition: Expedition |
                                     type="number" min="0" placeholder="Ex : 450"
                                     value={kmReel}
                                     onChange={e => setKmReel(e.target.value)}
-                                    className="w-full h-10 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-3 pr-12 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20"
+                                    className="w-full h-10 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-3 pr-12 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20"
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-white/30 font-medium">km</span>
                             </div>
@@ -791,7 +791,7 @@ function VoyageTab({ expedition, onDeclareIncident }: { expedition: Expedition |
 
                     <textarea value={commentaire} onChange={e => setCommentaire(e.target.value)}
                         placeholder="Commentaire optionnel…" rows={2}
-                        className="w-full rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
+                        className="w-full rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
                     <div className="flex gap-2">
                         <button onClick={() => setConfirmAction(null)}
                             className="flex-1 h-10 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/50 text-sm font-medium">
