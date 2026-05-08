@@ -295,6 +295,8 @@ return [
     'dash_adjustments' => 'Ajustements',
     'dash_logistics' => 'Logistique',
     'dash_planning' => 'Planification',
+    'dash_hse' => 'HSE',
+    'dash_conges' => 'Congés',
     'dash_finances' => 'Finances',
     'dash_payments' => 'Paiements',
     'dash_invoices' => 'Factures',

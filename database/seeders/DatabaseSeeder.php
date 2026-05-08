@@ -13,29 +13,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-       $this->call([
+        $this->call([
             RoleSeeder::class,
-        //     CategorieSeeder::class,
-        //    ProduitSeeder::class,
-        //     ClientSeeder::class,
-        //    MouvementsStockSeeder::class,
-        //    CommandeSeeder::class,
-        //     PaiementSeeder::class,
-        //     FactureSeeder::class,
-        //     ImageProduitSeeder::class,
-        //    CamionSeeder::class,
-        //    ChauffeurSeeder::class,
-        //    ExpeditionSeeder::class,
-        //    LivraisonSeeder::class,
-       ]);
-      $user= user::factory()->create([
-        'name' => 'Haidara',
-        'email' => 'sidymohamedcherifhaidara02@gmail.com',
-        'password' => bcrypt('password'),
-    ]);
+            CategorieSeeder::class,
+            ProduitSeeder::class,
+            ClientSeeder::class,
+            MouvementsStockSeeder::class,
+            CommandeSeeder::class,
+            PaiementSeeder::class,
+            FactureSeeder::class,
+            ImageProduitSeeder::class,
+            //    CamionSeeder::class,
+            //    ChauffeurSeeder::class,
+            //    ExpeditionSeeder::class,
+            //    LivraisonSeeder::class,
+        ]);
+        $user = User::factory()->create([
+            'name' => 'Haidara',
+            'email' => 'sidymohamedcherifhaidara02@gmail.com',
+            'password' => bcrypt('password'),
+        ]);
         $user->assignRole('admin');
         $user->assignRole('super admin');
-
 
     }
 }

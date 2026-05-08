@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Form } from '@inertiajs/react';
+import React, { useState, useMemo } from 'react';
+import { Form, useForm, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Plus, Trash2, Pencil, ArrowRight, Package, ChevronDown, Search, X, Check, Phone, Truck, History, Calendar } from 'lucide-react';
 import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
@@ -44,9 +44,6 @@ function ProductRow({ row, index, onUpdate, onRemove, onOpenModal, errors }: Pro
             transition={{ duration: 0.2 }}
             className="rounded-xl border border-border bg-muted/30 p-4"
         >
-            {/* Hidden input so produit_id is included in form submission */}
-            <input type="hidden" name={`produits[${index}][produit_id]`} value={row.produit_id} />
-
             <div className="grid grid-cols-[1fr_100px_auto] gap-3 items-end">
                 <div>
                     {index === 0 && (
@@ -73,7 +70,6 @@ function ProductRow({ row, index, onUpdate, onRemove, onOpenModal, errors }: Pro
                         min={1}
                         value={row.quantite}
                         onChange={e => onUpdate(index, 'quantite', e.target.value)}
-                        name={`produits[${index}][quantite]`}
                         error={errQuantite}
                     />
                 </div>
@@ -240,116 +236,196 @@ interface NewExpeditionFormProps {
     camionsDisponibles: Camion[];
     chauffeursDisponibles: Chauffeur[];
     produits: Produit[];
+    onSuccess?: () => void;
 }
 
-function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits }: NewExpeditionFormProps) {
-    const [rows, setRows] = useState<ProductRowState[]>([
-        { produit_id: '', quantite: 1, produit: undefined },
-    ]);
+function NewExpeditionForm({ camionsDisponibles, chauffeursDisponibles, produits, onSuccess }: NewExpeditionFormProps) {
+    const form = useForm({
+        camion_id: String(camionsDisponibles[0]?.id ?? ''),
+        chauffeur_id: String(chauffeursDisponibles[0]?.id ?? ''),
+        origine: '',
+        destination: '',
+        date_depart: '',
+        date_arrivee_prevue: '',
+        statut: 'en préparation',
+        details: '',
+        produits: [{ produit_id: '' as string | number, quantite: 1 }],
+    });
+
+    const [productDetails, setProductDetails] = useState<(Produit | undefined)[]>([undefined]);
     const [modalIndex, setModalIndex] = useState<number | null>(null);
 
-    const addRow = () => setRows(prev => [...prev, { produit_id: '', quantite: 1, produit: undefined }]);
-    const removeRow = (i: number) => setRows(prev => prev.filter((_, idx) => idx !== i));
+    const addRow = () => {
+        form.setData('produits', [...form.data.produits, { produit_id: '', quantite: 1 }]);
+        setProductDetails(prev => [...prev, undefined]);
+    };
+
+    const removeRow = (i: number) => {
+        if (form.data.produits.length === 1) return;
+        form.setData('produits', form.data.produits.filter((_, idx) => idx !== i));
+        setProductDetails(prev => prev.filter((_, idx) => idx !== i));
+    };
+
     const updateRow = (i: number, key: 'produit_id' | 'quantite', val: string | number, produit?: Produit) => {
-        setRows(prev => {
-            const next = [...prev];
-            if (key === 'produit_id') {
-                next[i] = { ...next[i], produit_id: val, produit };
-            } else {
-                next[i] = { ...next[i], quantite: Number(val) };
-            }
-            return next;
+        const next = form.data.produits.map((row, idx) =>
+            idx === i ? { ...row, [key]: key === 'quantite' ? Number(val) : val } : row
+        );
+        form.setData('produits', next);
+        if (key === 'produit_id') {
+            setProductDetails(prev => prev.map((d, idx) => idx === i ? produit : d));
+        }
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        form.post('/dashboard/logistique/expeditions', {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset();
+                setProductDetails([undefined]);
+                onSuccess?.();
+            },
         });
     };
 
-    const handleSelectProduct = (index: number, produit: Produit) => {
-        updateRow(index, 'produit_id', produit.id, produit);
-    };
+    const rows: ProductRowState[] = form.data.produits.map((p, i) => ({
+        produit_id: p.produit_id,
+        quantite: p.quantite,
+        produit: productDetails[i],
+    }));
 
     return (
         <>
-            <Form method="post" action="/dashboard/logistique/expeditions" className="space-y-4">
-                {({ processing, errors }: { processing: boolean; errors: Record<string, string> }) => (
-                    <>
-                        <div className="grid grid-cols-2 gap-3">
-                            <ThemedSelect name="camion_id" label="Camion" error={errors.camion_id}>
-                                {camionsDisponibles.length === 0
-                                    ? <option value="">Aucun camion disponible</option>
-                                    : camionsDisponibles.map(c => (
-                                        <option key={c.id} value={c.id}>{c.immatriculation} — {c.marque}</option>
-                                    ))
-                                }
-                            </ThemedSelect>
-                            <ThemedSelect name="chauffeur_id" label="Chauffeur" error={errors.chauffeur_id}>
-                                {chauffeursDisponibles.length === 0
-                                    ? <option value="">Aucun chauffeur disponible</option>
-                                    : chauffeursDisponibles.map(c => (
-                                        <option key={c.id} value={c.id}>{c.nom} {c.prenom}</option>
-                                    ))
-                                }
-                            </ThemedSelect>
-                        </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                    <ThemedSelect
+                        name="camion_id"
+                        label="Camion"
+                        value={form.data.camion_id}
+                        onChange={e => form.setData('camion_id', e.target.value)}
+                        error={form.errors.camion_id}
+                    >
+                        {camionsDisponibles.length === 0
+                            ? <option value="">Aucun camion disponible</option>
+                            : camionsDisponibles.map(c => (
+                                <option key={c.id} value={c.id}>{c.immatriculation} — {c.marque}</option>
+                            ))
+                        }
+                    </ThemedSelect>
+                    <ThemedSelect
+                        name="chauffeur_id"
+                        label="Chauffeur"
+                        value={form.data.chauffeur_id}
+                        onChange={e => form.setData('chauffeur_id', e.target.value)}
+                        error={form.errors.chauffeur_id}
+                    >
+                        {chauffeursDisponibles.length === 0
+                            ? <option value="">Aucun chauffeur disponible</option>
+                            : chauffeursDisponibles.map(c => (
+                                <option key={c.id} value={c.id}>{c.nom} {c.prenom}</option>
+                            ))
+                        }
+                    </ThemedSelect>
+                </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <ThemedInput name="origine" label="Origine" placeholder="Entrepôt principal" error={errors.origine} />
-                            <ThemedInput name="destination" label="Destination" placeholder="Site client" error={errors.destination} />
-                        </div>
+                <div className="grid grid-cols-2 gap-3">
+                    <ThemedInput
+                        name="origine"
+                        label="Origine"
+                        placeholder="Entrepôt principal"
+                        value={form.data.origine}
+                        onChange={e => form.setData('origine', e.target.value)}
+                        error={form.errors.origine}
+                    />
+                    <ThemedInput
+                        name="destination"
+                        label="Destination"
+                        placeholder="Site client"
+                        value={form.data.destination}
+                        onChange={e => form.setData('destination', e.target.value)}
+                        error={form.errors.destination}
+                    />
+                </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <ThemedInput name="date_depart" label="Date de départ" type="date" error={errors.date_depart} />
-                            <ThemedInput name="date_arrivee_prevue" label="Arrivée prévue" type="date" error={errors.date_arrivee_prevue} />
-                        </div>
+                <div className="grid grid-cols-2 gap-3">
+                    <ThemedInput
+                        name="date_depart"
+                        label="Date de départ"
+                        type="date"
+                        value={form.data.date_depart}
+                        onChange={e => form.setData('date_depart', e.target.value)}
+                        error={form.errors.date_depart}
+                    />
+                    <ThemedInput
+                        name="date_arrivee_prevue"
+                        label="Arrivée prévue"
+                        type="date"
+                        value={form.data.date_arrivee_prevue}
+                        onChange={e => form.setData('date_arrivee_prevue', e.target.value)}
+                        error={form.errors.date_arrivee_prevue}
+                    />
+                </div>
 
-                        <ThemedSelect name="statut" label="Statut" error={errors.statut}>
-                            <option value="en préparation">En préparation</option>
-                            <option value="en cours">En cours</option>
-                            <option value="livré">Livré</option>
-                            <option value="annulé">Annulé</option>
-                        </ThemedSelect>
+                <ThemedSelect
+                    name="statut"
+                    label="Statut"
+                    value={form.data.statut}
+                    onChange={e => form.setData('statut', e.target.value)}
+                    error={form.errors.statut}
+                >
+                    <option value="en préparation">En préparation</option>
+                    <option value="en cours">En cours</option>
+                    <option value="livré">Livré</option>
+                    <option value="annulé">Annulé</option>
+                </ThemedSelect>
 
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                                Produits à livrer
-                            </label>
-                            <AnimatePresence>
-                                {rows.map((row, i) => (
-                                    <ProductRow
-                                        key={i}
-                                        row={row}
-                                        index={i}
-                                        produits={produits}
-                                        onUpdate={updateRow}
-                                        onRemove={removeRow}
-                                        onOpenModal={(idx) => setModalIndex(idx)}
-                                        errors={errors}
-                                    />
-                                ))}
-                            </AnimatePresence>
-                            <Button type="button" variant="outline" size="sm" onClick={addRow} className="w-full">
-                                <Plus size={12} />
-                                Ajouter un produit
-                            </Button>
-                            {errors.produits && <p className="text-xs text-destructive">{errors.produits}</p>}
-                        </div>
+                <div className="space-y-2">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        Produits à livrer
+                    </label>
+                    <AnimatePresence>
+                        {rows.map((row, i) => (
+                            <ProductRow
+                                key={i}
+                                row={row}
+                                index={i}
+                                produits={produits}
+                                onUpdate={updateRow}
+                                onRemove={removeRow}
+                                onOpenModal={(idx) => setModalIndex(idx)}
+                                errors={form.errors as Record<string, string>}
+                            />
+                        ))}
+                    </AnimatePresence>
+                    <Button type="button" variant="outline" size="sm" onClick={addRow} className="w-full">
+                        <Plus size={12} />
+                        Ajouter un produit
+                    </Button>
+                    {form.errors.produits && <p className="text-xs text-destructive">{form.errors.produits as string}</p>}
+                </div>
 
-                        <ThemedTextarea name="details" label="Détails" rows={3} placeholder="Observations sur le chargement…" />
+                <ThemedTextarea
+                    name="details"
+                    label="Détails"
+                    rows={3}
+                    placeholder="Observations sur le chargement…"
+                    value={form.data.details}
+                    onChange={e => form.setData('details', e.target.value)}
+                />
 
-                        <Button type="submit" disabled={processing} className="w-full">
-                            <Plus size={14} />
-                            Créer l'expédition
-                        </Button>
-                    </>
-                )}
-            </Form>
+                <Button type="submit" disabled={form.processing} className="w-full">
+                    <Plus size={14} />
+                    Créer l'expédition
+                </Button>
+            </form>
 
-            {/* Product selection modal */}
             <ProductModal
                 isOpen={modalIndex !== null}
                 onClose={() => setModalIndex(null)}
                 produits={produits}
                 onSelect={(produit) => {
                     if (modalIndex !== null) {
-                        handleSelectProduct(modalIndex, produit);
+                        updateRow(modalIndex, 'produit_id', produit.id, produit);
                         setModalIndex(null);
                     }
                 }}
@@ -407,8 +483,13 @@ interface ExpeditionCardProps {
     onEdit: (id: number) => void;
 }
 
+const PROTECTED_STATUTS = ['en cours', 'annulé', 'livré'] as const;
+const CANCELLABLE_STATUTS = ['en préparation', 'en cours'] as const;
+
 function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
     const [expanded, setExpanded] = useState(false);
+    const [confirmCancel, setConfirmCancel] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     return (
         <motion.div
@@ -481,12 +562,67 @@ function ExpeditionCard({ expedition, index, onEdit }: ExpeditionCardProps) {
                                 </select>
                                 <Button type="submit" variant="secondary" size="sm">MAJ statut</Button>
                             </Form>
-                            <Form method="delete" action={`/dashboard/logistique/expeditions/${expedition.id}`}>
-                                <Button type="submit" variant="danger" size="sm" className="text-white">
-                                    <Trash2 size={12} className="text-white" />
-                                </Button>
-                            </Form>
+                            {!PROTECTED_STATUTS.includes(expedition.statut as typeof PROTECTED_STATUTS[number]) && (
+                                <Form method="delete" action={`/dashboard/logistique/expeditions/${expedition.id}`}>
+                                    <Button type="submit" variant="danger" size="sm" className="text-white">
+                                        <Trash2 size={12} className="text-white" />
+                                    </Button>
+                                </Form>
+                            )}
                         </div>
+
+                        {/* Cancel button */}
+                        {CANCELLABLE_STATUTS.includes(expedition.statut as typeof CANCELLABLE_STATUTS[number]) && (
+                            <div className="px-4 pb-3">
+                                {!confirmCancel ? (
+                                    <button
+                                        onClick={() => setConfirmCancel(true)}
+                                        className="w-full h-9 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/25 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                                    >
+                                        <X size={13} /> Annuler l'expédition
+                                    </button>
+                                ) : (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/25 p-3 space-y-2"
+                                    >
+                                        <p className="text-xs font-semibold text-red-700 dark:text-red-400">
+                                            Confirmer l'annulation de {expedition.reference} ?
+                                        </p>
+                                        <p className="text-[11px] text-red-600/70 dark:text-red-400/60">
+                                            Le stock sera restauré, le chauffeur et le camion repasseront en disponible.
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setConfirmCancel(false)}
+                                                className="flex-1 h-8 rounded-lg bg-white dark:bg-white/5 border border-red-200 dark:border-red-500/25 text-xs text-red-500 dark:text-red-400 font-medium"
+                                            >
+                                                Retour
+                                            </button>
+                                            <button
+                                                disabled={cancelling}
+                                                onClick={() => {
+                                                    setCancelling(true);
+                                                    router.patch(
+                                                        `/dashboard/logistique/expeditions/${expedition.id}/annuler`,
+                                                        {},
+                                                        {
+                                                            preserveScroll: true,
+                                                            onSuccess: () => setConfirmCancel(false),
+                                                            onFinish: () => setCancelling(false),
+                                                        }
+                                                    );
+                                                }}
+                                                className="flex-1 h-8 rounded-lg bg-red-600 text-white text-xs font-bold disabled:opacity-50 flex items-center justify-center gap-1"
+                                            >
+                                                <X size={11} /> {cancelling ? 'Annulation…' : 'Confirmer'}
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Info grid: chauffeur + camion */}
                         <div className="grid grid-cols-2 gap-2 px-4 pb-2">
@@ -679,6 +815,7 @@ export default function ExpeditionsTab({
                         camionsDisponibles={camionsDisponibles}
                         chauffeursDisponibles={chauffeursDisponibles}
                         produits={produits}
+                        onSuccess={() => setShowNew(false)}
                     />
                 </DrawerPanel>
 

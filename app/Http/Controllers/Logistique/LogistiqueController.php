@@ -20,16 +20,24 @@ class LogistiqueController extends Controller
         $expeditions = Expedition::with(['camion', 'chauffeur', 'produits', 'livraisons'])
             ->orderByDesc('date_depart')
             ->get();
-        $livraisons = Livraison::with('expedition')
+        $livraisons = Livraison::with(['expedition.chauffeur'])
             ->orderByDesc('date_statut')
             ->limit(50)
             ->get();
+
+        $livraisonsAValider = Livraison::with(['expedition.chauffeur'])
+            ->where('etat', 'livré')
+            ->where('valide_admin', false)
+            ->whereHas('expedition', fn ($q) => $q->where('statut', 'livraison_soumise'))
+            ->orderByDesc('date_statut')
+            ->get();
+
         $produits = Produit::where('quantite_stock', '>', 0)
             ->orderBy('nom')
             ->get();
 
         $retards = $expeditions
-            ->whereNotIn('statut', ['livré', 'annulé'])
+            ->whereNotIn('statut', ['livré', 'annulé', 'livraison_soumise'])
             ->filter(fn ($e) => $e->date_arrivee_prevue && $e->date_arrivee_prevue->lt(now()))
             ->values();
 
@@ -64,12 +72,14 @@ class LogistiqueController extends Controller
             'chauffeursDisponibles' => $chauffeurs->where('statut', 'disponible')->values(),
             'expeditions' => $expeditions,
             'livraisons' => $livraisons,
+            'livraisonsAValider' => $livraisonsAValider,
             'produits' => $produits,
             'retards' => $retards,
             'stats' => [
                 'camions_disponibles' => $camions->where('statut', 'disponible')->count(),
                 'camions_en_maintenance' => $camions->where('statut', 'maintenance')->count(),
-                'expeditions_en_cours' => $expeditions->where('statut', 'en cours')->count(),
+                'expeditions_en_cours' => $expeditions->whereIn('statut', ['en cours', 'livraison_soumise'])->count(),
+                'livraisons_a_valider' => $livraisonsAValider->count(),
                 'expeditions_en_retard' => $retards->count(),
                 'livraisons_en_preparation' => $expeditions->where('statut', 'en préparation')->count(),
                 'livraisons_livrees' => $livrees,

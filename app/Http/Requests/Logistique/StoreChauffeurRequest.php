@@ -17,9 +17,9 @@ class StoreChauffeurRequest extends FormRequest
             'nom' => 'required|string|max:255',
             'prenom' => 'nullable|string|max:255',
             'telephone' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255|unique:chauffeurs,email',
+            'email' => 'required|email|max:255|unique:chauffeurs,email|unique:users,email',
             'permis' => 'nullable|string|max:100',
-            'statut' => 'required|in:disponible,en mission,repos',
+            'statut' => 'required|in:disponible,en mission,en_repos',
             'notes' => 'nullable|string',
         ];
     }

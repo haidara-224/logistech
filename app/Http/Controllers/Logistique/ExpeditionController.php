@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Logistique\StoreExpeditionRequest;
 use App\Http\Requests\Logistique\UpdateExpeditionRequest;
 use App\Http\Requests\Logistique\UpdateExpeditionStatusRequest;
+use App\Models\ChauffeurNotification;
 use App\Models\Expedition;
 use App\Models\Mouvements_stock;
 use App\Models\Produit;
@@ -48,6 +49,24 @@ class ExpeditionController extends Controller
             $expedition->chauffeur->update(['statut' => 'disponible']);
         }
 
+        $depart = $expedition->date_depart
+            ? $expedition->date_depart->format('d/m/Y')
+            : '—';
+
+        $alreadyNotified = ChauffeurNotification::where('chauffeur_id', $expedition->chauffeur_id)
+            ->where('type', 'expedition_assignee')
+            ->where('data->expedition_id', $expedition->id)
+            ->exists();
+
+        if (! $alreadyNotified) {
+            ChauffeurNotification::create([
+                'chauffeur_id' => $expedition->chauffeur_id,
+                'type' => 'expedition_assignee',
+                'message' => "Nouvelle mission assignée : {$expedition->reference} — départ le {$depart}.",
+                'data' => ['expedition_id' => $expedition->id],
+            ]);
+        }
+
         return back()->with('success', 'Expédition créée et stock mis à jour.');
     }
 
@@ -78,9 +97,76 @@ class ExpeditionController extends Controller
         return back()->with('success', 'Expédition mise à jour.');
     }
 
+    public function annuler(Expedition $expedition): RedirectResponse
+    {
+        abort_if(
+            in_array($expedition->statut, ['annulé', 'livré'], true),
+            403,
+            'Cette expédition ne peut pas être annulée.'
+        );
+
+        $expedition->load('produits', 'chauffeur', 'camion');
+
+        $expedition->update(['statut' => 'annulé']);
+
+        $expedition->chauffeur?->update(['statut' => 'disponible']);
+        $expedition->camion?->update(['statut' => 'disponible']);
+
+        foreach ($expedition->produits as $produit) {
+            $quantite = (int) ($produit->pivot->quantite ?? 0);
+            if ($quantite > 0) {
+                $produit->quantite_stock += $quantite;
+                $produit->save();
+
+                Mouvements_stock::create([
+                    'produit_id' => $produit->id,
+                    'type' => 'entree',
+                    'quantite' => $quantite,
+                    'source' => 'annulation_expedition',
+                ]);
+            }
+        }
+
+        if ($expedition->chauffeur_id) {
+            ChauffeurNotification::create([
+                'chauffeur_id' => $expedition->chauffeur_id,
+                'type' => 'expedition_annulee',
+                'message' => "La mission {$expedition->reference} a été annulée par l'administration.",
+                'data' => ['expedition_id' => $expedition->id],
+            ]);
+        }
+
+        return back()->with('success', "Expédition {$expedition->reference} annulée. Stock restauré.");
+    }
+
     public function destroy(Expedition $expedition): RedirectResponse
     {
+        abort_if(
+            in_array($expedition->statut, ['en cours', 'annulé', 'livré'], true),
+            403,
+            'Les expéditions en cours, annulées ou livrées ne peuvent pas être supprimées.'
+        );
+
+        $expedition->load('produits', 'chauffeur', 'camion');
         $expedition->delete();
+
+        $expedition->chauffeur?->update(['statut' => 'disponible']);
+        $expedition->camion?->update(['statut' => 'disponible']);
+
+        foreach ($expedition->produits as $produit) {
+            $quantite = (int) ($produit->pivot->quantite ?? 0);
+            if ($quantite > 0) {
+                $produit->quantite_stock += $quantite;
+                $produit->save();
+
+                Mouvements_stock::create([
+                    'produit_id' => $produit->id,
+                    'type' => 'entree',
+                    'quantite' => $quantite,
+                    'source' => 'annulation_expedition',
+                ]);
+            }
+        }
 
         return back()->with('success', 'Expédition supprimée.');
     }

@@ -26,4 +26,9 @@ class Camion extends Model
     {
         return $this->hasMany(Expedition::class);
     }
+
+    public function hseDocuments(): HasMany
+    {
+        return $this->hasMany(HseCamionDocument::class);
+    }
 }

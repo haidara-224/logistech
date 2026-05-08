@@ -4,6 +4,7 @@ use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BoutiqueController;
 use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\Chauffeur\DashboardController as ChauffeurDashboardController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommandeController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\PanierController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\VenteController;
+use App\Http\Middleware\EnsureChauffeurPasswordChanged;
 use App\Models\AdminNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +163,23 @@ Route::middleware(['auth', 'verified', 'role:super admin'])->prefix('dashboard')
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
     Route::get('audit/export', [AuditLogController::class, 'export'])->name('audit.export');
 });
+// Chauffeur mobile app
+Route::middleware(['auth', 'role:chauffeur', EnsureChauffeurPasswordChanged::class])
+    ->prefix('chauffeur')
+    ->group(function () {
+        Route::get('/', [ChauffeurDashboardController::class, 'index'])->name('chauffeur.dashboard');
+        Route::patch('expeditions/{expedition}/statut', [ChauffeurDashboardController::class, 'updateExpedition'])->name('chauffeur.expedition.update');
+        Route::post('incidents', [ChauffeurDashboardController::class, 'storeIncident'])->name('chauffeur.incident.store');
+        Route::patch('incidents/{incident}/statut', [ChauffeurDashboardController::class, 'resolveIncident'])->name('chauffeur.incident.resolve');
+        Route::post('conges', [ChauffeurDashboardController::class, 'storeConge'])->name('chauffeur.conge.store');
+        Route::patch('notifications/lues', [ChauffeurDashboardController::class, 'markNotificationsRead'])->name('chauffeur.notifications.read');
+    });
+
+Route::middleware(['auth', 'role:chauffeur'])->prefix('chauffeur')->group(function () {
+    Route::get('password', [ChauffeurDashboardController::class, 'editPassword'])->name('chauffeur.password.edit');
+    Route::post('password', [ChauffeurDashboardController::class, 'updatePassword'])->name('chauffeur.password.update');
+});
+
 Route::get('/auth/redirect', function () {
     return Socialite::driver('google')->redirect();
 });

@@ -11,7 +11,7 @@ const FILTER_OPTIONS = [
     { value: 'all', label: 'Tous les statuts' },
     { value: 'disponible', label: 'Disponible' },
     { value: 'en mission', label: 'En mission' },
-    { value: 'repos', label: 'Repos' },
+    { value: 'en_repos', label: 'En repos' },
 ];
 
 const AVATAR_COLORS = [
@@ -109,7 +109,7 @@ function NewChauffeurForm() {
                         <ThemedSelect name="statut" label="Statut">
                             <option value="disponible">Disponible</option>
                             <option value="en mission">En mission</option>
-                            <option value="repos">Repos</option>
+                            <option value="en_repos">En repos</option>
                         </ThemedSelect>
                     </div>
                     <ThemedTextarea name="notes" label="Notes" rows={3} placeholder="Disponibilités, informations complémentaires…" />
@@ -139,7 +139,7 @@ function EditChauffeurForm({ chauffeur }: { chauffeur: Chauffeur }) {
                 <ThemedSelect name="statut" label="Statut" defaultValue={chauffeur.statut}>
                     <option value="disponible">Disponible</option>
                     <option value="en mission">En mission</option>
-                    <option value="repos">Repos</option>
+                    <option value="en_repos">En repos</option>
                 </ThemedSelect>
             </div>
             <Button type="submit" className="w-full">

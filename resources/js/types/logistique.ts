@@ -23,8 +23,18 @@ export interface Chauffeur {
     telephone?: string;
     email?: string;
     permis?: string;
-    statut: 'disponible' | 'en mission' | 'repos';
+    statut: 'disponible' | 'en mission' | 'en_repos';
     notes?: string;
+}
+
+export interface ChauffeurNotification {
+    id: number;
+    chauffeur_id: number;
+    type: 'conge_approuve' | 'conge_refuse' | 'expedition_assignee' | 'livraison_validee' | 'livraison_annulee';
+    message: string;
+    data?: Record<string, unknown> | null;
+    read_at: string | null;
+    created_at: string;
 }
 
 export interface ProduitPivot extends Produit {
@@ -46,7 +56,7 @@ export interface Expedition {
     details?: string;
     date_depart: string | null;
     date_arrivee_prevue: string | null;
-    statut: 'en préparation' | 'en cours' | 'livré' | 'annulé';
+    statut: 'en préparation' | 'en cours' | 'livraison_soumise' | 'livré' | 'annulé';
     camion: Camion;
     chauffeur: Chauffeur;
     produits: ProduitPivot[];
@@ -57,7 +67,10 @@ export interface Livraison {
     id: number;
     etat: string;
     commentaire?: string;
+    km_reel?: number | null;
     date_statut?: string;
+    valide_admin: boolean;
+    valide_at?: string | null;
     expedition: Expedition;
 }
 
@@ -88,6 +101,19 @@ export interface Stats {
     cout_maintenance_annuel: number;
 }
 
+export interface CongeChauffeur {
+    id: number;
+    chauffeur_id: number;
+    chauffeur?: Chauffeur;
+    date_debut: string;
+    date_fin: string;
+    type: string;
+    motif?: string | null;
+    statut: 'en_attente' | 'approuve' | 'refuse';
+    commentaire_admin?: string | null;
+    created_at?: string;
+}
+
 export interface LogistiqueProps {
     camions: Camion[];
     chauffeurs: Chauffeur[];
@@ -95,6 +121,7 @@ export interface LogistiqueProps {
     chauffeursDisponibles: Chauffeur[];
     expeditions: Expedition[];
     livraisons: Livraison[];
+    livraisonsAValider: Livraison[];
     produits: Produit[];
     retards: Expedition[];
     stats: Stats;

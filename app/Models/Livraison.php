@@ -16,11 +16,16 @@ class Livraison extends Model
         'expedition_id',
         'etat',
         'commentaire',
+        'km_reel',
         'date_statut',
+        'valide_admin',
+        'valide_at',
     ];
 
     protected $casts = [
         'date_statut' => 'datetime',
+        'valide_at' => 'datetime',
+        'valide_admin' => 'boolean',
     ];
 
     public function expedition(): BelongsTo

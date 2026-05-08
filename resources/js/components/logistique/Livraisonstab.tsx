@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Form } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Package, CheckCircle2, Clock, Loader, XCircle, Search, Filter, Calendar } from 'lucide-react';
-import { ThemedInput, ThemedSelect, ThemedTextarea, Button, StatusBadge, Panel, DrawerPanel, EmptyState, FilterBar, Pagination } from './Ui';
+import { Form, router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { Package, CheckCircle2, Clock, Loader, XCircle, ShieldCheck, Navigation, X, Check } from 'lucide-react';
+import { ThemedInput, ThemedSelect, ThemedTextarea, Button, Panel, EmptyState, FilterBar, Pagination } from './Ui';
 import type { Livraison, Expedition } from '@/types/logistique';
 
 const PER_PAGE = 10;
@@ -24,6 +24,7 @@ const stateConfig = {
 
 interface LivraisonsTabProps {
     livraisons: Livraison[];
+    livraisonsAValider: Livraison[];
     expeditions: Expedition[];
 }
 
@@ -171,8 +172,64 @@ function NewLivraisonForm({ expeditions }: { expeditions: Expedition[] }) {
     );
 }
 
+// ── Pending validation card ──────────────────────────────────────────────────
+function PendingValidationCard({ livraison }: { livraison: Livraison }) {
+    const chauffeur = livraison.expedition?.chauffeur;
+    const [processing, setProcessing] = useState(false);
+
+    const decide = (statut_final: 'livré' | 'annulé') => {
+        setProcessing(true);
+        router.patch(
+            `/dashboard/logistique/livraisons/${livraison.id}/valider`,
+            { statut_final },
+            { preserveScroll: true, onFinish: () => setProcessing(false) },
+        );
+    };
+
+    return (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/8 px-4 py-3">
+            <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <Package size={15} className="text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{livraison.expedition?.reference ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground">
+                        {chauffeur ? `${chauffeur.prenom ?? ''} ${chauffeur.nom}`.trim() : '—'}
+                        {livraison.date_statut && ` · ${new Date(livraison.date_statut).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}`}
+                    </p>
+                    {livraison.km_reel != null && (
+                        <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-0.5">
+                            <Navigation size={10} />{livraison.km_reel.toLocaleString('fr-FR')} km réels
+                        </p>
+                    )}
+                    {livraison.commentaire && (
+                        <p className="text-xs text-muted-foreground italic mt-0.5 line-clamp-1">{livraison.commentaire}</p>
+                    )}
+                </div>
+            </div>
+            <div className="flex gap-2 mt-3">
+                <button
+                    onClick={() => decide('annulé')}
+                    disabled={processing}
+                    className="flex-1 h-8 rounded-lg border border-border text-muted-foreground text-xs font-semibold hover:bg-red-500/8 hover:text-red-500 hover:border-red-500/30 disabled:opacity-50 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                >
+                    <X size={12} /> Annuler
+                </button>
+                <button
+                    onClick={() => decide('livré')}
+                    disabled={processing}
+                    className="flex-1 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                >
+                    <Check size={12} /> Valider livraison
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
-export default function LivraisonsTab({ livraisons, expeditions }: LivraisonsTabProps) {
+export default function LivraisonsTab({ livraisons, livraisonsAValider, expeditions }: LivraisonsTabProps) {
     const [viewMode, setViewMode] = useState<'timeline' | 'list'>('timeline');
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
@@ -246,6 +303,18 @@ export default function LivraisonsTab({ livraisons, expeditions }: LivraisonsTab
                     </div>
                 }
             >
+                {/* Pending validation banner */}
+                {livraisonsAValider.length > 0 && (
+                    <div className="mb-5 space-y-2">
+                        <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                            <ShieldCheck size={12} /> {livraisonsAValider.length} livraison(s) à réceptionner
+                        </p>
+                        {livraisonsAValider.map(l => (
+                            <PendingValidationCard key={l.id} livraison={l} />
+                        ))}
+                    </div>
+                )}
+
                 <FilterBar
                     search={search}
                     onSearch={handleSearch}

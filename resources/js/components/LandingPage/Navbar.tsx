@@ -103,11 +103,12 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
 
             {/* Logo */}
             <motion.a href="/" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-3 shrink-0">
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-[#C8962E]/30 shadow-md">
-                <img src={logoSrc} alt="LOGISTECH EQUIP+" className="w-full h-full object-cover" />
+              <div className="relative w-13.5 h-13.5 lg:w-15.5 lg:h-15.5 rounded-xl overflow-hidden ring-2 ring-[#C8962E]/50 shadow-lg shrink-0"
+                style={{ background: isDark ? '#0f1929' : '#ffffff' }}>
+                <img src={logoSrc} alt="LOGISTECH EQUIP+" className="w-full h-full object-cover" style={{ imageRendering: 'auto' }} />
               </div>
               <div className="flex flex-col leading-none">
-                <span className={cn('font-bold text-[15px] tracking-wide', isDark ? 'text-white' : 'text-gray-900')} style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                <span className={cn('font-bold text-[15px] lg:text-[17px] tracking-wide', isDark ? 'text-white' : 'text-gray-900')} style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                   LOGISTECH
                 </span>
                 <span className="text-[#C8962E] text-[9px] tracking-[0.25em] font-medium mt-0.5">EQUIP+</span>
@@ -271,7 +272,8 @@ export function Navbar({ onDevis, canRegister = true, isAdmin = false, isSuperAd
               <div className="flex items-center justify-between px-5 py-4"
                 style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg overflow-hidden ring-2 ring-[#C8962E]/30">
+                  <div className="w-11 h-11 rounded-lg overflow-hidden ring-2 ring-[#C8962E]/40 shadow-md"
+                    style={{ background: isDark ? 'rgba(255,255,255,0.05)' : '#fff' }}>
                     <img src={logoSrc} alt="LOGISTECH" className="w-full h-full object-cover" />
                   </div>
                   <div>

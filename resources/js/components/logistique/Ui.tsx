@@ -104,14 +104,15 @@ export function Button({ children, disabled, variant = 'primary', size = 'md', c
 
 // ── StatusBadge ──────────────────────────────────────────────────────────────
 type StatusKey =
-    | 'disponible' | 'en mission' | 'maintenance' | 'repos'
+    | 'disponible' | 'en mission' | 'maintenance' | 'repos' | 'en_repos'
     | 'en cours' | 'en préparation' | 'livré' | 'annulé';
 
 const STATUS_CONFIG: Record<StatusKey, { color: string; bg: string; label: string }> = {
     disponible:        { color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10', label: 'Disponible' },
     'en mission':      { color: 'text-amber-600 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-500/10',   label: 'En mission' },
     maintenance:       { color: 'text-red-600 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-500/10',       label: 'Maintenance' },
-    repos:             { color: 'text-slate-600 dark:text-slate-400',    bg: 'bg-slate-100 dark:bg-slate-500/10',  label: 'Repos' },
+    repos:             { color: 'text-slate-600 dark:text-slate-400',    bg: 'bg-slate-100 dark:bg-slate-500/10',  label: 'En repos' },
+    en_repos:          { color: 'text-slate-600 dark:text-slate-400',    bg: 'bg-slate-100 dark:bg-slate-500/10',  label: 'En repos' },
     'en cours':        { color: 'text-blue-600 dark:text-blue-400',      bg: 'bg-blue-50 dark:bg-blue-500/10',     label: 'En cours' },
     'en préparation':  { color: 'text-amber-600 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-500/10',   label: 'En préparation' },
     livré:             { color: 'text-violet-600 dark:text-violet-400',   bg: 'bg-violet-50 dark:bg-violet-500/10', label: 'Livré' },

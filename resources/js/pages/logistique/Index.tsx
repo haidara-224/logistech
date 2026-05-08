@@ -93,6 +93,12 @@ export default function LogistiqueIndex(props: LogistiqueProps) {
                                             {props.stats.expeditions_en_retard}
                                         </span>
                                     )}
+                                    {/* Pending validation badge on livraisons tab */}
+                                    {tab.id === 'livraisons' && props.livraisonsAValider.length > 0 && (
+                                        <span className="relative ml-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-amber-500 text-white text-[9px] font-bold">
+                                            {props.livraisonsAValider.length}
+                                        </span>
+                                    )}
                                 </button>
                             );
                         })}
@@ -139,6 +145,7 @@ export default function LogistiqueIndex(props: LogistiqueProps) {
                             {activeTab === 'livraisons' && (
                                 <LivraisonsTab
                                     livraisons={props.livraisons}
+                                    livraisonsAValider={props.livraisonsAValider}
                                     expeditions={props.expeditions}
                                 />
                             )}

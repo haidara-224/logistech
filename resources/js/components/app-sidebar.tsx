@@ -21,6 +21,8 @@ import {
     ClipboardList,
     ChevronRight,
     Globe,
+    ShieldCheck,
+    Umbrella,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -89,6 +91,8 @@ export function AppSidebar() {
             items: [
                 { label: t('dash_logistics'), href: '/dashboard/logistique',   icon: Truck            },
                 { label: t('dash_planning'),  href: '/dashboard/planification', icon: GanttChartSquare },
+                { label: t('dash_hse'),       href: '/dashboard/hse',           icon: ShieldCheck      },
+                { label: t('dash_conges'),    href: '/dashboard/conges',         icon: Umbrella         },
             ],
         },
         {
