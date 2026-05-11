@@ -5,7 +5,7 @@ import {
     ShieldCheck, FileText, Truck, Users, AlertTriangle,
     CheckCircle2, Clock, XCircle, Plus, Trash2, Edit2,
     ChevronDown, ChevronUp, FileUp, ExternalLink, Activity,
-    BarChart3, X, Check,
+    BarChart3, X, Check, Fuel, Siren, Navigation, Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,15 +39,40 @@ interface HseIncident {
     chauffeur?: Chauffeur; camion?: Camion; expedition?: Expedition;
 }
 
+interface InspectionPredepart {
+    id: number; chauffeur_id: number; camion_id: number | null; expedition_id: number | null;
+    freins: boolean; pneus: boolean; feux: boolean; cargaison: boolean;
+    extincteur: boolean; trousse_secours: boolean; documents_bord: boolean; niveaux_fluides: boolean;
+    observations: string | null; created_at: string;
+    chauffeur?: Chauffeur; camion?: Camion; expedition?: Expedition;
+}
+
+interface RapportCarburant {
+    id: number; chauffeur_id: number; camion_id: number | null; expedition_id: number | null;
+    litres: string; cout: string | null; station: string | null; km_compteur: number | null;
+    created_at: string;
+    chauffeur?: Chauffeur; camion?: Camion;
+}
+
+interface SosAlert {
+    id: number; type: string; message: string;
+    data: { chauffeur_id?: number; latitude?: number; longitude?: number; message?: string };
+    read_at: string | null; created_at: string;
+}
+
 interface Stats {
     docs_expires: number; docs_expire_bientot: number; docs_valides: number;
     incidents_ouverts: number; incidents_total: number; accidents_30j: number;
+    inspections_total: number; litres_total: number; co2_total: number; sos_non_lus: number;
 }
 
 interface Props {
     chauffeurDocs: HseDoc[]; camionDocs: HseDoc[];
     incidents: HseIncident[]; chauffeurs: Chauffeur[];
     camions: Camion[]; expeditions: Expedition[]; stats: Stats;
+    inspections: InspectionPredepart[];
+    rapportsCarburant: RapportCarburant[];
+    sosAlerts: SosAlert[];
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -505,13 +530,16 @@ function IncidentForm({ chauffeurs, camions, expeditions, incident, onClose }: {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const TABS = [
-    { id: 'dashboard',  label: 'Vue globale',         icon: BarChart3 },
-    { id: 'chauffeurs', label: 'Documents chauffeurs', icon: Users },
-    { id: 'camions',    label: 'Documents véhicules',  icon: Truck },
-    { id: 'incidents',  label: 'Incidents',            icon: AlertTriangle },
+    { id: 'dashboard',   label: 'Vue globale',         icon: BarChart3,    badge: null as null | number },
+    { id: 'chauffeurs',  label: 'Documents chauffeurs', icon: Users,        badge: null },
+    { id: 'camions',     label: 'Documents véhicules',  icon: Truck,        badge: null },
+    { id: 'incidents',   label: 'Incidents',            icon: AlertTriangle,badge: null },
+    { id: 'inspections', label: 'Inspections',          icon: CheckCircle2, badge: null },
+    { id: 'carburant',   label: 'Carburant',            icon: Fuel,         badge: null },
+    { id: 'sos',         label: 'SOS',                  icon: Siren,        badge: null },
 ];
 
-export default function HseIndex({ chauffeurDocs, camionDocs, incidents, chauffeurs, camions, expeditions, stats }: Props) {
+export default function HseIndex({ chauffeurDocs, camionDocs, incidents, chauffeurs, camions, expeditions, stats, inspections, rapportsCarburant, sosAlerts }: Props) {
     const initialTab = new URLSearchParams(window.location.search).get('tab') ?? 'dashboard';
     const [activeTab, setActiveTab]             = useState(initialTab);
     const [showIncidentForm, setShowIncidentForm] = useState(false);
@@ -568,18 +596,21 @@ export default function HseIndex({ chauffeurDocs, camionDocs, incidents, chauffe
                     </motion.div>
 
                     {/* Tabs */}
-                    <div className="flex items-center gap-1 mb-8 p-1 bg-muted/40 rounded-2xl w-fit border border-border">
+                    <div className="flex flex-wrap items-center gap-1 mb-8 p-1 bg-muted/40 rounded-2xl w-fit border border-border">
                         {TABS.map(tab => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
-                            const badge = tab.id === 'incidents' && stats.incidents_ouverts > 0 ? stats.incidents_ouverts : 0;
+                            const badge = tab.id === 'incidents' ? (stats.incidents_ouverts > 0 ? stats.incidents_ouverts : 0)
+                                        : tab.id === 'sos'       ? (stats.sos_non_lus > 0 ? stats.sos_non_lus : 0)
+                                        : 0;
+                            const isSos = tab.id === 'sos';
                             return (
                                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                                     className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 cursor-pointer"
-                                    style={{ color: isActive ? 'var(--foreground)' : 'var(--muted-foreground)' }}>
+                                    style={{ color: isActive ? (isSos ? '#dc2626' : 'var(--foreground)') : (isSos ? '#ef4444' : 'var(--muted-foreground)') }}>
                                     {isActive && (
                                         <motion.div layoutId="hse-tab-pill"
-                                            className="absolute inset-0 rounded-xl bg-secondary"
+                                            className={`absolute inset-0 rounded-xl ${isSos ? 'bg-red-50 dark:bg-red-500/10' : 'bg-secondary'}`}
                                             transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
                                     )}
                                     <Icon size={14} />
@@ -603,6 +634,9 @@ export default function HseIndex({ chauffeurDocs, camionDocs, incidents, chauffe
                                     { label: 'Incidents ouverts',      value: stats.incidents_ouverts,   icon: AlertTriangle, color: 'text-red-500',    bg: 'bg-red-500/10'    },
                                     { label: 'Total incidents',        value: stats.incidents_total,     icon: FileText,     color: 'text-blue-500',    bg: 'bg-blue-500/10'   },
                                     { label: 'Accidents (30 derniers j)', value: stats.accidents_30j,   icon: ShieldCheck,  color: 'text-purple-500',  bg: 'bg-purple-500/10' },
+                                    { label: 'Inspections réalisées',  value: stats.inspections_total,  icon: CheckCircle2, color: 'text-blue-500',    bg: 'bg-blue-500/10'   },
+                                    { label: 'Litres consommés',       value: `${stats.litres_total.toLocaleString('fr-FR')} L`, icon: Fuel, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                                    { label: 'CO₂ émis (estimé)',      value: `${stats.co2_total.toLocaleString('fr-FR')} kg`, icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
                                 ].map(s => (
                                     <div key={s.label} className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
                                         <div className={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center shrink-0`}>
@@ -785,6 +819,189 @@ export default function HseIndex({ chauffeurDocs, camionDocs, incidents, chauffe
                                     );
                                 })}
                             </div>
+                        </motion.div>
+                    )}
+
+                    {/* ── Inspections pré-départ ── */}
+                    {activeTab === 'inspections' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">{inspections.length} inspection(s) enregistrée(s)</p>
+                                <span className="text-xs px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-200 dark:border-blue-500/20">
+                                    {stats.inspections_total} total
+                                </span>
+                            </div>
+
+                            {inspections.length === 0 ? (
+                                <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
+                                    <CheckCircle2 size={40} className="mx-auto text-emerald-400 mb-3" />
+                                    <p className="text-muted-foreground">Aucune inspection enregistrée.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {inspections.map(insp => {
+                                        const items = [
+                                            { key: 'freins', label: 'Freins', ok: insp.freins },
+                                            { key: 'pneus', label: 'Pneus', ok: insp.pneus },
+                                            { key: 'feux', label: 'Feux', ok: insp.feux },
+                                            { key: 'cargaison', label: 'Cargaison', ok: insp.cargaison },
+                                            { key: 'extincteur', label: 'Extincteur', ok: insp.extincteur },
+                                            { key: 'trousse_secours', label: 'Trousse', ok: insp.trousse_secours },
+                                            { key: 'documents_bord', label: 'Documents', ok: insp.documents_bord },
+                                            { key: 'niveaux_fluides', label: 'Fluides', ok: insp.niveaux_fluides },
+                                        ];
+                                        const okCount = items.filter(i => i.ok).length;
+                                        const allOk = okCount === items.length;
+                                        return (
+                                            <div key={insp.id} className="rounded-xl border border-border bg-card p-5">
+                                                <div className="flex items-start justify-between gap-4 mb-3">
+                                                    <div>
+                                                        <p className="font-semibold text-sm text-foreground">
+                                                            {insp.chauffeur ? `${insp.chauffeur.prenom} ${insp.chauffeur.nom}` : 'Chauffeur inconnu'}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {new Date(insp.created_at).toLocaleString('fr-FR')}
+                                                            {insp.camion && ` — ${insp.camion.immatriculation}`}
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${allOk ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10' : 'bg-amber-100 text-amber-600 dark:bg-amber-500/10'}`}>
+                                                        {okCount}/{items.length} OK
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {items.map(item => (
+                                                        <span key={item.key} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${item.ok ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-red-50 text-red-500 dark:bg-red-500/10'}`}>
+                                                            {item.ok ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+                                                            {item.label}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                {insp.observations && (
+                                                    <div className="mt-3 p-3 rounded-lg bg-muted/40 text-xs text-muted-foreground">
+                                                        <span className="font-semibold text-foreground">Observations : </span>{insp.observations}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {/* ── Rapports carburant ── */}
+                    {activeTab === 'carburant' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                            {/* Summary cards */}
+                            <div className="grid grid-cols-3 gap-4">
+                                {[
+                                    { label: 'Rapports', value: rapportsCarburant.length, icon: Fuel, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                                    { label: 'Litres total', value: `${stats.litres_total.toLocaleString('fr-FR')} L`, icon: Fuel, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                                    { label: 'CO₂ émis', value: `${stats.co2_total.toLocaleString('fr-FR')} kg`, icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                                ].map(s => (
+                                    <div key={s.label} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                                        <div className={`w-9 h-9 rounded-lg ${s.bg} flex items-center justify-center shrink-0`}>
+                                            <s.icon size={16} className={s.color} />
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold text-foreground">{s.value}</p>
+                                            <p className="text-xs text-muted-foreground">{s.label}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {rapportsCarburant.length === 0 ? (
+                                <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
+                                    <Fuel size={40} className="mx-auto text-amber-400 mb-3" />
+                                    <p className="text-muted-foreground">Aucun rapport carburant.</p>
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b border-border bg-muted/30">
+                                                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Chauffeur</th>
+                                                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Véhicule</th>
+                                                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Station</th>
+                                                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Litres</th>
+                                                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Coût</th>
+                                                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">CO₂</th>
+                                                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {rapportsCarburant.map(r => (
+                                                <tr key={r.id} className="border-b border-border last:border-0 hover:bg-muted/20">
+                                                    <td className="px-4 py-3 font-medium text-foreground">
+                                                        {r.chauffeur ? `${r.chauffeur.prenom} ${r.chauffeur.nom}` : '—'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-muted-foreground">{r.camion?.immatriculation ?? '—'}</td>
+                                                    <td className="px-4 py-3 text-muted-foreground">{r.station ?? '—'}</td>
+                                                    <td className="px-4 py-3 text-right font-semibold text-amber-600">{parseFloat(r.litres).toLocaleString('fr-FR')} L</td>
+                                                    <td className="px-4 py-3 text-right text-muted-foreground">{r.cout ? parseInt(r.cout).toLocaleString('fr-FR') : '—'}</td>
+                                                    <td className="px-4 py-3 text-right text-emerald-600 text-xs">{(parseFloat(r.litres) * 2.67).toFixed(1)} kg</td>
+                                                    <td className="px-4 py-3 text-right text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {/* ── SOS Alerts ── */}
+                    {activeTab === 'sos' && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">{sosAlerts.length} alerte(s) SOS</p>
+                                {stats.sos_non_lus > 0 && (
+                                    <span className="px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold border border-red-200 dark:border-red-500/20">
+                                        {stats.sos_non_lus} non lu(s)
+                                    </span>
+                                )}
+                            </div>
+
+                            {sosAlerts.length === 0 ? (
+                                <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
+                                    <Siren size={40} className="mx-auto text-gray-300 mb-3" />
+                                    <p className="text-muted-foreground">Aucune alerte SOS reçue.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {sosAlerts.map(sos => (
+                                        <div key={sos.id} className={`rounded-xl border p-5 ${sos.read_at ? 'border-border bg-card' : 'border-red-200 dark:border-red-500/30 bg-red-50/50 dark:bg-red-500/5'}`}>
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${sos.read_at ? 'bg-gray-100 dark:bg-white/5' : 'bg-red-100 dark:bg-red-500/20 animate-pulse'}`}>
+                                                        <Siren size={18} className={sos.read_at ? 'text-gray-400' : 'text-red-500'} />
+                                                    </div>
+                                                    <div>
+                                                        <p className={`font-semibold text-sm ${sos.read_at ? 'text-foreground' : 'text-red-700 dark:text-red-400'}`}>
+                                                            {sos.message}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            {new Date(sos.created_at).toLocaleString('fr-FR')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {!sos.read_at && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold shrink-0">NOUVEAU</span>
+                                                )}
+                                            </div>
+                                            {(sos.data?.latitude && sos.data?.longitude) && (
+                                                <a href={`https://www.google.com/maps?q=${sos.data.latitude},${sos.data.longitude}`}
+                                                    target="_blank" rel="noreferrer"
+                                                    className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                                    <Navigation size={12} />
+                                                    Voir la position GPS ({Number(sos.data.latitude).toFixed(5)}, {Number(sos.data.longitude).toFixed(5)})
+                                                </a>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </div>

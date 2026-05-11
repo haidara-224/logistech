@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Logistique;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Logistique\StoreHseDocumentRequest;
 use App\Http\Requests\Logistique\StoreHseIncidentRequest;
+use App\Models\AdminNotification;
 use App\Models\Camion;
 use App\Models\Chauffeur;
 use App\Models\Expedition;
 use App\Models\HseCamionDocument;
 use App\Models\HseChauffeurDocument;
 use App\Models\HseIncident;
+use App\Models\InspectionPredepart;
+use App\Models\RapportCarburant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -34,6 +37,21 @@ class HseController extends Controller
             ->orderByDesc('date_incident')
             ->get();
 
+        $inspections = InspectionPredepart::with(['chauffeur', 'camion', 'expedition'])
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get();
+
+        $rapportsCarburant = RapportCarburant::with(['chauffeur', 'camion'])
+            ->orderByDesc('created_at')
+            ->limit(200)
+            ->get();
+
+        $sosAlerts = AdminNotification::where('type', 'sos')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
         $expiresThisMonth = $chauffeurDocs->where('statut', 'expire_bientot')->count()
             + $camionDocs->where('statut', 'expire_bientot')->count();
 
@@ -44,6 +62,9 @@ class HseController extends Controller
             'chauffeurDocs' => $chauffeurDocs,
             'camionDocs' => $camionDocs,
             'incidents' => $incidents,
+            'inspections' => $inspections,
+            'rapportsCarburant' => $rapportsCarburant,
+            'sosAlerts' => $sosAlerts,
             'chauffeurs' => Chauffeur::orderBy('nom')->get(['id', 'nom', 'prenom']),
             'camions' => Camion::orderBy('immatriculation')->get(['id', 'immatriculation', 'marque']),
             'expeditions' => Expedition::orderByDesc('date_depart')->limit(50)->get(['id', 'reference', 'date_depart']),
@@ -58,6 +79,10 @@ class HseController extends Controller
                     ->where('type', 'accident')
                     ->where('date_incident', '>=', now()->subDays(30))
                     ->count(),
+                'inspections_total' => $inspections->count(),
+                'litres_total' => round((float) $rapportsCarburant->sum('litres'), 1),
+                'co2_total' => round((float) $rapportsCarburant->sum('litres') * 2.67, 1),
+                'sos_non_lus' => $sosAlerts->whereNull('read_at')->count(),
             ],
         ]);
     }

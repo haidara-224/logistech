@@ -173,6 +173,9 @@ Route::middleware(['auth', 'role:chauffeur', EnsureChauffeurPasswordChanged::cla
         Route::patch('incidents/{incident}/statut', [ChauffeurDashboardController::class, 'resolveIncident'])->name('chauffeur.incident.resolve');
         Route::post('conges', [ChauffeurDashboardController::class, 'storeConge'])->name('chauffeur.conge.store');
         Route::patch('notifications/lues', [ChauffeurDashboardController::class, 'markNotificationsRead'])->name('chauffeur.notifications.read');
+        Route::post('inspections', [ChauffeurDashboardController::class, 'storeInspection'])->name('chauffeur.inspection.store');
+        Route::post('carburant', [ChauffeurDashboardController::class, 'storeCarburant'])->name('chauffeur.carburant.store');
+        Route::post('sos', [ChauffeurDashboardController::class, 'storeSos'])->name('chauffeur.sos');
     });
 
 Route::middleware(['auth', 'role:chauffeur'])->prefix('chauffeur')->group(function () {

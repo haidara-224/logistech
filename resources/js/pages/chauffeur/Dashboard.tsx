@@ -1,12 +1,12 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
     AlertCircle, AlertTriangle, ArrowRight, Bell, CalendarDays,
-    Check, CheckCircle2, ChevronRight, Clock, FileText,
-    Flag, Home, Lock, LogOut, Moon, Navigation, Package,
-    Play, Shield, Sun, Truck, User, X, XCircle, Zap,
-    Monitor, Umbrella, Plus, BriefcaseMedical,
+    Camera, Check, CheckCircle2, ChevronRight, Clock, ExternalLink, FileText,
+    Flag, Fuel, Home, Lock, LogOut, Moon, Navigation, Package,
+    Play, Plus, Siren, Sun, Truck, User, X, XCircle,
+    Monitor, Umbrella, Zap,
 } from 'lucide-react';
 import { useAppearance } from '@/hooks/use-appearance';
 
@@ -47,6 +47,7 @@ interface Expedition {
 interface HseDoc {
     id: number; type: string; numero: string | null;
     date_expiration: string | null; organisme: string | null;
+    document_path: string | null;
     statut: 'valide' | 'expire_bientot' | 'expire';
     jours_restants: number | null;
 }
@@ -73,6 +74,24 @@ interface Stats {
     notifications_non_lues: number;
 }
 
+interface RapportCarburant {
+    id: number; litres: string; cout: string | null;
+    station: string | null; km_compteur: number | null;
+    created_at: string;
+}
+
+interface InspectionPredepart {
+    id: number; freins: boolean; pneus: boolean; feux: boolean;
+    cargaison: boolean; extincteur: boolean; trousse_secours: boolean;
+    documents_bord: boolean; niveaux_fluides: boolean;
+    observations: string | null; created_at: string;
+}
+
+interface Score {
+    ponctualite: number; securite: number;
+    km_total: number; litres_total: number; co2_kg: number;
+}
+
 interface Props {
     chauffeur: Chauffeur;
     activeExpedition: Expedition | null;
@@ -82,6 +101,9 @@ interface Props {
     documents: HseDoc[];
     conges: Conge[];
     notifications: ChauffeurNotif[];
+    rapportsCarburant: RapportCarburant[];
+    lastInspection: InspectionPredepart | null;
+    score: Score;
     stats: Stats;
 }
 
@@ -316,12 +338,14 @@ function CongeModal({ onClose }: { onClose: () => void }) {
 // ─── NotificationsModal ───────────────────────────────────────────────────────
 
 const NOTIF_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
-    conge_approuve:      { icon: CheckCircle2, color: '#10b981' },
-    conge_refuse:        { icon: XCircle,      color: '#ef4444' },
-    expedition_assignee: { icon: Truck,        color: '#3b82f6' },
-    expedition_annulee:  { icon: XCircle,      color: '#ef4444' },
-    livraison_validee:   { icon: Package,      color: '#10b981' },
-    livraison_annulee:   { icon: Package,      color: '#ef4444' },
+    conge_approuve:       { icon: CheckCircle2,  color: '#10b981' },
+    conge_refuse:         { icon: XCircle,       color: '#ef4444' },
+    expedition_assignee:  { icon: Truck,         color: '#3b82f6' },
+    expedition_annulee:   { icon: XCircle,       color: '#ef4444' },
+    livraison_validee:    { icon: Package,       color: '#10b981' },
+    livraison_annulee:    { icon: Package,       color: '#ef4444' },
+    document_expiration:  { icon: FileText,      color: '#f59e0b' },
+    sos:                  { icon: Siren,         color: '#ef4444' },
 };
 
 function NotificationsModal({ notifications, onClose }: { notifications: ChauffeurNotif[]; onClose: () => void }) {
@@ -397,6 +421,8 @@ function NotificationsModal({ notifications, onClose }: { notifications: Chauffe
 // ─── IncidentModal ────────────────────────────────────────────────────────────
 
 function IncidentModal({ onClose, expedition }: { onClose: () => void; expedition: Expedition | null }) {
+    const photoRef = useRef<HTMLInputElement>(null);
+    const [photos, setPhotos] = useState<File[]>([]);
     const form = useForm({
         type: 'accident', date_incident: new Date().toISOString().slice(0, 16),
         lieu: '', description: '', blesses: false, nb_blesses: 0,
@@ -409,7 +435,15 @@ function IncidentModal({ onClose, expedition }: { onClose: () => void; expeditio
             ? form.data.causes.filter(c => c !== v)
             : [...form.data.causes, v]);
 
-    const submit = () => form.post('/chauffeur/incidents', { preserveScroll: true, onSuccess: () => onClose() });
+    const submit = () => {
+        const fd = new FormData();
+        Object.entries(form.data).forEach(([k, v]) => {
+            if (Array.isArray(v)) { v.forEach(item => fd.append(`${k}[]`, item)); }
+            else { fd.append(k, String(v)); }
+        });
+        photos.forEach(p => fd.append('photos[]', p));
+        router.post('/chauffeur/incidents', fd, { preserveScroll: true, onSuccess: () => onClose() });
+    };
 
     return (
         <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center">
@@ -494,6 +528,31 @@ function IncidentModal({ onClose, expedition }: { onClose: () => void; expeditio
                             ))}
                         </div>
                     </div>
+
+                    {/* Photos */}
+                    <div>
+                        <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-2">Photos (optionnel)</p>
+                        <input ref={photoRef} type="file" accept="image/*" capture="environment" multiple className="hidden"
+                            onChange={e => setPhotos(Array.from(e.target.files ?? []).slice(0, 5))} />
+                        <button onClick={() => photoRef.current?.click()}
+                            className="w-full h-10 rounded-xl border border-dashed border-gray-300 dark:border-white/20 flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-white/40 active:bg-gray-50 dark:active:bg-white/5 transition-all">
+                            <Camera size={14} />
+                            {photos.length > 0 ? `${photos.length} photo(s) sélectionnée(s)` : 'Prendre / choisir des photos'}
+                        </button>
+                        {photos.length > 0 && (
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                                {photos.map((p, i) => (
+                                    <div key={i} className="relative w-14 h-14 rounded-xl overflow-hidden bg-gray-100 dark:bg-white/5">
+                                        <img src={URL.createObjectURL(p)} alt="" className="w-full h-full object-cover" />
+                                        <button onClick={() => setPhotos(ps => ps.filter((_, j) => j !== i))}
+                                            className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/50 flex items-center justify-center">
+                                            <X size={8} className="text-white" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="px-5 pb-6 pt-2">
@@ -508,12 +567,267 @@ function IncidentModal({ onClose, expedition }: { onClose: () => void; expeditio
     );
 }
 
+// ─── InspectionModal ─────────────────────────────────────────────────────────
+
+const INSPECTION_ITEMS: { key: keyof InspectionForm; label: string }[] = [
+    { key: 'freins',          label: 'Freins' },
+    { key: 'pneus',           label: 'Pneus' },
+    { key: 'feux',            label: 'Feux & clignotants' },
+    { key: 'cargaison',       label: 'Cargaison sécurisée' },
+    { key: 'extincteur',      label: 'Extincteur' },
+    { key: 'trousse_secours', label: 'Trousse de secours' },
+    { key: 'documents_bord',  label: 'Documents de bord' },
+    { key: 'niveaux_fluides', label: 'Niveaux fluides' },
+];
+
+interface InspectionForm {
+    freins: boolean; pneus: boolean; feux: boolean; cargaison: boolean;
+    extincteur: boolean; trousse_secours: boolean; documents_bord: boolean;
+    niveaux_fluides: boolean; observations: string; expedition_id: string;
+}
+
+function InspectionModal({ onClose, expedition }: { onClose: () => void; expedition: Expedition | null }) {
+    const form = useForm<InspectionForm>({
+        freins: false, pneus: false, feux: false, cargaison: false,
+        extincteur: false, trousse_secours: false, documents_bord: false,
+        niveaux_fluides: false, observations: '', expedition_id: expedition?.id?.toString() ?? '',
+    });
+
+    const allOk = INSPECTION_ITEMS.every(item => form.data[item.key]);
+    const checkedCount = INSPECTION_ITEMS.filter(item => form.data[item.key]).length;
+
+    const submit = () => form.post('/chauffeur/inspections', { preserveScroll: true, onSuccess: () => onClose() });
+
+    return (
+        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm" onClick={onClose} />
+            <motion.div initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#0d1829] border border-gray-200 dark:border-white/10 shadow-2xl">
+
+                <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                    <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-white/20" />
+                </div>
+                <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-gray-100 dark:border-white/10">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+                            <CheckCircle2 size={14} className="text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <span className="font-bold text-gray-900 dark:text-white text-sm">Inspection pré-départ</span>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <X size={14} className="text-gray-400 dark:text-white/60" />
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider">Points de contrôle</p>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${allOk ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-white/50'}`}>
+                            {checkedCount}/{INSPECTION_ITEMS.length}
+                        </span>
+                    </div>
+
+                    {INSPECTION_ITEMS.map(item => (
+                        <button key={item.key} onClick={() => form.setData(item.key, !form.data[item.key])}
+                            className={`w-full flex items-center gap-3 h-12 px-4 rounded-xl border transition-all ${form.data[item.key] ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-500/15 dark:border-emerald-500/40' : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10'}`}>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${form.data[item.key] ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 dark:border-white/30'}`}>
+                                {form.data[item.key] && <Check size={11} className="text-white" />}
+                            </div>
+                            <span className={`text-sm font-medium ${form.data[item.key] ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-700 dark:text-white/70'}`}>{item.label}</span>
+                        </button>
+                    ))}
+
+                    <div>
+                        <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Observations</p>
+                        <textarea value={form.data.observations} onChange={e => form.setData('observations', e.target.value)}
+                            placeholder="Anomalies, remarques…" rows={2}
+                            className="w-full rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
+                    </div>
+                </div>
+
+                <div className="px-5 pb-6 pt-2">
+                    <button onClick={submit} disabled={form.processing}
+                        className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-2 transition-all">
+                        <CheckCircle2 size={16} />
+                        {form.processing ? 'Enregistrement…' : "Valider l'inspection"}
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
+// ─── CarburantModal ───────────────────────────────────────────────────────────
+
+function CarburantModal({ onClose, expedition }: { onClose: () => void; expedition: Expedition | null }) {
+    const form = useForm({
+        litres: '', cout: '', station: '', km_compteur: '',
+        expedition_id: expedition?.id?.toString() ?? '',
+    });
+
+    const co2 = form.data.litres ? (parseFloat(form.data.litres) * 2.67).toFixed(1) : null;
+
+    const submit = () => form.post('/chauffeur/carburant', { preserveScroll: true, onSuccess: () => onClose() });
+
+    return (
+        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm" onClick={onClose} />
+            <motion.div initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#0d1829] border border-gray-200 dark:border-white/10 shadow-2xl">
+
+                <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                    <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-white/20" />
+                </div>
+                <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-gray-100 dark:border-white/10">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                            <Fuel size={14} className="text-amber-500 dark:text-amber-400" />
+                        </div>
+                        <span className="font-bold text-gray-900 dark:text-white text-sm">Rapport carburant</span>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <X size={14} className="text-gray-400 dark:text-white/60" />
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Litres *</p>
+                            <div className="relative">
+                                <input type="number" min="0" step="0.1" value={form.data.litres} onChange={e => form.setData('litres', e.target.value)}
+                                    placeholder="0" className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-3 pr-8 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20" />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-white/30">L</span>
+                            </div>
+                            {form.errors.litres && <p className="text-red-500 text-xs mt-1">{form.errors.litres}</p>}
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Coût (FCFA)</p>
+                            <input type="number" min="0" value={form.data.cout} onChange={e => form.setData('cout', e.target.value)}
+                                placeholder="0" className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Station</p>
+                        <input type="text" value={form.data.station} onChange={e => form.setData('station', e.target.value)}
+                            placeholder="Nom de la station…" className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20" />
+                    </div>
+
+                    <div>
+                        <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Km compteur</p>
+                        <div className="relative">
+                            <input type="number" min="0" value={form.data.km_compteur} onChange={e => form.setData('km_compteur', e.target.value)}
+                                placeholder="0" className="w-full h-10 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 pl-3 pr-10 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20" />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-white/30">km</span>
+                        </div>
+                    </div>
+
+                    {co2 && (
+                        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-4 py-3 flex items-center gap-2">
+                            <Zap size={14} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
+                            <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                                Émissions estimées : <span className="font-bold">{co2} kg CO₂</span>
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="px-5 pb-6 pt-2">
+                    <button onClick={submit} disabled={form.processing || !form.data.litres}
+                        className="w-full h-12 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-2 transition-all">
+                        <Fuel size={16} />
+                        {form.processing ? 'Enregistrement…' : 'Enregistrer le plein'}
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
+// ─── SosModal ─────────────────────────────────────────────────────────────────
+
+function SosModal({ onClose }: { onClose: () => void }) {
+    const [message, setMessage] = useState('');
+    const [sending, setSending] = useState(false);
+
+    const send = () => {
+        setSending(true);
+        const doPost = (lat?: number, lng?: number) => {
+            router.post('/chauffeur/sos', { message, latitude: lat, longitude: lng }, {
+                preserveScroll: true,
+                onSuccess: () => onClose(),
+                onFinish: () => setSending(false),
+            });
+        };
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => doPost(pos.coords.latitude, pos.coords.longitude),
+                () => doPost(),
+                { timeout: 5000 },
+            );
+        } else {
+            doPost();
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm" onClick={onClose} />
+            <motion.div initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl bg-white dark:bg-[#0d1829] border border-gray-200 dark:border-white/10 shadow-2xl">
+
+                <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                    <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-white/20" />
+                </div>
+                <div className="flex items-center justify-between px-5 pt-3 pb-4 border-b border-gray-100 dark:border-white/10">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                            <Siren size={14} className="text-red-500 dark:text-red-400" />
+                        </div>
+                        <span className="font-bold text-gray-900 dark:text-white text-sm">Appel d'urgence SOS</span>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                        <X size={14} className="text-gray-400 dark:text-white/60" />
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-4">
+                    <div className="rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-4 py-3">
+                        <p className="text-sm font-semibold text-red-700 dark:text-red-400">Votre position GPS sera partagée avec l'administration.</p>
+                    </div>
+                    <div>
+                        <p className="text-[11px] font-semibold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-1.5">Message (optionnel)</p>
+                        <textarea value={message} onChange={e => setMessage(e.target.value)}
+                            placeholder="Décrivez rapidement la situation…" rows={3}
+                            className="w-full rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-2.5 text-base md:text-sm text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 resize-none" />
+                    </div>
+                </div>
+
+                <div className="px-5 pb-6 pt-2 flex gap-2">
+                    <button onClick={onClose} className="flex-1 h-12 rounded-2xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/60 font-semibold text-sm">
+                        Annuler
+                    </button>
+                    <button onClick={send} disabled={sending}
+                        className="flex-1 h-12 rounded-2xl bg-red-600 hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 text-white font-bold flex items-center justify-center gap-2 transition-all">
+                        <Siren size={16} />
+                        {sending ? 'Envoi…' : 'Envoyer SOS'}
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
 // ─── Tab: Accueil ─────────────────────────────────────────────────────────────
 
-function AccueilTab({ chauffeur, activeExpedition, stats, documents, incidents, onDeclareIncident, onTabChange }: {
+function AccueilTab({ chauffeur, activeExpedition, stats, documents, score, onDeclareIncident, onSos, onTabChange }: {
     chauffeur: Chauffeur; activeExpedition: Expedition | null;
-    stats: Stats; documents: HseDoc[]; incidents: HseIncident[];
-    onDeclareIncident: () => void; onTabChange: (t: Tab) => void;
+    stats: Stats; documents: HseDoc[]; score: Score;
+    onDeclareIncident: () => void; onSos: () => void; onTabChange: (t: Tab) => void;
 }) {
     const driver = {
         disponible:  { label: 'Disponible',  dot: 'bg-emerald-500', cls: 'text-emerald-600 dark:text-emerald-400' },
@@ -610,23 +924,87 @@ function AccueilTab({ chauffeur, activeExpedition, stats, documents, incidents, 
                                         {doc.statut === 'expire' ? 'Expiré' : `Expire dans ${doc.jours_restants}j`}
                                     </p>
                                 </div>
+                                {doc.document_path && (
+                                    <a href={doc.document_path} target="_blank" rel="noreferrer"
+                                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 ${doc.statut === 'expire' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'}`}>
+                                        <ExternalLink size={11} /> Voir
+                                    </a>
+                                )}
                             </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            <button onClick={onDeclareIncident}
-                className="w-full h-12 rounded-2xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
-                <AlertTriangle size={16} /> Déclarer un incident
-            </button>
+            {/* Score conducteur */}
+            <div>
+                <p className="text-xs font-bold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-2.5">Score conducteur</p>
+                <div className="rounded-2xl bg-white dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.08] p-4 space-y-3">
+                    <div className="flex items-center gap-4">
+                        {/* Circular score */}
+                        <div className="relative w-16 h-16 shrink-0">
+                            <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
+                                <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-gray-100 dark:text-white/10" />
+                                <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="88" strokeLinecap="round"
+                                    strokeDashoffset={88 - 88 * Math.round((score.ponctualite + score.securite) / 2) / 100}
+                                    className={Math.round((score.ponctualite + score.securite) / 2) >= 80 ? 'text-emerald-500' : Math.round((score.ponctualite + score.securite) / 2) >= 60 ? 'text-amber-500' : 'text-red-500'} />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">{Math.round((score.ponctualite + score.securite) / 2)}%</span>
+                            </div>
+                        </div>
+                        <div className="flex-1 space-y-2">
+                            {[
+                                { label: 'Ponctualité', value: score.ponctualite, color: 'bg-blue-500' },
+                                { label: 'Sécurité', value: score.securite, color: 'bg-emerald-500' },
+                            ].map(m => (
+                                <div key={m.label}>
+                                    <div className="flex justify-between text-[11px] mb-1">
+                                        <span className="text-gray-500 dark:text-white/50">{m.label}</span>
+                                        <span className="font-semibold text-gray-900 dark:text-white">{m.value}%</span>
+                                    </div>
+                                    <div className="h-1.5 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
+                                        <div className={`h-full rounded-full ${m.color} transition-all`} style={{ width: `${m.value}%` }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1 border-t border-gray-100 dark:border-white/[0.06]">
+                        {[
+                            { label: 'km total', value: score.km_total.toLocaleString('fr-FR') },
+                            { label: 'litres', value: score.litres_total.toLocaleString('fr-FR') },
+                            { label: 'kg CO₂', value: score.co2_kg.toLocaleString('fr-FR') },
+                        ].map(s => (
+                            <div key={s.label} className="text-center">
+                                <p className="text-sm font-bold text-gray-900 dark:text-white">{s.value}</p>
+                                <p className="text-[10px] text-gray-400 dark:text-white/30">{s.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex gap-2">
+                <button onClick={onDeclareIncident}
+                    className="flex-1 h-12 rounded-2xl bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+                    <AlertTriangle size={16} /> Incident
+                </button>
+                <button onClick={onSos}
+                    className="h-12 px-5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg shadow-red-500/30">
+                    <Siren size={16} /> SOS
+                </button>
+            </div>
         </div>
     );
 }
 
 // ─── Tab: Voyage ──────────────────────────────────────────────────────────────
 
-function VoyageTab({ expedition, onDeclareIncident }: { expedition: Expedition | null; onDeclareIncident: () => void }) {
+function VoyageTab({ expedition, onDeclareIncident, onInspection, onCarburant }: {
+    expedition: Expedition | null; onDeclareIncident: () => void;
+    onInspection: () => void; onCarburant: () => void;
+}) {
     const [confirmAction, setConfirmAction] = useState<'en cours' | 'livré' | null>(null);
     const [commentaire, setCommentaire]     = useState('');
     const [kmReel, setKmReel]               = useState('');
@@ -757,10 +1135,20 @@ function VoyageTab({ expedition, onDeclareIncident }: { expedition: Expedition |
                             <Flag size={18} /> Marquer comme livré
                         </button>
                     )}
-                    <button onClick={onDeclareIncident}
-                        className="w-full h-11 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 font-medium text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
-                        <AlertTriangle size={14} /> Signaler un incident
-                    </button>
+                    <div className="grid grid-cols-3 gap-2">
+                        <button onClick={onDeclareIncident}
+                            className="h-11 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60 font-medium text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all">
+                            <AlertTriangle size={13} /> Incident
+                        </button>
+                        <button onClick={onInspection}
+                            className="h-11 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 font-medium text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all">
+                            <CheckCircle2 size={13} /> Inspection
+                        </button>
+                        <button onClick={onCarburant}
+                            className="h-11 rounded-2xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 font-medium text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all">
+                            <Fuel size={13} /> Carburant
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -967,7 +1355,7 @@ function IncidentsTab({ incidents, onDeclare }: { incidents: HseIncident[]; onDe
 
 // ─── Tab: Profil ──────────────────────────────────────────────────────────────
 
-function ProfilTab({ chauffeur, documents }: { chauffeur: Chauffeur; documents: HseDoc[] }) {
+function ProfilTab({ chauffeur, documents, rapportsCarburant }: { chauffeur: Chauffeur; documents: HseDoc[]; rapportsCarburant: RapportCarburant[] }) {
     const { appearance, updateAppearance } = useAppearance();
 
     const themeOptions = [
@@ -1028,13 +1416,51 @@ function ProfilTab({ chauffeur, documents }: { chauffeur: Chauffeur; documents: 
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{DOC_LABELS[doc.type] ?? doc.type}</p>
+                                    {doc.numero && <p className="text-xs text-gray-400 dark:text-white/30">N° {doc.numero}</p>}
                                     {doc.organisme && <p className="text-xs text-gray-400 dark:text-white/30">{doc.organisme}</p>}
                                 </div>
-                                <div className="text-right shrink-0">
+                                <div className="flex flex-col items-end gap-1 shrink-0">
                                     {doc.statut === 'expire'         && <p className="text-xs font-bold text-red-600 dark:text-red-400">Expiré</p>}
-                                    {doc.statut === 'expire_bientot' && <p className="text-xs font-bold text-amber-600 dark:text-amber-400">{doc.jours_restants}j</p>}
+                                    {doc.statut === 'expire_bientot' && <p className="text-xs font-bold text-amber-600 dark:text-amber-400">{doc.jours_restants}j restants</p>}
                                     {doc.statut === 'valide'         && <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Valide</p>}
-                                    {doc.date_expiration && <p className="text-[10px] text-gray-400 dark:text-white/20 mt-0.5">{fmtDate(doc.date_expiration)}</p>}
+                                    {doc.date_expiration && <p className="text-[10px] text-gray-400 dark:text-white/20">Exp. {fmtDate(doc.date_expiration)}</p>}
+                                    {doc.document_path && (
+                                        <a href={doc.document_path} target="_blank" rel="noreferrer"
+                                            className="flex items-center gap-1 text-[10px] font-semibold text-blue-500 dark:text-blue-400 hover:underline">
+                                            <ExternalLink size={10} /> Voir
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Carburant */}
+            <div>
+                <p className="text-xs font-bold text-gray-400 dark:text-white/40 uppercase tracking-wider mb-2.5">Historique carburant ({rapportsCarburant.length})</p>
+                {rapportsCarburant.length === 0 ? (
+                    <div className="rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-5 text-center">
+                        <Fuel size={22} className="mx-auto text-gray-300 dark:text-white/15 mb-1.5" />
+                        <p className="text-sm text-gray-400 dark:text-white/40">Aucun rapport carburant</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {rapportsCarburant.slice(0, 5).map(r => (
+                            <div key={r.id} className="rounded-xl bg-white dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.08] px-4 py-3 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                                    <Fuel size={14} className="text-amber-500 dark:text-amber-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{parseFloat(r.litres).toLocaleString('fr-FR')} L</p>
+                                    <p className="text-xs text-gray-400 dark:text-white/30">
+                                        {r.station ?? 'Station inconnue'} · {fmtDate(r.created_at)}
+                                    </p>
+                                </div>
+                                <div className="text-right shrink-0">
+                                    {r.cout && <p className="text-xs font-semibold text-gray-700 dark:text-white/70">{parseInt(r.cout).toLocaleString('fr-FR')} F</p>}
+                                    <p className="text-[10px] text-emerald-500 dark:text-emerald-400">{(parseFloat(r.litres) * 2.67).toFixed(1)} kg CO₂</p>
                                 </div>
                             </div>
                         ))}
@@ -1103,12 +1529,16 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 export default function ChauffeurDashboard({
-    chauffeur, activeExpedition, agenda, pastExpeditions, incidents, documents, conges, notifications, stats,
+    chauffeur, activeExpedition, agenda, pastExpeditions, incidents, documents,
+    conges, notifications, rapportsCarburant, score, stats,
 }: Props) {
-    const [activeTab, setActiveTab]                   = useState<Tab>('accueil');
-    const [showIncidentModal, setShowIncidentModal]   = useState(false);
-    const [showCongeModal, setShowCongeModal]         = useState(false);
-    const [showNotifModal, setShowNotifModal]         = useState(false);
+    const [activeTab, setActiveTab]                       = useState<Tab>('accueil');
+    const [showIncidentModal, setShowIncidentModal]       = useState(false);
+    const [showCongeModal, setShowCongeModal]             = useState(false);
+    const [showNotifModal, setShowNotifModal]             = useState(false);
+    const [showInspectionModal, setShowInspectionModal]   = useState(false);
+    const [showCarburantModal, setShowCarburantModal]     = useState(false);
+    const [showSosModal, setShowSosModal]                 = useState(false);
 
     const openNotifModal = () => {
         setShowNotifModal(true);
@@ -1133,6 +1563,15 @@ export default function ChauffeurDashboard({
                 )}
                 {showNotifModal && (
                     <NotificationsModal notifications={notifications} onClose={() => setShowNotifModal(false)} />
+                )}
+                {showInspectionModal && (
+                    <InspectionModal onClose={() => setShowInspectionModal(false)} expedition={activeExpedition} />
+                )}
+                {showCarburantModal && (
+                    <CarburantModal onClose={() => setShowCarburantModal(false)} expedition={activeExpedition} />
+                )}
+                {showSosModal && (
+                    <SosModal onClose={() => setShowSosModal(false)} />
                 )}
             </AnimatePresence>
 
@@ -1172,11 +1611,11 @@ export default function ChauffeurDashboard({
                         <motion.div key={activeTab}
                             initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.15 }}>
-                            {activeTab === 'accueil'   && <AccueilTab chauffeur={chauffeur} activeExpedition={activeExpedition} stats={stats} documents={documents} incidents={incidents} onDeclareIncident={() => setShowIncidentModal(true)} onTabChange={setActiveTab} />}
-                            {activeTab === 'voyage'    && <VoyageTab expedition={activeExpedition} onDeclareIncident={() => setShowIncidentModal(true)} />}
+                            {activeTab === 'accueil'   && <AccueilTab chauffeur={chauffeur} activeExpedition={activeExpedition} stats={stats} documents={documents} score={score} onDeclareIncident={() => setShowIncidentModal(true)} onSos={() => setShowSosModal(true)} onTabChange={setActiveTab} />}
+                            {activeTab === 'voyage'    && <VoyageTab expedition={activeExpedition} onDeclareIncident={() => setShowIncidentModal(true)} onInspection={() => setShowInspectionModal(true)} onCarburant={() => setShowCarburantModal(true)} />}
                             {activeTab === 'missions'  && <MissionsTab agenda={agenda} pastExpeditions={pastExpeditions} conges={conges} onRequestConge={() => setShowCongeModal(true)} />}
                             {activeTab === 'incidents' && <IncidentsTab incidents={incidents} onDeclare={() => setShowIncidentModal(true)} />}
-                            {activeTab === 'profil'    && <ProfilTab chauffeur={chauffeur} documents={documents} />}
+                            {activeTab === 'profil'    && <ProfilTab chauffeur={chauffeur} documents={documents} rapportsCarburant={rapportsCarburant} />}
                         </motion.div>
                     </AnimatePresence>
                 </div>

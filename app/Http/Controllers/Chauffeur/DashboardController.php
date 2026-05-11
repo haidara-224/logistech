@@ -10,11 +10,15 @@ use App\Models\CongeChauffeur;
 use App\Models\Expedition;
 use App\Models\HseChauffeurDocument;
 use App\Models\HseIncident;
+use App\Models\InspectionPredepart;
 use App\Models\Livraison;
+use App\Models\RapportCarburant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,7 +26,7 @@ class DashboardController extends Controller
 {
     private function chauffeur(): Chauffeur
     {
-        $chauffeur = User::find(auth()->id())?->chauffeur;
+        $chauffeur = User::find(Auth::id())?->chauffeur;
 
         abort_unless($chauffeur !== null, 404, 'Aucun profil chauffeur associé.');
 
@@ -74,6 +78,33 @@ class DashboardController extends Controller
             ->limit(30)
             ->get();
 
+        $rapportsCarburant = RapportCarburant::where('chauffeur_id', $chauffeur->id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        $lastInspection = InspectionPredepart::where('chauffeur_id', $chauffeur->id)
+            ->latest()
+            ->first();
+
+        // Score conducteur
+        $totalVoyages = Expedition::where('chauffeur_id', $chauffeur->id)->count();
+        $voyagesLivres = Expedition::where('chauffeur_id', $chauffeur->id)
+            ->where('statut', 'livré')
+            ->count();
+        $totalIncidents = HseIncident::where('chauffeur_id', $chauffeur->id)->count();
+        $totalKm = Livraison::whereHas('expedition', fn ($q) => $q->where('chauffeur_id', $chauffeur->id))
+            ->whereNotNull('km_reel')
+            ->sum('km_reel');
+        $totalLitres = $rapportsCarburant->sum('litres');
+        $score = [
+            'ponctualite' => $totalVoyages > 0 ? round(($voyagesLivres / $totalVoyages) * 100) : 100,
+            'securite' => $totalVoyages > 0 ? max(0, round((1 - $totalIncidents / $totalVoyages) * 100)) : 100,
+            'km_total' => (int) $totalKm,
+            'litres_total' => round((float) $totalLitres, 1),
+            'co2_kg' => round((float) $totalLitres * 2.67, 1),
+        ];
+
         return Inertia::render('chauffeur/Dashboard', [
             'chauffeur' => $chauffeur->load('user'),
             'activeExpedition' => $activeExpedition,
@@ -83,12 +114,15 @@ class DashboardController extends Controller
             'documents' => $documents,
             'conges' => $conges,
             'notifications' => $notifications,
+            'rapportsCarburant' => $rapportsCarburant,
+            'lastInspection' => $lastInspection,
+            'score' => $score,
             'stats' => [
                 'incidents_ouverts' => $incidents->where('statut', 'ouvert')->count(),
                 'docs_expires' => $documents->where('statut', 'expire')->count(),
                 'docs_expire_bientot' => $documents->where('statut', 'expire_bientot')->count(),
                 'docs_valides' => $documents->where('statut', 'valide')->count(),
-                'voyages_total' => Expedition::where('chauffeur_id', $chauffeur->id)->count(),
+                'voyages_total' => $totalVoyages,
                 'conges_en_attente' => $conges->where('statut', 'en_attente')->count(),
                 'notifications_non_lues' => $notifications->whereNull('read_at')->count(),
             ],
@@ -155,7 +189,16 @@ class DashboardController extends Controller
             'causes' => ['nullable', 'array'],
             'causes.*' => ['string', 'max:50'],
             'expedition_id' => ['nullable', 'exists:expeditions,id'],
+            'photos' => ['nullable', 'array', 'max:5'],
+            'photos.*' => ['image', 'max:5120'],
         ]);
+
+        $photoPaths = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $photoPaths[] = Storage::disk('public')->put('incidents', $photo);
+            }
+        }
 
         HseIncident::create([
             ...$validated,
@@ -165,6 +208,7 @@ class DashboardController extends Controller
                 ->latest()
                 ->value('camion_id'),
             'statut' => 'ouvert',
+            'photos_paths' => $photoPaths,
         ]);
 
         AdminNotification::create([
@@ -174,6 +218,91 @@ class DashboardController extends Controller
         ]);
 
         return back()->with('success', 'Incident déclaré.');
+    }
+
+    public function storeInspection(Request $request): RedirectResponse
+    {
+        $chauffeur = $this->chauffeur();
+
+        $validated = $request->validate([
+            'expedition_id' => ['nullable', 'exists:expeditions,id'],
+            'freins' => ['boolean'],
+            'pneus' => ['boolean'],
+            'feux' => ['boolean'],
+            'cargaison' => ['boolean'],
+            'extincteur' => ['boolean'],
+            'trousse_secours' => ['boolean'],
+            'documents_bord' => ['boolean'],
+            'niveaux_fluides' => ['boolean'],
+            'observations' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $camionId = $request->expedition_id
+            ? Expedition::find($request->expedition_id)?->camion_id
+            : Expedition::where('chauffeur_id', $chauffeur->id)
+                ->whereIn('statut', ['en cours', 'en préparation'])
+                ->latest()
+                ->value('camion_id');
+
+        InspectionPredepart::create([
+            ...$validated,
+            'chauffeur_id' => $chauffeur->id,
+            'camion_id' => $camionId,
+        ]);
+
+        return back()->with('success', 'Inspection pré-départ enregistrée.');
+    }
+
+    public function storeCarburant(Request $request): RedirectResponse
+    {
+        $chauffeur = $this->chauffeur();
+
+        $validated = $request->validate([
+            'litres' => ['required', 'numeric', 'min:1', 'max:2000'],
+            'cout' => ['nullable', 'numeric', 'min:0'],
+            'station' => ['nullable', 'string', 'max:255'],
+            'km_compteur' => ['nullable', 'integer', 'min:0'],
+            'expedition_id' => ['nullable', 'exists:expeditions,id'],
+        ]);
+
+        $camionId = $request->expedition_id
+            ? Expedition::find($request->expedition_id)?->camion_id
+            : Expedition::where('chauffeur_id', $chauffeur->id)
+                ->whereIn('statut', ['en cours', 'en préparation'])
+                ->latest()
+                ->value('camion_id');
+
+        RapportCarburant::create([
+            ...$validated,
+            'chauffeur_id' => $chauffeur->id,
+            'camion_id' => $camionId,
+        ]);
+
+        return back()->with('success', 'Rapport carburant enregistré.');
+    }
+
+    public function storeSos(Request $request): RedirectResponse
+    {
+        $chauffeur = $this->chauffeur();
+
+        $request->validate([
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'message' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        AdminNotification::create([
+            'type' => 'sos',
+            'message' => "🆘 SOS de {$chauffeur->prenom} {$chauffeur->nom}".($request->message ? " : {$request->message}" : '.'),
+            'data' => [
+                'chauffeur_id' => $chauffeur->id,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'message' => $request->message,
+            ],
+        ]);
+
+        return back()->with('success', 'SOS envoyé. Les équipes ont été alertées.');
     }
 
     public function resolveIncident(HseIncident $incident): RedirectResponse
@@ -244,7 +373,7 @@ class DashboardController extends Controller
             'password_confirmation' => ['required', 'string'],
         ]);
 
-        User::find(auth()->id())?->update([
+        User::find(Auth::id())?->update([
             'password' => Hash::make($request->password),
             'must_change_password' => false,
         ]);

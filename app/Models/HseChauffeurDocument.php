@@ -31,11 +31,13 @@ class HseChauffeurDocument extends Model
             return 'valide';
         }
 
-        if ($this->date_expiration->isPast()) {
+        $jours = (int) now()->startOfDay()->diffInDays($this->date_expiration->copy()->startOfDay(), false);
+
+        if ($jours < 0) {
             return 'expire';
         }
 
-        if ($this->date_expiration->diffInDays(now()) <= 30) {
+        if ($jours <= 30) {
             return 'expire_bientot';
         }
 
@@ -44,9 +46,11 @@ class HseChauffeurDocument extends Model
 
     public function getJoursRestantsAttribute(): ?int
     {
-        return $this->date_expiration
-            ? (int) now()->diffInDays($this->date_expiration, false)
-            : null;
+        if (! $this->date_expiration) {
+            return null;
+        }
+
+        return (int) now()->startOfDay()->diffInDays($this->date_expiration->copy()->startOfDay(), false);
     }
 
     public static function typeLabel(string $type): string

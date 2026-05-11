@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Bell, FileText, Mail, Package, Rss, ShoppingCart, Truck, Umbrella, X, CheckCheck, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Bell, FileText, Mail, Package, Rss, ShoppingCart, Siren, Truck, Umbrella, X, CheckCheck, ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 
 interface ActivityNotification {
     id: string;
-    type: 'devis' | 'contact' | 'newsletter' | 'commande_online' | 'incident' | 'conge' | 'livraison' | 'expedition_demarre';
+    type: 'devis' | 'contact' | 'newsletter' | 'commande_online' | 'incident' | 'conge' | 'livraison' | 'expedition_demarre' | 'sos';
     message: string;
     data: Record<string, unknown>;
     receivedAt: string;
@@ -21,6 +21,7 @@ const TYPE_CONFIG = {
     conge:              { icon: Umbrella,      color: 'text-blue-500',   bg: 'bg-blue-500/10',   label: 'Congé',       href: '/dashboard/conges' },
     livraison:          { icon: Package,       color: 'text-amber-500',  bg: 'bg-amber-500/10',  label: 'Livraison',   href: '/dashboard/logistique' },
     expedition_demarre: { icon: Truck,         color: 'text-emerald-500',bg: 'bg-emerald-500/10',label: 'Expédition',  href: '/dashboard/logistique' },
+    sos:                { icon: Siren,         color: 'text-red-600',    bg: 'bg-red-600/10',    label: 'SOS',         href: '/dashboard/hse?tab=sos' },
 };
 
 export function NotificationBell() {
