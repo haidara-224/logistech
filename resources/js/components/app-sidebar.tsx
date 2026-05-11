@@ -43,7 +43,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { dashboard } from '@/routes';
-import { useTranslation } from '@/hooks/use-translation';
 
 type NavItem = { label: string; href: string; icon: React.ElementType };
 type NavGroup = { label: string; icon: React.ElementType; items: NavItem[] };
@@ -51,90 +50,89 @@ type NavGroup = { label: string; icon: React.ElementType; items: NavItem[] };
 export function AppSidebar() {
     const { auth } = usePage().props as any;
     const currentUrl = usePage().url;
-    const { t } = useTranslation();
 
     const NAV_GROUPS: NavGroup[] = [
         {
-            label: t('dash_catalogue'),
+            label: 'Catalogue',
             icon: Package,
             items: [
-                { label: t('dash_products'),   href: '/dashboard/produits',    icon: Package   },
-                { label: t('dash_categories'), href: '/dashboard/categories',  icon: FolderGit2 },
+                { label: 'Produits',    href: '/dashboard/produits',   icon: Package   },
+                { label: 'Catégories', href: '/dashboard/categories', icon: FolderGit2 },
             ],
         },
         {
-            label: t('dash_sales'),
+            label: 'Ventes',
             icon: ShoppingCart,
             items: [
-                { label: t('dash_sales'),   href: '/dashboard/ventes',    icon: ShoppingCart },
-                { label: t('dash_orders'),  href: '/dashboard/commandes', icon: BookOpen     },
+                { label: 'Ventes',    href: '/dashboard/ventes',    icon: ShoppingCart },
+                { label: 'Commandes', href: '/dashboard/commandes', icon: BookOpen     },
             ],
         },
         {
-            label: t('dash_clients'),
+            label: 'Clients',
             icon: Users,
             items: [
-                { label: t('dash_clients'), href: '/dashboard/clients', icon: Users },
+                { label: 'Clients', href: '/dashboard/clients', icon: Users },
             ],
         },
         {
-            label: t('dash_stock'),
+            label: 'Stock',
             icon: Box,
             items: [
-                { label: t('dash_movements'),   href: '/dashboard/mouvements',        icon: Repeat },
-                { label: t('dash_adjustments'), href: '/dashboard/stock/ajustements', icon: Box    },
+                { label: 'Mouvements',  href: '/dashboard/mouvements',        icon: Repeat },
+                { label: 'Ajustements', href: '/dashboard/stock/ajustements', icon: Box    },
             ],
         },
         {
-            label: t('dash_logistics'),
+            label: 'Logistique',
             icon: Truck,
             items: [
-                { label: t('dash_logistics'), href: '/dashboard/logistique',   icon: Truck            },
-                { label: t('dash_planning'),  href: '/dashboard/planification', icon: GanttChartSquare },
-                { label: t('dash_hse'),       href: '/dashboard/hse',           icon: ShieldCheck      },
-                { label: t('dash_conges'),    href: '/dashboard/conges',         icon: Umbrella         },
+                { label: 'Logistique',    href: '/dashboard/logistique',    icon: Truck            },
+                { label: 'Planification', href: '/dashboard/planification', icon: GanttChartSquare },
+                { label: 'HSE',           href: '/dashboard/hse',           icon: ShieldCheck      },
+                { label: 'Congés',        href: '/dashboard/conges',        icon: Umbrella         },
             ],
         },
         {
-            label: t('dash_agenda'),
+            label: 'Agenda',
             icon: CalendarDays,
             items: [
-                { label: t('dash_agenda'), href: '/dashboard/agenda', icon: CalendarDays },
+                { label: 'Agenda', href: '/dashboard/agenda', icon: CalendarDays },
             ],
         },
         {
-            label: t('dash_finances'),
+            label: 'Finances',
             icon: DollarSign,
             items: [
-                { label: t('dash_payments'), href: '/dashboard/paiements', icon: DollarSign },
-                { label: t('dash_invoices'), href: '/dashboard/factures',  icon: FileText   },
+                { label: 'Paiements', href: '/dashboard/paiements', icon: DollarSign },
+                { label: 'Factures',  href: '/dashboard/factures',  icon: FileText   },
             ],
         },
         {
-            label: t('dash_communication'),
+            label: 'Communication',
             icon: Mail,
             items: [
-                { label: t('dash_quotes'),     href: '/dashboard/devis',      icon: ClipboardList },
-                { label: t('dash_messages'),   href: '/dashboard/contact',    icon: Mail          },
-                { label: t('dash_newsletter'), href: '/dashboard/newsletter', icon: Rss           },
+                { label: 'Demandes de devis', href: '/dashboard/devis',      icon: ClipboardList },
+                { label: 'Messages contact',  href: '/dashboard/contact',    icon: Mail          },
+                { label: 'Newsletter',        href: '/dashboard/newsletter', icon: Rss           },
             ],
         },
         {
-            label: t('dash_site'),
+            label: 'Site Web',
             icon: Globe,
             items: [
-                { label: t('dash_landing'), href: '/dashboard/landing', icon: Globe },
+                { label: "Page d'accueil", href: '/dashboard/landing', icon: Globe },
             ],
         },
     ];
 
     const parametresItems: NavItem[] = [
-        { label: t('dash_general'),     href: '/dashboard/settings',    icon: Settings  },
+        { label: 'Général',      href: '/dashboard/settings',    icon: Settings  },
         ...(auth?.is_super_admin
             ? [
-                  { label: t('dash_permissions'), href: '/dashboard/permissions', icon: HardHat  },
-                  { label: t('dash_restore'),     href: '/dashboard/restore',     icon: RotateCcw },
-                  { label: t('dash_logs'),        href: '/dashboard/audit',       icon: FileText  },
+                  { label: 'Permissions', href: '/dashboard/permissions', icon: HardHat   },
+                  { label: 'Restauration', href: '/dashboard/restore',    icon: RotateCcw },
+                  { label: 'Logs',         href: '/dashboard/audit',      icon: FileText  },
               ]
             : []),
     ];
@@ -162,7 +160,7 @@ export function AppSidebar() {
                                 <SidebarMenuButton asChild isActive={currentUrl === '/dashboard'}>
                                     <Link href={dashboard()}>
                                         <LayoutGrid />
-                                        <span>{t('dash_title')}</span>
+                                        <span>Tableau de bord</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -228,7 +226,7 @@ export function AppSidebar() {
                                     <CollapsibleTrigger asChild>
                                         <SidebarMenuButton>
                                             <Settings />
-                                            <span>{t('dash_settings')}</span>
+                                            <span>Paramètres</span>
                                             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                         </SidebarMenuButton>
                                     </CollapsibleTrigger>

@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, FileText, Mail, Rss, ShoppingCart, X, CheckCheck, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Bell, FileText, Mail, Package, Rss, ShoppingCart, Truck, Umbrella, X, CheckCheck, ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 
 interface ActivityNotification {
     id: string;
-    type: 'devis' | 'contact' | 'newsletter' | 'commande_online';
+    type: 'devis' | 'contact' | 'newsletter' | 'commande_online' | 'incident' | 'conge' | 'livraison' | 'expedition_demarre';
     message: string;
     data: Record<string, unknown>;
     receivedAt: string;
@@ -13,10 +13,14 @@ interface ActivityNotification {
 }
 
 const TYPE_CONFIG = {
-    devis: { icon: FileText, color: 'text-[#C8962E]', bg: 'bg-[#C8962E]/10', label: 'Devis', href: '/dashboard/devis' },
-    contact: { icon: Mail, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Contact', href: '/dashboard/contact' },
-    newsletter: { icon: Rss, color: 'text-purple-500', bg: 'bg-purple-500/10', label: 'Newsletter', href: '/dashboard/newsletter' },
-    commande_online: { icon: ShoppingCart, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Commande', href: '/dashboard/commandes' },
+    devis:              { icon: FileText,      color: 'text-[#C8962E]',  bg: 'bg-[#C8962E]/10',  label: 'Devis',       href: '/dashboard/devis' },
+    contact:            { icon: Mail,          color: 'text-blue-500',   bg: 'bg-blue-500/10',   label: 'Contact',     href: '/dashboard/contact' },
+    newsletter:         { icon: Rss,           color: 'text-purple-500', bg: 'bg-purple-500/10', label: 'Newsletter',  href: '/dashboard/newsletter' },
+    commande_online:    { icon: ShoppingCart,  color: 'text-emerald-500',bg: 'bg-emerald-500/10',label: 'Commande',    href: '/dashboard/commandes' },
+    incident:           { icon: AlertTriangle, color: 'text-red-500',    bg: 'bg-red-500/10',    label: 'Incident',    href: '/dashboard/hse?tab=incidents' },
+    conge:              { icon: Umbrella,      color: 'text-blue-500',   bg: 'bg-blue-500/10',   label: 'Congé',       href: '/dashboard/conges' },
+    livraison:          { icon: Package,       color: 'text-amber-500',  bg: 'bg-amber-500/10',  label: 'Livraison',   href: '/dashboard/logistique' },
+    expedition_demarre: { icon: Truck,         color: 'text-emerald-500',bg: 'bg-emerald-500/10',label: 'Expédition',  href: '/dashboard/logistique' },
 };
 
 export function NotificationBell() {

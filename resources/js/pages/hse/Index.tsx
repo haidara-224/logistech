@@ -512,7 +512,8 @@ const TABS = [
 ];
 
 export default function HseIndex({ chauffeurDocs, camionDocs, incidents, chauffeurs, camions, expeditions, stats }: Props) {
-    const [activeTab, setActiveTab]             = useState('dashboard');
+    const initialTab = new URLSearchParams(window.location.search).get('tab') ?? 'dashboard';
+    const [activeTab, setActiveTab]             = useState(initialTab);
     const [showIncidentForm, setShowIncidentForm] = useState(false);
     const [editIncident, setEditIncident]       = useState<HseIncident | null>(null);
 
