@@ -48,7 +48,7 @@ class CommandeController extends Controller
 
     public function show(Commande $commande)
     {
-        $commande->load('client', 'items.produit');
+        $commande->load('client', 'items.produit', 'factures', 'bonLivraison');
 
         return Inertia::render('commandes/Show', ['commande' => $commande]);
     }

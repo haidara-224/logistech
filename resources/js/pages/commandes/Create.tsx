@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Package, Plus, Receipt, Search, ShoppingCart, Trash2, User, X } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Package, Plus, Receipt, Search, ShoppingCart, Trash2, Truck, User, X } from 'lucide-react';
 import { useState } from 'react';
-import { Client, Produit } from '@/types/models';
+import { Client } from '@/types/models';
 import { ProductPickerModal, ProduitPickerItem } from '@/components/ProductPickerModal';
+import { fmtGnf } from '@/lib/utils';
 
 interface Props {
     clients: Pick<Client, 'id' | 'nom' | 'prenom'>[];
@@ -18,9 +19,6 @@ interface Item {
     img: string | null;
 }
 
-const fmtGnf = (n: number) =>
-    new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(n);
-
 function imgUrl(p: ProduitPickerItem): string | null {
     const path = p.images?.[0]?.image?.image_path;
     return path ? `/storage/${path}` : null;
@@ -30,6 +28,9 @@ export default function CommandesCreate({ clients, produits }: Props) {
     const [clientId, setClientId] = useState<string>('');
     const [clientSearch, setClientSearch] = useState('');
     const [items, setItems] = useState<Item[]>([]);
+    const [fraisTransport, setFraisTransport] = useState<number>(0);
+    const [droitsDouane, setDroitsDouane] = useState<number>(0);
+    const [notes, setNotes] = useState<string>('');
     const [processing, setProcessing] = useState(false);
     const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
     const [clientPanelOpen, setClientPanelOpen] = useState(true);
@@ -57,13 +58,25 @@ export default function CommandesCreate({ clients, produits }: Props) {
     };
     const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
 
-    const total = items.reduce((sum, i) => sum + i.quantite * i.prix_unitaire, 0);
+    const sousTotal = items.reduce((sum, i) => sum + i.quantite * i.prix_unitaire, 0);
+    const totalAvecFrais = sousTotal + fraisTransport + droitsDouane;
     const validItems = items.filter((i) => i.produit_id > 0 && i.quantite > 0);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
-        router.post('/dashboard/commandes', { client_id: clientId, items: validItems }, { onFinish: () => setProcessing(false) });
+        router.post(
+            '/dashboard/commandes',
+            {
+                client_id: clientId,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                items: validItems as any,
+                frais_transport: fraisTransport,
+                droits_douane: droitsDouane,
+                notes: notes || null,
+            },
+            { onFinish: () => setProcessing(false) },
+        );
     };
 
     return (
@@ -88,7 +101,7 @@ export default function CommandesCreate({ clients, produits }: Props) {
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                            {/* Left column — Client + Articles */}
+                            {/* Left column — Client + Articles + Notes */}
                             <div className="lg:col-span-2 space-y-5">
 
                                 {/* Client card */}
@@ -219,7 +232,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                                             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
                                                             className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                                                             <div className="flex items-center gap-3 p-3 bg-gray-50/50 dark:bg-gray-800/30">
-                                                                {/* Product selector */}
                                                                 <button type="button" onClick={() => setPickerOpenFor(idx)}
                                                                     className={`flex items-center gap-2.5 flex-1 min-w-0 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${
                                                                         item.produit_id
@@ -248,7 +260,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                                                     <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0 ml-auto" />
                                                                 </button>
 
-                                                                {/* Qty */}
                                                                 <div className="shrink-0 text-center">
                                                                     <p className="text-[10px] text-gray-400 mb-1 font-medium">Qté</p>
                                                                     <input type="number" min={1} value={item.quantite}
@@ -257,7 +268,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                                                     />
                                                                 </div>
 
-                                                                {/* Prix unitaire */}
                                                                 <div className="shrink-0 text-center">
                                                                     <p className="text-[10px] text-gray-400 mb-1 font-medium">Prix unit.</p>
                                                                     <input type="number" min={0} value={item.prix_unitaire}
@@ -292,6 +302,51 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Frais & Notes card */}
+                                <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                                    <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
+                                            <Truck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Frais supplémentaires</p>
+                                    </div>
+                                    <div className="p-5 space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Frais de transport</label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="number" min={0} step={1} value={fraisTransport}
+                                                        onChange={(e) => setFraisTransport(Number(e.target.value))}
+                                                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 py-2.5 px-3 pr-14 text-sm focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
+                                                    />
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">GNF</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Droits de douane</label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="number" min={0} step={1} value={droitsDouane}
+                                                        onChange={(e) => setDroitsDouane(Number(e.target.value))}
+                                                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 py-2.5 px-3 pr-14 text-sm focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
+                                                    />
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">GNF</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Notes / observations</label>
+                                            <textarea
+                                                rows={3} value={notes}
+                                                onChange={(e) => setNotes(e.target.value)}
+                                                placeholder="Informations complémentaires…"
+                                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 py-2.5 px-3 text-sm resize-none focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Right column — Summary */}
@@ -308,7 +363,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                         </div>
 
                                         <div className="p-5">
-                                            {/* Client row */}
                                             <div className="flex items-center justify-between py-2.5 border-b border-gray-100 dark:border-gray-800">
                                                 <span className="text-xs text-gray-500">Client</span>
                                                 <span className="text-xs font-semibold text-gray-900 dark:text-white">
@@ -316,7 +370,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                                 </span>
                                             </div>
 
-                                            {/* Items list */}
                                             {validItems.length > 0 ? (
                                                 <div className="mt-3 space-y-2">
                                                     {validItems.map((item, idx) => (
@@ -330,21 +383,34 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <p className="text-center text-xs text-gray-400 py-6">Aucun article ajouté</p>
+                                                <p className="text-center text-xs text-gray-400 py-4">Aucun article ajouté</p>
                                             )}
 
-                                            {/* Total */}
-                                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                                                <div className="flex items-center justify-between">
+                                            {/* Frais breakdown */}
+                                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
+                                                <div className="flex items-center justify-between text-xs text-gray-500">
+                                                    <span>Sous-total articles</span>
+                                                    <span className="font-medium">{fmtGnf(sousTotal)} GNF</span>
+                                                </div>
+                                                {fraisTransport > 0 && (
+                                                    <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
+                                                        <span>Frais de transport</span>
+                                                        <span className="font-medium">+ {fmtGnf(fraisTransport)} GNF</span>
+                                                    </div>
+                                                )}
+                                                {droitsDouane > 0 && (
+                                                    <div className="flex items-center justify-between text-xs text-orange-600 dark:text-orange-400">
+                                                        <span>Droits de douane</span>
+                                                        <span className="font-medium">+ {fmtGnf(droitsDouane)} GNF</span>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
                                                     <span className="text-sm font-bold text-gray-900 dark:text-white">Total</span>
                                                     <div className="text-right">
-                                                        <span className="text-xl font-black text-[#C8962E]">{fmtGnf(total)}</span>
+                                                        <span className="text-xl font-black text-[#C8962E]">{fmtGnf(totalAvecFrais)}</span>
                                                         <span className="text-xs text-gray-500 ml-1">GNF</span>
                                                     </div>
                                                 </div>
-                                                {validItems.length > 0 && (
-                                                    <p className="text-xs text-gray-400 mt-1 text-right">{validItems.length} article{validItems.length > 1 ? 's' : ''}</p>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -363,7 +429,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                         </Link>
                                     </div>
 
-                                    {/* Validation hints */}
                                     {(!clientId || validItems.length === 0) && (
                                         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-3 space-y-1.5">
                                             <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Requis avant de soumettre</p>
@@ -386,7 +451,6 @@ export default function CommandesCreate({ clients, produits }: Props) {
                 </div>
             </div>
 
-            {/* Product picker */}
             <AnimatePresence>
                 {pickerOpenFor !== null && (
                     <ProductPickerModal

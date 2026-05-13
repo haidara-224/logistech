@@ -7,11 +7,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE chauffeurs MODIFY COLUMN statut ENUM('disponible','en mission','en_repos') NOT NULL DEFAULT 'disponible'");
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE chauffeurs MODIFY COLUMN statut ENUM('disponible','en mission','en_repos') NOT NULL DEFAULT 'disponible'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE chauffeurs MODIFY COLUMN statut ENUM('disponible','en mission','repos') NOT NULL DEFAULT 'disponible'");
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE chauffeurs MODIFY COLUMN statut ENUM('disponible','en mission','repos') NOT NULL DEFAULT 'disponible'");
+        }
     }
 };

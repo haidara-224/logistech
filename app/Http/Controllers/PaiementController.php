@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Commande;
+use App\Models\Facture;
 use App\Models\Paiement;
 use App\Services\PaiementService;
 use Illuminate\Http\RedirectResponse;
@@ -36,7 +37,7 @@ class PaiementController extends Controller
             'nb_paiements' => Paiement::count(),
         ];
 
-        $chart = Paiement::selectRaw("DATE(created_at) as date, SUM(montant) as total, COUNT(*) as nb")
+        $chart = Paiement::selectRaw('DATE(created_at) as date, SUM(montant) as total, COUNT(*) as nb')
             ->where('status', 'effectue')
             ->where('created_at', '>=', now()->subDays(30))
             ->groupByRaw('DATE(created_at)')
@@ -46,11 +47,25 @@ class PaiementController extends Controller
         return Inertia::render('paiements/Index', compact('paiements', 'stats', 'chart'));
     }
 
+    public function createFromFacture(Facture $facture)
+    {
+        $facture->load('commande.client', 'commande.items.produit');
+
+        return Inertia::render('paiements/Create', [
+            'commande' => $facture->commande,
+            'facture' => $facture,
+        ]);
+    }
+
     public function create(Commande $commande)
     {
         $commande->load('client', 'items.produit');
+        $facture = $commande->factures()->where('type', 'vente')->latest()->first();
 
-        return Inertia::render('paiements/Create', ['commande' => $commande]);
+        return Inertia::render('paiements/Create', [
+            'commande' => $commande,
+            'facture' => $facture,
+        ]);
     }
 
     public function register(Request $request, Commande $commande): RedirectResponse
@@ -58,11 +73,11 @@ class PaiementController extends Controller
         $data = $request->validate([
             'montant' => 'required|numeric|min:0',
             'mode_paiement' => 'nullable|string',
-            'status' => 'nullable|string',
             'date_paiement' => 'nullable|date',
+            'facture_id' => 'nullable|exists:factures,id',
         ]);
 
-        $this->service->registerPayment($commande->id, $data);
+        $this->service->registerPayment($commande->id, $data, $data['facture_id'] ?? null);
 
         return redirect()->route('commandes.show', $commande->id)->with('success', 'Paiement enregistré');
     }

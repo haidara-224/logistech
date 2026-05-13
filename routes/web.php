@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\AchatController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BonLivraisonController;
+use App\Http\Controllers\BonReceptionController;
+use App\Http\Controllers\BonSortieController;
 use App\Http\Controllers\BoutiqueController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\Chauffeur\DashboardController as ChauffeurDashboardController;
@@ -10,8 +14,10 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepotController;
 use App\Http\Controllers\DevisController;
 use App\Http\Controllers\FactureController;
+use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingSectionController;
 use App\Http\Controllers\LanguageController;
@@ -21,6 +27,7 @@ use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\PanierController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\SocialiteController;
+use App\Http\Controllers\TransfertDepotController;
 use App\Http\Controllers\VenteController;
 use App\Http\Middleware\EnsureChauffeurPasswordChanged;
 use App\Models\AdminNotification;
@@ -141,6 +148,57 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
     // Factures
     Route::get('factures', [FactureController::class, 'index'])->name('factures.index');
     Route::get('factures/{facture}', [FactureController::class, 'show'])->name('factures.show');
+    Route::post('commandes/{commande}/factures/generer', [FactureController::class, 'generate'])->name('factures.generate');
+    Route::get('factures/{facture}/paiement/creer', [PaiementController::class, 'createFromFacture'])->name('factures.paiement.create');
+
+    // Bons de livraison
+    Route::post('commandes/{commande}/bl/generer', [BonLivraisonController::class, 'generate'])->name('bons-livraison.generate');
+    Route::get('bons-livraison/{bonLivraison}', [BonLivraisonController::class, 'show'])->name('bons-livraison.show');
+
+    // Bons de réception (achats)
+    Route::post('achats/{achat}/br/generer', [BonReceptionController::class, 'generate'])->name('bons-reception.generate');
+    Route::get('bons-reception/{bonReception}', [BonReceptionController::class, 'show'])->name('bons-reception.show');
+
+    // Bons de sortie
+    Route::get('bons-sortie', [BonSortieController::class, 'index'])->name('bons-sortie.index');
+    Route::get('bons-sortie/creer', [BonSortieController::class, 'create'])->name('bons-sortie.create');
+    Route::post('bons-sortie', [BonSortieController::class, 'store'])->name('bons-sortie.store');
+    Route::get('bons-sortie/{bonSortie}', [BonSortieController::class, 'show'])->name('bons-sortie.show');
+    Route::post('bons-sortie/{bonSortie}/valider', [BonSortieController::class, 'valider'])->name('bons-sortie.valider');
+    Route::post('bons-sortie/{bonSortie}/annuler', [BonSortieController::class, 'annuler'])->name('bons-sortie.annuler');
+
+    // Fournisseurs
+    Route::get('fournisseurs', [FournisseurController::class, 'index'])->name('fournisseurs.index');
+    Route::get('fournisseurs/creer', [FournisseurController::class, 'create'])->name('fournisseurs.create');
+    Route::post('fournisseurs', [FournisseurController::class, 'store'])->name('fournisseurs.store');
+    Route::get('fournisseurs/{fournisseur}', [FournisseurController::class, 'show'])->name('fournisseurs.show');
+    Route::get('fournisseurs/{fournisseur}/modifier', [FournisseurController::class, 'edit'])->name('fournisseurs.edit');
+    Route::put('fournisseurs/{fournisseur}', [FournisseurController::class, 'update'])->name('fournisseurs.update');
+    Route::delete('fournisseurs/{fournisseur}', [FournisseurController::class, 'destroy'])->name('fournisseurs.destroy');
+
+    // Achats
+    Route::get('achats', [AchatController::class, 'index'])->name('achats.index');
+    Route::get('achats/creer', [AchatController::class, 'create'])->name('achats.create');
+    Route::post('achats', [AchatController::class, 'store'])->name('achats.store');
+    Route::get('achats/{achat}', [AchatController::class, 'show'])->name('achats.show');
+    Route::post('achats/{achat}/valider', [AchatController::class, 'valider'])->name('achats.valider');
+    Route::post('achats/{achat}/facture', [AchatController::class, 'generateFacture'])->name('achats.facture.generate');
+    Route::post('achats/{achat}/br/generer', [BonReceptionController::class, 'generate'])->name('achats.br.generate');
+
+    // Dépôts
+    Route::get('depots', [DepotController::class, 'index'])->name('depots.index');
+    Route::get('depots/creer', [DepotController::class, 'create'])->name('depots.create');
+    Route::post('depots', [DepotController::class, 'store'])->name('depots.store');
+    Route::get('depots/{depot}/modifier', [DepotController::class, 'edit'])->name('depots.edit');
+    Route::put('depots/{depot}', [DepotController::class, 'update'])->name('depots.update');
+    Route::delete('depots/{depot}', [DepotController::class, 'destroy'])->name('depots.destroy');
+
+    // Transferts de dépôt
+    Route::get('transferts', [TransfertDepotController::class, 'index'])->name('transferts.index');
+    Route::get('transferts/creer', [TransfertDepotController::class, 'create'])->name('transferts.create');
+    Route::post('transferts', [TransfertDepotController::class, 'store'])->name('transferts.store');
+    Route::get('transferts/{transfert}', [TransfertDepotController::class, 'show'])->name('transferts.show');
+    Route::post('transferts/{transfert}/completer', [TransfertDepotController::class, 'completer'])->name('transferts.completer');
 
     // Ventes (commandes payées / CA)
     Route::get('ventes', [VenteController::class, 'index'])->name('ventes.index');

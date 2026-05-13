@@ -14,6 +14,7 @@ class Paiement extends Model
 
     protected $fillable = [
         'commande_id',
+        'facture_id',
         'montant',
         'mode_paiement',
         'status',
@@ -23,5 +24,10 @@ class Paiement extends Model
     public function commande(): BelongsTo
     {
         return $this->belongsTo(Commande::class);
+    }
+
+    public function facture(): BelongsTo
+    {
+        return $this->belongsTo(Facture::class);
     }
 }

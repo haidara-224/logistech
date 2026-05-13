@@ -6,7 +6,6 @@ use App\Contracts\CommandeServiceInterface;
 use App\Contracts\StockServiceInterface;
 use App\Models\Commande;
 use App\Models\Commande_item;
-use App\Models\Facture;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +29,9 @@ class CommandeService implements CommandeServiceInterface
                 'status' => $data['status'] ?? 'en_attente',
                 'source' => $data['source'] ?? 'pos',
                 'montant_total' => 0,
+                'frais_transport' => $data['frais_transport'] ?? 0,
+                'droits_douane' => $data['droits_douane'] ?? 0,
+                'notes' => $data['notes'] ?? null,
             ]);
 
             $total = 0;
@@ -39,7 +41,7 @@ class CommandeService implements CommandeServiceInterface
                 $quantite = $item['quantite'] ?? 0;
                 $prixTotal = $prixUnitaire * $quantite;
 
-                $ci = Commande_item::create([
+                Commande_item::create([
                     'commande_id' => $commande->id,
                     'produit_id' => $item['produit_id'],
                     'quantite' => $quantite,
@@ -47,7 +49,6 @@ class CommandeService implements CommandeServiceInterface
                     'prix_total' => $prixTotal,
                 ]);
 
-                // decrement stock via stock service, pass source if provided
                 $this->stockService->adjustStock($item['produit_id'], 'out', $quantite, $data['source'] ?? 'online', $commande->id);
 
                 $total += $prixTotal;
@@ -55,14 +56,6 @@ class CommandeService implements CommandeServiceInterface
 
             $commande->montant_total = $total;
             $commande->save();
-
-            $count = Facture::count() + 1;
-            Facture::create([
-                'commande_id' => $commande->id,
-                'numero_facture' => 'FAC-'.now()->year.'-'.str_pad($count, 5, '0', STR_PAD_LEFT),
-                'montant_total' => $total,
-                'date_emission' => now(),
-            ]);
 
             return $commande;
         });

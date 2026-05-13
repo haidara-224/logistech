@@ -1,9 +1,18 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, ShoppingCart, User, Package, Calendar, CheckCircle, Clock, XCircle, Truck, DollarSign, CreditCard } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
+import { ArrowLeft, ShoppingCart, User, Package, Calendar, CheckCircle, Clock, XCircle, Truck, FileText, ClipboardList } from 'lucide-react';
+import { toast } from 'sonner';
 import { Commande } from '@/types/models';
+import { fmtGnf } from '@/lib/utils';
+
+interface BonLivraison { id: number; numero_bl: string; statut: string; date_emission: string | null }
+interface Facture { id: number; numero_facture: string; statut: string; montant_total: number }
 
 interface Props {
-    commande: Commande;
+    commande: Commande & {
+        factures?: Facture[];
+        bon_livraison?: BonLivraison | null;
+    };
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
@@ -14,9 +23,33 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
 };
 
 export default function CommandesShow({ commande }: Props) {
+    const { flash } = usePage().props as any;
+
+    useEffect(() => {
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.info) toast.info(flash.info);
+        if (flash?.error) toast.error(flash.error);
+    }, [flash]);
+
     const cfg = statusConfig[commande.status ?? 'en_attente'] ?? statusConfig.en_attente;
     const StatusIcon = cfg.icon;
     const items = commande.items ?? [];
+
+    const facture = commande.factures?.[0] ?? null;
+    const bonLivraison = commande.bon_livraison ?? null;
+
+    const fraisTransport = Number(commande.frais_transport ?? 0);
+    const droitsDouane = Number(commande.droits_douane ?? 0);
+    const sousTotal = Number(commande.montant_total ?? 0);
+    const totalAvecFrais = sousTotal + fraisTransport + droitsDouane;
+
+    const handleGenerateFacture = () => {
+        router.post(`/dashboard/commandes/${commande.id}/factures/generer`);
+    };
+
+    const handleGenerateBL = () => {
+        router.post(`/dashboard/commandes/${commande.id}/bl/generer`);
+    };
 
     return (
         <>
@@ -29,7 +62,7 @@ export default function CommandesShow({ commande }: Props) {
                     </Link>
                 </div>
 
-                {/* Header card */}
+                {/* Header */}
                 <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
@@ -42,18 +75,47 @@ export default function CommandesShow({ commande }: Props) {
                                 {commande.created_at ? new Date(commande.created_at).toLocaleDateString('fr-FR', { dateStyle: 'long' }) : '—'}
                             </p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${cfg.color}`}>
                                 <StatusIcon className="h-4 w-4" />
                                 {cfg.label}
                             </span>
-                            {commande.status === 'en_attente' && (
-                                <Link
-                                    href={`/dashboard/commandes/${commande.id}/paiements/creer`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold hover:shadow-lg transition-all"
+
+                            {/* Générer facture si pas encore générée */}
+                            {!facture ? (
+                                <button
+                                    onClick={handleGenerateFacture}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-linear-to-r from-[#C8962E] to-[#E8B84B] text-white text-sm font-semibold hover:shadow-lg transition-all"
                                 >
-                                    <CreditCard className="h-4 w-4" />
-                                    Enregistrer paiement
+                                    <FileText className="h-4 w-4" />
+                                    Générer facture
+                                </button>
+                            ) : (
+                                <Link
+                                    href={`/dashboard/factures/${facture.id}`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#C8962E] text-[#C8962E] text-sm font-semibold hover:bg-[#C8962E]/5 transition-all"
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    Voir facture {facture.statut === 'payee' ? '✓' : ''}
+                                </Link>
+                            )}
+
+                            {/* Générer BL */}
+                            {!bonLivraison ? (
+                                <button
+                                    onClick={handleGenerateBL}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-all"
+                                >
+                                    <ClipboardList className="h-4 w-4" />
+                                    Générer BL
+                                </button>
+                            ) : (
+                                <Link
+                                    href={`/dashboard/bons-livraison/${bonLivraison.id}`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-500 text-blue-600 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all"
+                                >
+                                    <ClipboardList className="h-4 w-4" />
+                                    Voir BL
                                 </Link>
                             )}
                         </div>
@@ -75,9 +137,6 @@ export default function CommandesShow({ commande }: Props) {
                                 {commande.client.telephone && (
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{commande.client.telephone}</p>
                                 )}
-                                <Link href={`/clients/${commande.client.id}`} className="inline-block mt-2 text-xs text-[#C8962E] hover:text-[#E8B84B] transition-colors font-medium">
-                                    Voir le client →
-                                </Link>
                             </div>
                         ) : (
                             <p className="text-gray-500 dark:text-gray-400 text-sm">Client non trouvé</p>
@@ -93,17 +152,29 @@ export default function CommandesShow({ commande }: Props) {
                     </div>
 
                     {/* Montant */}
-                    <div className="rounded-2xl bg-gradient-to-br from-[#C8962E]/10 to-[#E8B84B]/10 border border-[#C8962E]/20 shadow-sm p-5">
-                        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <DollarSign className="h-4 w-4" />
-                            Total
-                        </h2>
+                    <div className="rounded-2xl bg-linear-to-br from-[#C8962E]/10 to-[#E8B84B]/10 border border-[#C8962E]/20 shadow-sm p-5">
+                        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Total</h2>
                         <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {commande.montant_total?.toLocaleString() ?? '—'}
+                            {fmtGnf(totalAvecFrais)}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">GNF</p>
+                        {(fraisTransport > 0 || droitsDouane > 0) && (
+                            <div className="mt-2 space-y-0.5 text-xs text-gray-500">
+                                <p>Articles : {fmtGnf(sousTotal)} GNF</p>
+                                {fraisTransport > 0 && <p>Transport : +{fmtGnf(fraisTransport)} GNF</p>}
+                                {droitsDouane > 0 && <p>Douane : +{fmtGnf(droitsDouane)} GNF</p>}
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* Notes */}
+                {commande.notes && (
+                    <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+                        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Notes</h2>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{commande.notes}</p>
+                    </div>
+                )}
 
                 {/* Articles */}
                 <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
@@ -141,22 +212,38 @@ export default function CommandesShow({ commande }: Props) {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
-                                            {Number(item.prix_unitaire).toLocaleString()} GNF
+                                            {fmtGnf(Number(item.prix_unitaire))} GNF
                                         </td>
                                         <td className="px-6 py-4 text-right text-sm font-medium text-gray-900 dark:text-white">
                                             {item.quantite}
                                         </td>
                                         <td className="px-6 py-4 text-right font-semibold text-gray-900 dark:text-white">
-                                            {Number(item.prix_total).toLocaleString()} GNF
+                                            {fmtGnf(Number(item.prix_total))} GNF
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot>
                                 <tr className="border-t-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                                    <td colSpan={3} className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Total</td>
-                                    <td className="px-6 py-4 text-right font-bold text-lg text-gray-900 dark:text-white">
-                                        {commande.montant_total?.toLocaleString() ?? '—'} GNF
+                                    <td colSpan={3} className="px-6 py-3 text-right text-xs text-gray-500">Sous-total articles</td>
+                                    <td className="px-6 py-3 text-right font-semibold text-gray-700 dark:text-gray-300">{fmtGnf(sousTotal)} GNF</td>
+                                </tr>
+                                {fraisTransport > 0 && (
+                                    <tr className="bg-gray-50 dark:bg-gray-800/50">
+                                        <td colSpan={3} className="px-6 py-2 text-right text-xs text-blue-600 dark:text-blue-400">Frais de transport</td>
+                                        <td className="px-6 py-2 text-right text-sm text-blue-600 dark:text-blue-400">+{fmtGnf(fraisTransport)} GNF</td>
+                                    </tr>
+                                )}
+                                {droitsDouane > 0 && (
+                                    <tr className="bg-gray-50 dark:bg-gray-800/50">
+                                        <td colSpan={3} className="px-6 py-2 text-right text-xs text-orange-600 dark:text-orange-400">Droits de douane</td>
+                                        <td className="px-6 py-2 text-right text-sm text-orange-600 dark:text-orange-400">+{fmtGnf(droitsDouane)} GNF</td>
+                                    </tr>
+                                )}
+                                <tr className="border-t border-gray-200 dark:border-gray-700 bg-[#C8962E]/5">
+                                    <td colSpan={3} className="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">Total général</td>
+                                    <td className="px-6 py-4 text-right font-bold text-lg text-[#C8962E]">
+                                        {fmtGnf(totalAvecFrais)} GNF
                                     </td>
                                 </tr>
                             </tfoot>
@@ -170,7 +257,7 @@ export default function CommandesShow({ commande }: Props) {
 
 CommandesShow.layout = {
     breadcrumbs: [
-        { title: 'Commandes', href: '/commandes' },
+        { title: 'Commandes', href: '/dashboard/commandes' },
         { title: 'Détails', href: '#' },
     ],
 };
