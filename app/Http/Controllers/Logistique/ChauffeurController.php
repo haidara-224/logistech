@@ -25,9 +25,23 @@ class ChauffeurController extends Controller
 
         $user->assignRole('chauffeur');
 
-        Chauffeur::create([...$data, 'user_id' => $user->id]);
+        Chauffeur::create([...$data, 'user_id' => $user->id, 'matricule' => $this->generateMatricule()]);
 
         return back()->with('success', 'Chauffeur enregistré — compte créé avec le mot de passe provisoire : 0000.');
+    }
+
+    private function generateMatricule(): string
+    {
+        $year = date('Y');
+        $base = 'CHF-'.$year.'-';
+        $count = Chauffeur::withTrashed()->count() + 1;
+
+        do {
+            $matricule = $base.str_pad($count, 4, '0', STR_PAD_LEFT);
+            $count++;
+        } while (Chauffeur::withTrashed()->where('matricule', $matricule)->exists());
+
+        return $matricule;
     }
 
     public function update(UpdateChauffeurRequest $request, Chauffeur $chauffeur): RedirectResponse

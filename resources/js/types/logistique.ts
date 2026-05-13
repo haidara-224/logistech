@@ -18,6 +18,7 @@ export interface Camion {
 
 export interface Chauffeur {
     id: number;
+    matricule?: string | null;
     nom: string;
     prenom?: string;
     telephone?: string;

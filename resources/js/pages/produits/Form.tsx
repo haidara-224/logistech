@@ -1,7 +1,15 @@
 import { router, usePage } from '@inertiajs/react';
-import { AlertCircle, DollarSign, ImagePlus, Package, Tag, X } from 'lucide-react';
+import { AlertCircle, DollarSign, ImagePlus, Package, RefreshCw, Tag, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { Produit, Categorie } from '@/types/models';
+
+function generateSku(nom: string): string {
+    const words = nom.trim().split(/\s+/).filter(Boolean);
+    const prefix = words.map((w) => w[0] ?? '').join('').toUpperCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Z0-9]/g, '').slice(0, 4) || 'PRD';
+    const suffix = String(Math.floor(Math.random() * 9000) + 1000);
+    return `${prefix}-${suffix}`;
+}
 
 interface ExistingImage {
     id: number;
@@ -40,8 +48,27 @@ export default function ProduitFormModal({ produit, categories, onClose, onSucce
         categorie_id: String(produit?.categorie_id ?? ''),
     });
 
+    const [skuManual, setSkuManual] = useState(isEditing && !!produit?.sku);
+
     const set = (key: keyof typeof fields, value: string) =>
         setFields((prev) => ({ ...prev, [key]: value }));
+
+    const handleNomChange = (value: string) => {
+        set('nom', value);
+        if (!skuManual && value.trim()) {
+            set('sku', generateSku(value));
+        }
+    };
+
+    const handleSkuChange = (value: string) => {
+        setSkuManual(true);
+        set('sku', value);
+    };
+
+    const regenerateSku = () => {
+        setSkuManual(false);
+        set('sku', generateSku(fields.nom));
+    };
 
     const addFiles = useCallback((files: FileList | File[]) => {
         const arr = Array.from(files).filter((f) => f.type.startsWith('image/'));
@@ -72,7 +99,7 @@ export default function ProduitFormModal({ produit, categories, onClose, onSucce
         if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: { preventDefault(): void }) => {
         e.preventDefault();
         setProcessing(true);
 
@@ -91,8 +118,6 @@ export default function ProduitFormModal({ produit, categories, onClose, onSucce
             onFinish: () => setProcessing(false),
         });
     };
-
-    const visibleExisting = existingImages.filter((img) => !deletedImageIds.includes(img.id));
 
     return (
         <div className="relative">
@@ -207,7 +232,7 @@ export default function ProduitFormModal({ produit, categories, onClose, onSucce
                         <input
                             type="text"
                             value={fields.nom}
-                            onChange={(e) => set('nom', e.target.value)}
+                            onChange={(e) => handleNomChange(e.target.value)}
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 py-2.5 pl-10 pr-4 text-sm focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
                             placeholder="Ex: Charpente métallique"
                             required
@@ -219,16 +244,27 @@ export default function ProduitFormModal({ produit, categories, onClose, onSucce
                 <div className="grid grid-cols-2 gap-4">
                     {/* SKU */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SKU</label>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SKU</label>
+                            {!skuManual && fields.sku && (
+                                <span className="text-[10px] text-[#C8962E] font-medium bg-[#C8962E]/10 px-1.5 py-0.5 rounded">auto</span>
+                            )}
+                        </div>
                         <div className="relative">
                             <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
                                 value={fields.sku}
-                                onChange={(e) => set('sku', e.target.value)}
-                                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 py-2.5 pl-10 pr-4 text-sm focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
-                                placeholder="CHR-001"
+                                onChange={(e) => handleSkuChange(e.target.value)}
+                                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 py-2.5 pl-10 pr-9 text-sm focus:border-[#C8962E] focus:outline-none focus:ring-2 focus:ring-[#C8962E]/20 transition-all"
+                                placeholder="Généré automatiquement"
                             />
+                            {fields.nom && (
+                                <button type="button" onClick={regenerateSku} title="Régénérer le SKU"
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#C8962E] transition-colors">
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                </button>
+                            )}
                         </div>
                     </div>
 

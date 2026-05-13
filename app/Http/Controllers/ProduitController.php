@@ -61,7 +61,13 @@ class ProduitController extends Controller
 
     public function store(StoreProduitRequest $request): RedirectResponse
     {
-        $produit = Produit::create($request->validated());
+        $data = $request->validated();
+
+        if (empty($data['sku'])) {
+            $data['sku'] = $this->generateUniqueSku($data['nom']);
+        }
+
+        $produit = Produit::create($data);
         Mouvements_stock::create([
             'produit_id' => $produit->id,
             'quantite' => $produit->quantite_stock,
@@ -131,6 +137,19 @@ class ProduitController extends Controller
         Produit::withTrashed()->forceDelete();
 
         return redirect()->route('produits.index')->with('success', 'Tous les produits ont été supprimés.');
+    }
+
+    private function generateUniqueSku(string $nom): string
+    {
+        $words = preg_split('/\s+/', trim($nom));
+        $prefix = strtoupper(implode('', array_map(fn ($w) => substr($w, 0, 1), $words)));
+        $prefix = substr(preg_replace('/[^A-Z0-9]/', '', iconv('UTF-8', 'ASCII//TRANSLIT', $prefix)) ?: 'PRD', 0, 4);
+
+        do {
+            $sku = $prefix.'-'.str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        } while (Produit::where('sku', $sku)->exists());
+
+        return $sku;
     }
 
     private function storeImages(Produit $produit, array $files): void

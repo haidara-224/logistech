@@ -50,9 +50,16 @@ function ChauffeurRow({ chauffeur, index, onEdit, missionRef }: ChauffeurRowProp
             <Avatar nom={chauffeur.nom} prenom={chauffeur.prenom} />
 
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                    {[chauffeur.nom, chauffeur.prenom].filter(Boolean).join(' ')}
-                </p>
+                <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">
+                        {[chauffeur.nom, chauffeur.prenom].filter(Boolean).join(' ')}
+                    </p>
+                    {chauffeur.matricule && (
+                        <span className="text-[10px] font-mono font-semibold text-[#C8962E] bg-[#C8962E]/10 px-1.5 py-0.5 rounded">
+                            {chauffeur.matricule}
+                        </span>
+                    )}
+                </div>
                 <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                     {chauffeur.telephone && (
                         <span className="flex items-center gap-1">
@@ -125,6 +132,14 @@ function NewChauffeurForm() {
 function EditChauffeurForm({ chauffeur }: { chauffeur: Chauffeur }) {
     return (
         <Form method="put" action={`/dashboard/logistique/chauffeurs/${chauffeur.id}`} className="space-y-4">
+            {chauffeur.matricule && (
+                <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Matricule</p>
+                    <p className="text-sm font-mono font-semibold text-[#C8962E] bg-[#C8962E]/10 px-3 py-2 rounded-lg inline-block">
+                        {chauffeur.matricule}
+                    </p>
+                </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
                 <ThemedInput name="nom" label="Nom" defaultValue={chauffeur.nom} />
                 <ThemedInput name="prenom" label="Prénom" defaultValue={chauffeur.prenom ?? ''} />

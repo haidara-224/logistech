@@ -15,6 +15,7 @@ class Chauffeur extends Model
 
     protected $fillable = [
         'user_id',
+        'matricule',
         'nom',
         'prenom',
         'telephone',
