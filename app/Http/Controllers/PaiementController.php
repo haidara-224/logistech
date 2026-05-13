@@ -49,12 +49,38 @@ class PaiementController extends Controller
 
     public function createFromFacture(Facture $facture)
     {
+        if ($facture->type === 'achat') {
+            $facture->load('achat.fournisseur', 'achat.items.produit');
+
+            return Inertia::render('paiements/Create', [
+                'commande' => null,
+                'facture' => $facture,
+            ]);
+        }
+
         $facture->load('commande.client', 'commande.items.produit');
 
         return Inertia::render('paiements/Create', [
             'commande' => $facture->commande,
             'facture' => $facture,
         ]);
+    }
+
+    public function registerFromFacture(Request $request, Facture $facture): RedirectResponse
+    {
+        if ($facture->statut === 'payee') {
+            return back()->with('error', 'Cette facture est déjà payée.');
+        }
+
+        $data = $request->validate([
+            'montant' => 'required|numeric|min:0',
+            'mode_paiement' => 'nullable|string',
+            'date_paiement' => 'nullable|date',
+        ]);
+
+        $this->service->registerFacturePayment($facture, $data);
+
+        return redirect()->route('factures.show', $facture->id)->with('success', 'Paiement enregistré.');
     }
 
     public function create(Commande $commande)

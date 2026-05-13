@@ -155,6 +155,7 @@ export interface Facture {
   created_at?: string | null;
   updated_at?: string | null;
   commande?: Commande;
+  achat?: Achat | null;
   paiements?: Paiement[];
 }
 

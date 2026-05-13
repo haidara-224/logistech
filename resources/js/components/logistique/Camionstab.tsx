@@ -94,8 +94,7 @@ function NewCamionForm() {
                     </div>
                     <ThemedSelect name="statut" label="Statut">
                         <option value="disponible">Disponible</option>
-                        <option value="en mission">En mission</option>
-                        <option value="maintenance">Maintenance</option>
+                        
                     </ThemedSelect>
                     <ThemedTextarea name="notes" label="Notes" rows={3} placeholder="Informations complémentaires…" />
                     <Button type="submit" disabled={processing} className="w-full">

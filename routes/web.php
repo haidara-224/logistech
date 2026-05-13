@@ -150,6 +150,7 @@ Route::middleware(['auth', 'verified', 'role:admin|super admin'])->prefix('dashb
     Route::get('factures/{facture}', [FactureController::class, 'show'])->name('factures.show');
     Route::post('commandes/{commande}/factures/generer', [FactureController::class, 'generate'])->name('factures.generate');
     Route::get('factures/{facture}/paiement/creer', [PaiementController::class, 'createFromFacture'])->name('factures.paiement.create');
+    Route::post('factures/{facture}/paiement', [PaiementController::class, 'registerFromFacture'])->name('factures.paiement.register');
 
     // Bons de livraison
     Route::post('commandes/{commande}/bl/generer', [BonLivraisonController::class, 'generate'])->name('bons-livraison.generate');

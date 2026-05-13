@@ -36,4 +36,22 @@ class PaiementService
             return compact('paiement', 'commande');
         });
     }
+
+    public function registerFacturePayment(Facture $facture, array $data): Paiement
+    {
+        return DB::transaction(function () use ($facture, $data) {
+            $paiement = Paiement::create([
+                'commande_id' => null,
+                'facture_id' => $facture->id,
+                'montant' => $data['montant'],
+                'mode_paiement' => $data['mode_paiement'] ?? 'espece',
+                'status' => 'effectue',
+                'date_paiement' => $data['date_paiement'] ?? now(),
+            ]);
+
+            $facture->update(['statut' => 'payee']);
+
+            return $paiement;
+        });
+    }
 }

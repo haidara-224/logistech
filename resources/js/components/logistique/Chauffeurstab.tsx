@@ -108,8 +108,7 @@ function NewChauffeurForm() {
                         <ThemedInput name="permis" label="Catégories permis" placeholder="C, D" />
                         <ThemedSelect name="statut" label="Statut">
                             <option value="disponible">Disponible</option>
-                            <option value="en mission">En mission</option>
-                            <option value="en_repos">En repos</option>
+                           
                         </ThemedSelect>
                     </div>
                     <ThemedTextarea name="notes" label="Notes" rows={3} placeholder="Disponibilités, informations complémentaires…" />
