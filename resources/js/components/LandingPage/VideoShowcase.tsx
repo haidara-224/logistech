@@ -109,7 +109,7 @@ export function VideoShowcase() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, delay: 0.15 }}
-                    className="relative group"
+                    className="relative group max-w-sm mx-auto"
                 >
                     {/* Glow border */}
                     <div
@@ -124,7 +124,7 @@ export function VideoShowcase() {
                         {/* Video */}
                         <video
                             ref={videoRef}
-                            className="w-full aspect-video object-cover"
+                            className="w-full aspect-9/16 object-cover"
                             loop
                             playsInline
                             muted
