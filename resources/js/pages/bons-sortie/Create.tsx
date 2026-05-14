@@ -39,7 +39,13 @@ export default function BonsSortieCreate({ depots, produits }: Props) {
     const removeItem = (i: number) => setItems((prev) => prev.filter((_, idx) => idx !== i));
 
     const updateQty = (i: number, qty: number) => {
-        setItems((prev) => prev.map((item, idx) => (idx === i ? { ...item, quantite: Math.max(1, qty) } : item)));
+        setItems((prev) =>
+            prev.map((item, idx) => {
+                if (idx !== i) return item;
+                const max = item.stock_actuel > 0 ? item.stock_actuel : Infinity;
+                return { ...item, quantite: Math.min(Math.max(1, qty), max) };
+            }),
+        );
     };
 
     const handlePickerSelect = (p: ProduitPickerItem) => {
@@ -223,9 +229,13 @@ export default function BonsSortieCreate({ depots, produits }: Props) {
                                                                             className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
                                                                             <X className="w-3 h-3 rotate-45" />
                                                                         </button>
-                                                                        <input type="number" min={1} value={item.quantite}
+                                                                        <input
+                                                                            type="number"
+                                                                            min={1}
+                                                                            max={item.stock_actuel > 0 ? item.stock_actuel : undefined}
+                                                                            value={item.quantite}
                                                                             onChange={(e) => updateQty(idx, parseInt(e.target.value) || 1)}
-                                                                            className="w-14 text-center text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-1 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                                                            className={`w-14 text-center text-sm font-semibold rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-900 ${item.stock_actuel > 0 && item.quantite > item.stock_actuel ? 'border-red-400 text-red-600' : 'border-gray-200 dark:border-gray-700'}`}
                                                                         />
                                                                         <button type="button" onClick={() => updateQty(idx, item.quantite + 1)}
                                                                             className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">

@@ -70,14 +70,20 @@ class MouvementsStockController extends Controller
             'note' => 'nullable|string|max:500',
         ]);
 
+        $produit = Produit::findOrFail($data['produit_id']);
+
+        if ($data['type'] === 'sortie' && $data['quantite'] > $produit->quantite_stock) {
+            return back()->withErrors([
+                'quantite' => "Quantité demandée ({$data['quantite']}) supérieure au stock disponible ({$produit->quantite_stock}).",
+            ])->withInput();
+        }
+
         Mouvements_stock::create([
             ...$data,
             'source' => 'ajustement',
             'user_id' => Auth::id(),
-
         ]);
 
-        $produit = Produit::findOrFail($data['produit_id']);
         if ($data['type'] === 'entree') {
             $produit->increment('quantite_stock', $data['quantite']);
         } else {

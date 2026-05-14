@@ -72,14 +72,7 @@ export function AppSidebar() {
                 { label: 'Commandes', href: '/dashboard/commandes', icon: BookOpen     },
             ],
         },
-        {
-            label: 'Clients',
-            icon: Users,
-            items: [
-                { label: 'Clients', href: '/dashboard/clients', icon: Users },
-            ],
-        },
-        {
+         {
             label: 'Achats',
             icon: ShoppingBag,
             items: [
@@ -87,6 +80,14 @@ export function AppSidebar() {
                 { label: 'Fournisseurs',  href: '/dashboard/fournisseurs',  icon: Users          },
             ],
         },
+        {
+            label: 'Clients',
+            icon: Users,
+            items: [
+                { label: 'Clients', href: '/dashboard/clients', icon: Users },
+            ],
+        },
+       
         {
             label: 'Stock',
             icon: Box,

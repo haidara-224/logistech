@@ -17,6 +17,7 @@ interface Item {
     quantite: number;
     prix_unitaire: number;
     img: string | null;
+    stock_actuel: number;
 }
 
 function imgUrl(p: ProduitPickerItem): string | null {
@@ -43,18 +44,29 @@ export default function CommandesCreate({ clients, produits }: Props) {
 
     const selectProduct = (idx: number, p: ProduitPickerItem) => {
         const updated = [...items];
-        updated[idx] = { ...updated[idx], produit_id: p.id, nom: p.nom, prix_unitaire: p.prix_vente ?? 0, img: imgUrl(p) };
+        updated[idx] = {
+            ...updated[idx],
+            produit_id: p.id,
+            nom: p.nom,
+            prix_unitaire: p.prix_vente ?? 0,
+            img: imgUrl(p),
+            stock_actuel: p.quantite_stock ?? 0,
+        };
         setItems(updated);
     };
 
     const updateItem = (idx: number, field: 'quantite' | 'prix_unitaire', value: number) => {
         const updated = [...items];
+        if (field === 'quantite') {
+            const max = updated[idx].stock_actuel > 0 ? updated[idx].stock_actuel : Infinity;
+            value = Math.min(Math.max(1, value), max);
+        }
         updated[idx] = { ...updated[idx], [field]: value };
         setItems(updated);
     };
 
     const addItem = () => {
-        setItems([...items, { produit_id: 0, nom: '', quantite: 1, prix_unitaire: 0, img: null }]);
+        setItems([...items, { produit_id: 0, nom: '', quantite: 1, prix_unitaire: 0, img: null, stock_actuel: 0 }]);
     };
     const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
 
@@ -261,10 +273,16 @@ export default function CommandesCreate({ clients, produits }: Props) {
                                                                 </button>
 
                                                                 <div className="shrink-0 text-center">
-                                                                    <p className="text-[10px] text-gray-400 mb-1 font-medium">Qté</p>
-                                                                    <input type="number" min={1} value={item.quantite}
+                                                                    <p className="text-[10px] text-gray-400 mb-1 font-medium">
+                                                                        Qté{item.stock_actuel > 0 && <span className="ml-1 text-gray-400">/ {item.stock_actuel}</span>}
+                                                                    </p>
+                                                                    <input
+                                                                        type="number"
+                                                                        min={1}
+                                                                        max={item.stock_actuel > 0 ? item.stock_actuel : undefined}
+                                                                        value={item.quantite}
                                                                         onChange={(e) => updateItem(idx, 'quantite', Number(e.target.value))}
-                                                                        className="w-16 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2 px-2 text-sm text-center focus:border-[#C8962E] focus:outline-none transition-all"
+                                                                        className={`w-16 rounded-lg border py-2 px-2 text-sm text-center focus:outline-none transition-all bg-white dark:bg-gray-900 ${item.stock_actuel > 0 && item.quantite > item.stock_actuel ? 'border-red-400 text-red-600 focus:border-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-[#C8962E]'}`}
                                                                     />
                                                                 </div>
 
