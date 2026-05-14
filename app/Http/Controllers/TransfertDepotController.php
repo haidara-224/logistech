@@ -45,6 +45,17 @@ class TransfertDepotController extends Controller
             'items.*.quantite' => 'required|integer|min:1',
         ]);
 
+        $errors = [];
+        foreach ($validated['items'] as $index => $item) {
+            $produit = Produit::find($item['produit_id']);
+            if ($produit && (int) $item['quantite'] > $produit->quantite_stock) {
+                $errors["items.$index.quantite"] = "Quantité demandée ({$item['quantite']}) supérieure au stock disponible ({$produit->quantite_stock}) pour « {$produit->nom} ».";
+            }
+        }
+        if (! empty($errors)) {
+            return back()->withErrors($errors)->withInput();
+        }
+
         $transfert = $this->service->create($validated);
 
         return redirect()->route('transferts.show', $transfert->id)->with('success', 'Transfert créé.');

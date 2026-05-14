@@ -19,6 +19,12 @@ export default function TransfertsCreate({ depots, produits }: Props) {
     const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
     const updateItem = (idx: number, field: keyof Item, value: string | number) => {
         const updated = [...items];
+        if (field === 'quantite') {
+            const produit = produits.find((p) => String(p.id) === updated[idx].produit_id);
+            const stock = produit?.quantite_stock ?? 0;
+            const max = stock > 0 ? stock : Infinity;
+            value = Math.min(Math.max(1, Number(value)), max);
+        }
         updated[idx] = { ...updated[idx], [field]: value };
         setItems(updated);
     };
@@ -130,8 +136,16 @@ export default function TransfertsCreate({ depots, produits }: Props) {
                                         </select>
                                     </div>
                                     <div className="w-24">
-                                        {idx === 0 && <label className="block text-xs font-medium text-gray-500 mb-1.5">Quantité</label>}
-                                        <input type="number" min={1} value={item.quantite}
+                                        {idx === 0 && (
+                                            <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                                Quantité
+                                            </label>
+                                        )}
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={(() => { const p = produits.find((p) => String(p.id) === item.produit_id); const s = p?.quantite_stock ?? 0; return s > 0 ? s : undefined; })()}
+                                            value={item.quantite}
                                             onChange={(e) => updateItem(idx, 'quantite', Number(e.target.value))}
                                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 py-2.5 px-3 text-sm text-center focus:outline-none focus:border-indigo-500 transition-all"
                                         />
