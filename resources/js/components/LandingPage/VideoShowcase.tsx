@@ -130,8 +130,8 @@ export function VideoShowcase() {
                             muted
                             onTimeUpdate={handleTimeUpdate}
                         >
-                            <source src="/Video/video.mp4" type="video/mp4" />
-                            <source src="/Video/video.MOV" type="video/quicktime" />
+                            <source src="/Video/IMG_1.mp4" type="video/mp4" />
+                            <source src="/Video/IMG_1.MOV" type="video/quicktime" />
                         </video>
 
                         {/* Overlay */}

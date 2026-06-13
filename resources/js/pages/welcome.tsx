@@ -7,6 +7,7 @@ import { Hero } from "@/components/LandingPage/Hero";
 import { Services } from "@/components/LandingPage/Services";
 import { Testimonials } from "@/components/LandingPage/Testimonial";
 import { VideoShowcase } from "@/components/LandingPage/VideoShowcase";
+import { VideoGallery } from "@/components/LandingPage/VideoGallery";
 import AppLayoutLanding from "@/layouts/LandindLayout";
 
 import { Head, usePage } from "@inertiajs/react";
@@ -33,6 +34,7 @@ export default function Welcome() {
           <Head title="Logistech Equip +"/>
             <Hero onDevis={() => setDevisOpen(true)} />
             <VideoShowcase />
+            <VideoGallery />
             <Services onDevis={() => {}} />
             <About onDevis={() => {}} />
             <Gallery onDevis={() => {}} />
