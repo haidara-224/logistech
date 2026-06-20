@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, Maximize2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRef, useState } from 'react';
 
 interface Video {
     id: string;
@@ -40,12 +40,28 @@ function VideoCard({ video, index }: VideoCardProps) {
     const [playing, setPlaying] = useState(false);
     const [muted, setMuted] = useState(true);
 
-    const togglePlay = () => {
+    const togglePlay = async () => {
         const v = videoRef.current;
-        if (!v) return;
+
+        if (!v) {
+            return;
+        }
+
         if (v.paused) {
-            v.play();
-            setPlaying(true);
+            try {
+                await v.play();
+                setPlaying(true);
+            } catch {
+                v.muted = true;
+                setMuted(true);
+
+                try {
+                    await v.play();
+                    setPlaying(true);
+                } catch {
+                    setPlaying(false);
+                }
+            }
         } else {
             v.pause();
             setPlaying(false);
@@ -54,7 +70,11 @@ function VideoCard({ video, index }: VideoCardProps) {
 
     const toggleMute = () => {
         const v = videoRef.current;
-        if (!v) return;
+
+        if (!v) {
+            return;
+        }
+
         v.muted = !v.muted;
         setMuted(v.muted);
     };
@@ -79,6 +99,10 @@ function VideoCard({ video, index }: VideoCardProps) {
                     ref={videoRef}
                     className="w-full h-full object-cover"
                     playsInline
+                    webkit-playsinline="true"
+                    muted
+                    preload="metadata"
+                    controlsList="nodownload"
                     onPlay={() => setPlaying(true)}
                     onPause={() => setPlaying(false)}
                 >
@@ -129,7 +153,7 @@ function VideoCard({ video, index }: VideoCardProps) {
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                             <button
                                 onClick={togglePlay}
-                                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0"
+                                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors shrink-0"
                                 aria-label={playing ? 'Pause' : 'Play'}
                             >
                                 {playing ? (
@@ -140,7 +164,7 @@ function VideoCard({ video, index }: VideoCardProps) {
                             </button>
                             <button
                                 onClick={toggleMute}
-                                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0"
+                                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors shrink-0"
                                 aria-label={muted ? 'Unmute' : 'Mute'}
                             >
                                 {muted ? (
@@ -153,7 +177,7 @@ function VideoCard({ video, index }: VideoCardProps) {
                         </div>
                         <button
                             onClick={handleFullscreen}
-                            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0"
+                            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors shrink-0"
                             aria-label="Fullscreen"
                         >
                             <Maximize2 className="w-4 h-4 text-white" />

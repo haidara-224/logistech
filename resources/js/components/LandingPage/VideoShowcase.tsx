@@ -1,6 +1,6 @@
-import { useRef, useState, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, Maximize2 } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 
 export function VideoShowcase() {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -9,51 +9,84 @@ export function VideoShowcase() {
 
     const [playing, setPlaying] = useState(false);
     const [muted, setMuted] = useState(true);
-    const [started, setStarted] = useState(false);
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         const v = videoRef.current;
-        if (!v) return;
-        if (isInView && !started) {
-            v.muted = true;
-            v.play().then(() => { setPlaying(true); setStarted(true); }).catch(() => {});
+
+        if (!v) {
+            return;
         }
-        if (!isInView && playing) {
+
+        if (!isInView && !v.paused) {
             v.pause();
-            setPlaying(false);
         }
     }, [isInView]);
 
-    const togglePlay = () => {
+    const togglePlay = async () => {
         const v = videoRef.current;
-        if (!v) return;
-        if (v.paused) { v.play(); setPlaying(true); }
-        else { v.pause(); setPlaying(false); }
+
+        if (!v) {
+            return;
+        }
+
+        if (v.paused) {
+            try {
+                await v.play();
+                setPlaying(true);
+            } catch {
+                v.muted = true;
+                setMuted(true);
+
+                try {
+                    await v.play();
+                    setPlaying(true);
+                } catch {
+                    setPlaying(false);
+                }
+            }
+        } else {
+            v.pause();
+            setPlaying(false);
+        }
     };
 
     const toggleMute = () => {
         const v = videoRef.current;
-        if (!v) return;
+
+        if (!v) {
+            return;
+        }
+
         v.muted = !v.muted;
         setMuted(v.muted);
     };
 
     const handleTimeUpdate = () => {
         const v = videoRef.current;
-        if (!v || !v.duration) return;
+
+        if (!v || !v.duration) {
+            return;
+        }
+
         setProgress((v.currentTime / v.duration) * 100);
     };
 
     const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
         const v = videoRef.current;
-        if (!v) return;
+
+        if (!v) {
+            return;
+        }
+
         const rect = e.currentTarget.getBoundingClientRect();
         v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration;
     };
 
     const handleFullscreen = () => {
-        if (videoRef.current?.requestFullscreen) videoRef.current.requestFullscreen();
+        if (videoRef.current?.requestFullscreen) {
+            videoRef.current.requestFullscreen();
+        }
     };
 
     return (
@@ -127,11 +160,13 @@ export function VideoShowcase() {
                             className="w-full aspect-9/16 object-cover"
                             loop
                             playsInline
+                            webkit-playsinline="true"
                             muted
+                            preload="metadata"
+                            controlsList="nodownload"
                             onTimeUpdate={handleTimeUpdate}
                         >
                             <source src="/Video/IMG_1.mp4" type="video/mp4" />
-                            <source src="/Video/IMG_1.MOV" type="video/quicktime" />
                         </video>
 
                         {/* Overlay */}
